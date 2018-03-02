@@ -15,10 +15,10 @@ target_include_directories(catch INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/catch)
 # Here a generic example for creating an executable then defining it as a
 # test to CTest
 # 1. Create executable
-add_executable(test_example test_example.cpp)
+#add_executable(test_example test_example.cpp)
 
 # 2. Link it to the library being tested, plus the unit test library(ies)
-target_link_libraries(test_example examplelibrary catch)
+#target_link_libraries(test_example examplelibrary catch)
 
 # 3. Add the test program as a command to be run as a test
 # Note: NAME is what will be shown in CTest, COMMAND is what will be run
@@ -28,5 +28,5 @@ target_link_libraries(test_example examplelibrary catch)
 # Note: The executable can be passed command line arguments. Here we add
 #       `--success` which is provided by Catch's main() function and reports
 #       info about successful as well as failing tests.
-add_test(NAME testExampleClass COMMAND test_example --success)
+#add_test(NAME testExampleClass COMMAND test_example --success)
 
