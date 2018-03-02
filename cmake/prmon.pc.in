@@ -1,0 +1,9 @@
+prefix=${pcfiledir}/@HSFTEMPLATE_PCFILEDIR_TO_PREFIX@
+libdir=${prefix}@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: @PROJECT_NAME@
+Version: @PROJECT_VERSION@
+Description: "Description of @PROJECT_NAME@" 
+Libs: -L${libdir} -lexamplelibrary
+Cflags: -I${includedir}

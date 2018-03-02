@@ -1,0 +1,9 @@
+# Ignore the most common extra files that can
+# be produced while developing
+*~
+#*
+.DS_Store
+.pydevproject
+.project
+*.pyc
+.cproject
