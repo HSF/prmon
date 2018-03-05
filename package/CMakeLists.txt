@@ -1,8 +1,9 @@
-# Better have this
-find_package(rapidjson REQUIRED)
+find_package(RapidJSON REQUIRED)
+find_package(Threads REQUIRED)
 
 add_executable(prmon src/prmon.cpp src/prmon.h)
 target_include_directories(prmon PRIVATE RAPIDJSON_INCLUDEDIR)
+target_link_libraries(prmon Threads::Threads)
 
 # - Install the example library into the install time library directory
 # The EXPORT name is used so that we can "export" the target for
