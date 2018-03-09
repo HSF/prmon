@@ -1,16 +1,3 @@
-# - Create interface target for local catch copy
-# Single header is placed in dedicated directory for clean separation
-# Using an interface target means we simply link to it like any other target
-# and CMake with add all needed definitions, include paths etc.
-# To update the vendored copy of catch, simply download it via:
-#
-# $ curl -O https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp
-#
-# and copy the `catch.hpp` file into the catch subdirectory
-add_library(catch INTERFACE)
-target_include_directories(catch INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/catch)
-
-
 # - Create and define test executables
 # Here a generic example for creating an executable then defining it as a
 # test to CTest
@@ -30,3 +17,8 @@ target_include_directories(catch INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/catch)
 #       info about successful as well as failing tests.
 #add_test(NAME testExampleClass COMMAND test_example --success)
 
+find_package(Boost COMPONENTS program_options REQUIRED)
+
+add_executable(burner burner.cpp)
+target_include_directories(burner PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(burner PRIVATE ${Boost_LIBRARIES})

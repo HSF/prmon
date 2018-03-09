@@ -39,7 +39,7 @@ endif()
 # Both of these issues can be resolved using CMake's compile features, see
 #
 # - https://cmake.org/cmake/help/v3.3/manual/cmake-compile-features.7.html
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
