@@ -19,7 +19,7 @@
 #include <thread> 
 #include <sstream>
 
-int ReadProcs(pid_t mother_pid, unsigned long values[4], unsigned long long valuesIO[4], bool verbose=false);
+int ReadProcs(pid_t mother_pid, unsigned long values[4], unsigned long long valuesIO[4], unsigned long long valuesCPU[4], bool verbose=false);
 int MemoryMonitor(pid_t mpid, char* filename=NULL, char* jsonSummary=NULL, unsigned int interval=600);
 
 
