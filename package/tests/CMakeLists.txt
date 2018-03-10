@@ -18,7 +18,8 @@
 #add_test(NAME testExampleClass COMMAND test_example --success)
 
 find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Threads REQUIRED)
 
 add_executable(burner burner.cpp)
 target_include_directories(burner PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(burner PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(burner PRIVATE ${Boost_LIBRARIES} Threads::Threads)

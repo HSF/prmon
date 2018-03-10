@@ -6,6 +6,9 @@
 #include <iomanip>
 #include <chrono>
 #include <ratio>
+#include <thread>
+#include <vector>
+#include <unistd.h>
 
 #include <boost/program_options.hpp>
 
@@ -40,14 +43,21 @@ double burn_for(float ms_interval = 1.0) {
 
 int main(int argn, char *argv[]) {
   float runtime{};
-  int threads{}, procs{};
+  unsigned int threads{}, procs{};
 
-  prog_opt::options_description desc("Allowed options");
+  prog_opt::options_description desc(
+      "burner is a simple cpu burner program that can run in multiple threads\n"
+      "and/or processes.\n\n"
+      "If both threads and procs are sepecified then each process runs\n"
+      "multiple threads (so the load is threads * procs).\n\n"
+      "Allowed options:");
   desc.add_options()
-      ("help", "print this help message")
-      ("threads", prog_opt::value<int>(&threads)->default_value(1), "run in N threads")
-      ("procs", prog_opt::value<int>(&procs)->default_value(1), "run in N processes")
-      ("time", prog_opt::value<float>(&runtime)->default_value(default_runtime), "run for T seconds")
+      ("help,h", "print this help message")
+      ("threads,t", prog_opt::value<unsigned int>(&threads)->default_value(1),
+          "run in N threads (setting 0 will used the hardware concurrency value)")
+      ("procs,p", prog_opt::value<unsigned int>(&procs)->default_value(1),
+          "run in N processes (setting 0 will used the hardware concurrency value)")
+      ("time,r", prog_opt::value<float>(&runtime)->default_value(default_runtime), "run for T seconds")
   ;
 
   // Parse command line
@@ -65,10 +75,31 @@ int main(int argn, char *argv[]) {
     return 1;
   }
 
+  // If threads or procs is set to zero, then use the hardware
+  // concurrency value
+  auto hw = std::thread::hardware_concurrency();
+  if (threads==0) threads=hw;
+  if (procs==0) procs=hw;
+
   std::cout << "Will run for " << runtime << "s using " << procs <<
       " process(es) and " << threads << " thread(s)" << std::endl;
 
-  burn_for(runtime * std::kilo::num);
+  // First fork child processes
+  if (procs > 1) {
+    unsigned int children{0};
+    pid_t pid{0};
+    while (children < procs-1 && pid == 0) {
+      pid = fork();
+      ++children;
+    }
+  }
+
+  // Each process runs the requested number of threads
+  std::vector<std::thread> pool;
+  for (int i=0; i<threads; ++i)
+    pool.push_back(std::thread(burn_for, runtime*std::kilo::num));
+  for (auto& th: pool)
+    th.join();
 
   return 0;
 }
