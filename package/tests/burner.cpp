@@ -41,7 +41,7 @@ double burn_for(float ms_interval = 1.0) {
   return burn_result;
 }
 
-int main(int argn, char *argv[]) {
+int main(int argc, char *argv[]) {
   float runtime{};
   unsigned int threads{}, procs{};
 
@@ -62,7 +62,7 @@ int main(int argn, char *argv[]) {
 
   // Parse command line
   prog_opt::variables_map var_map;
-  prog_opt::store(prog_opt::parse_command_line(argn, argv, desc), var_map);
+  prog_opt::store(prog_opt::parse_command_line(argc, argv, desc), var_map);
   prog_opt::notify(var_map);
 
   if (var_map.count("help")) {
@@ -71,7 +71,7 @@ int main(int argn, char *argv[]) {
   }
 
   if (runtime < 0.0f) {
-    std::cerr << "Program rum time cannot be negative" << std::endl;
+    std::cerr << "Program run time cannot be negative" << std::endl;
     return 1;
   }
 

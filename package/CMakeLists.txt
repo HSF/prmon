@@ -1,9 +1,10 @@
 find_package(RapidJSON REQUIRED)
 find_package(Threads REQUIRED)
+find_package(Boost COMPONENTS program_options REQUIRED)
 
 add_executable(prmon src/prmon.cpp src/prmon.h)
 target_include_directories(prmon PRIVATE RAPIDJSON_INCLUDEDIR)
-target_link_libraries(prmon Threads::Threads)
+target_link_libraries(prmon ${Boost_LIBRARIES} Threads::Threads)
 
 # - Install the example library into the install time library directory
 # The EXPORT name is used so that we can "export" the target for
