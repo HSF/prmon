@@ -12,7 +12,7 @@
 
 using namespace rapidjson;
 
-int ReadProcs(pid_t mother_pid, unsigned long values[4], unsigned long long valuesIO[4], unsigned long long valuesCPU[4], bool verbose){
+int ReadProcs(const pid_t mother_pid, unsigned long values[4], unsigned long long valuesIO[4], unsigned long long valuesCPU[4], const bool verbose){
 
   //Get child process IDs
       std::vector<pid_t> cpids;
@@ -54,10 +54,10 @@ int ReadProcs(pid_t mother_pid, unsigned long values[4], unsigned long long valu
       unsigned long long trbyte(0);
       unsigned long long twbyte(0);
 
-      unsigned long utime(0);
-      unsigned long stime(0);
-      unsigned long cutime(0);
-      unsigned long cstime(0);
+      unsigned long long utime(0);
+      unsigned long long stime(0);
+      unsigned long long cutime(0);
+      unsigned long long cstime(0);
 
       std::vector<std::string> openFails;
 
@@ -100,14 +100,13 @@ int ReadProcs(pid_t mother_pid, unsigned long values[4], unsigned long long valu
           openFails.push_back(std::string(stat_buffer));
         }
         else {
-          long clock_ticks = sysconf (_SC_CLK_TCK);
           while(fgets(sbuffer,2048,file3)) {
             tsbuffer = strchr (sbuffer, ')');
             if(sscanf(tsbuffer + 2 , "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %80llu %80llu %80llu %80llu", &utime, &stime, &cutime, &cstime)) {
-              valuesCPU[0] = utime/clock_ticks;
-              valuesCPU[1] = stime/clock_ticks;
-              valuesCPU[2] = cutime/clock_ticks;
-              valuesCPU[3] = cstime/clock_ticks;
+              valuesCPU[0] = utime;
+              valuesCPU[1] = stime;
+              valuesCPU[2] = cutime;
+              valuesCPU[3] = cstime;
             }
           }
         }
@@ -171,6 +170,9 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
      Value& v2 = d["Avg"];
 
      startTime = time(0);
+
+     long clock_ticks = sysconf (_SC_CLK_TCK);
+     float inv_clock_ticks = 1./clock_ticks;
      // Monitoring loop until process exits
      while(kill(mpid, 0) == 0 && sigusr1 == false){
 
@@ -190,10 +192,10 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
 	       << valuesIO[1]   << "\t" 
 	       << valuesIO[2]   << "\t" 
 	       << valuesIO[3]   << "\t"
-	       << valuesCPU[0]   << "\t"
-	       << valuesCPU[1]   << "\t"
-	       << valuesCPU[2]   << "\t"
-	       << valuesCPU[3]   << std::endl;
+	       << valuesCPU[0]*inv_clock_ticks   << "\t"
+	       << valuesCPU[1]*inv_clock_ticks   << "\t"
+	       << valuesCPU[2]*inv_clock_ticks   << "\t"
+	       << valuesCPU[3]*inv_clock_ticks   << std::endl;
 
           // Compute statistics
           for(int i=0;i<4;i++){
@@ -242,7 +244,7 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
 
           // Total CPU measurements
           for(Value::MemberIterator it = v1.MemberBegin()+8; it != v1.MemberEnd(); ++it) {
-            it->value.SetUint64(maxValuesCPU[tmp]);
+            it->value.SetFloat(maxValuesCPU[tmp]*inv_clock_ticks);
             tmp += 1;
           }
           tmp = 0;
