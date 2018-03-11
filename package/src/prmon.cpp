@@ -8,15 +8,17 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/filewritestream.h"
 #include <math.h>
+#include <unistd.h>
 
 using namespace rapidjson;
 
-int ReadProcs(pid_t mother_pid, unsigned long values[4], unsigned long long valuesIO[4], bool verbose){
+int ReadProcs(const pid_t mother_pid, unsigned long values[4], unsigned long long valuesIO[4], unsigned long long valuesCPU[4], const bool verbose){
 
   //Get child process IDs
       std::vector<pid_t> cpids;
       char smaps_buffer[64];
       char io_buffer[64];
+      char stat_buffer[64];
       snprintf(smaps_buffer,64,"pstree -A -p %ld | tr \\- \\\\n",(long)mother_pid);
       FILE* pipe = popen(smaps_buffer, "r");
       if (pipe==0) {
@@ -52,8 +54,14 @@ int ReadProcs(pid_t mother_pid, unsigned long values[4], unsigned long long valu
       unsigned long long trbyte(0);
       unsigned long long twbyte(0);
 
+      unsigned long long utime(0);
+      unsigned long long stime(0);
+      unsigned long long cutime(0);
+      unsigned long long cstime(0);
+
       std::vector<std::string> openFails;
 
+      char sbuffer[2048], *tsbuffer;
       for(std::vector<pid_t>::const_iterator it=cpids.begin(); it!=cpids.end(); ++it) {
         snprintf(smaps_buffer,64,"/proc/%lu/smaps",(unsigned long)*it);
        
@@ -84,9 +92,28 @@ int ReadProcs(pid_t mother_pid, unsigned long values[4], unsigned long long valu
           fclose(file2);
 	}
 
+        snprintf(stat_buffer,64,"/proc/%llu/stat",(unsigned long long)*it);
+
+        FILE *file3 = fopen(stat_buffer,"r");
+
+        if(file3==0) {
+          openFails.push_back(std::string(stat_buffer));
+        }
+        else {
+          while(fgets(sbuffer,2048,file3)) {
+            tsbuffer = strchr (sbuffer, ')');
+            if(sscanf(tsbuffer + 2 , "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %80llu %80llu %80llu %80llu", &utime, &stime, &cutime, &cstime)) {
+              valuesCPU[0] = utime;
+              valuesCPU[1] = stime;
+              valuesCPU[2] = cutime;
+              valuesCPU[3] = cstime;
+            }
+          }
+        }
+
       } 
       if(openFails.size()>3 && verbose) {
-         std::cerr << "ProcMonitor: too many failures in opening smaps and io files!" << std::endl;
+         std::cerr << "ProcMonitor: too many failures in opening smaps, io, and stat files!" << std::endl;
          return 1; }
 
      return 0;
@@ -111,6 +138,9 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
      unsigned long long maxValuesIO[4] = {0,0,0,0};
      unsigned long long avgValuesIO[4] = {0,0,0,0};
 
+     unsigned long long    valuesCPU[4] = {0,0,0,0};
+     unsigned long long maxValuesCPU[4] = {0,0,0,0};
+     unsigned long long avgValuesCPU[4] = {0,0,0,0};
 
      int iteration = 0;
      time_t lastIteration = time(0) - interval;
@@ -120,9 +150,9 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
      // Open iteration output file     
      std::ofstream file;  
      file.open(filename);
-     file << "Time\t\t\t\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes" << std::endl;
+     file << "Time\t\t\t\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tstime\tcutime\tcstime" << std::endl;
 
-     const char json[] = "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, \"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, \"totWBYTES\": 0 }, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": 0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": 0,\"rateRBYTES\": 0, \"rateWBYTES\": 0}}";
+     const char json[] = "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, \"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, \"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" : 0, \"totCSTIME\" : 0 }, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": 0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": 0,\"rateRBYTES\": 0, \"rateWBYTES\": 0}}";
      
      Document d;
      d.Parse(json);
@@ -140,6 +170,9 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
      Value& v2 = d["Avg"];
 
      startTime = time(0);
+
+     long clock_ticks = sysconf (_SC_CLK_TCK);
+     float inv_clock_ticks = 1./clock_ticks;
      // Monitoring loop until process exits
      while(kill(mpid, 0) == 0 && sigusr1 == false){
 
@@ -147,7 +180,7 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
         if (time(0) - lastIteration > interval){         
  
           iteration = iteration + 1;
-          ReadProcs( mpid, values, valuesIO);
+          ReadProcs( mpid, values, valuesIO, valuesCPU );
 
           currentTime = time(0);
           file << currentTime << "\t" 
@@ -158,7 +191,11 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
 	       << valuesIO[0]   << "\t" 
 	       << valuesIO[1]   << "\t" 
 	       << valuesIO[2]   << "\t" 
-	       << valuesIO[3]   << std::endl;  
+	       << valuesIO[3]   << "\t"
+	       << valuesCPU[0]*inv_clock_ticks   << "\t"
+	       << valuesCPU[1]*inv_clock_ticks   << "\t"
+	       << valuesCPU[2]*inv_clock_ticks   << "\t"
+	       << valuesCPU[3]*inv_clock_ticks   << std::endl;
 
           // Compute statistics
           for(int i=0;i<4;i++){
@@ -172,6 +209,8 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
 
 	     avgValuesIO[i] =  (unsigned long long) maxValuesIO[i] / (currentTime-startTime) ;
 
+             if (valuesCPU[i] > maxValuesCPU[i])
+               maxValuesCPU[i] = valuesCPU[i];
 	  }
 
 
@@ -182,6 +221,7 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
           for(int i=0;i<4;i++) { 
 	    values[i]=0;
 	    valuesIO[i]=0;
+	    valuesCPU[i]=0;
 	  }
 
           // Create JSON realtime summary
@@ -200,6 +240,13 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
              tmp += 1;
 
 	  }
+          tmp = 0;
+
+          // Total CPU measurements
+          for(Value::MemberIterator it = v1.MemberBegin()+8; it != v1.MemberEnd(); ++it) {
+            it->value.SetFloat(maxValuesCPU[tmp]*inv_clock_ticks);
+            tmp += 1;
+          }
           tmp = 0;
 
           // Write JSON realtime summary to a temporary file (to avoid race conditions with pilot trying to read from file at the same time)
