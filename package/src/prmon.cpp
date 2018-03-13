@@ -103,10 +103,10 @@ int ReadProcs(const pid_t mother_pid, unsigned long values[4], unsigned long lon
           while(fgets(sbuffer,2048,file3)) {
             tsbuffer = strchr (sbuffer, ')');
             if(sscanf(tsbuffer + 2 , "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %80llu %80llu %80llu %80llu", &utime, &stime, &cutime, &cstime)) {
-              valuesCPU[0] = utime;
-              valuesCPU[1] = stime;
-              valuesCPU[2] = cutime;
-              valuesCPU[3] = cstime;
+              valuesCPU[0] += utime;
+              valuesCPU[1] += stime;
+              valuesCPU[2] += cutime;
+              valuesCPU[3] += cstime;
             }
           }
         }
