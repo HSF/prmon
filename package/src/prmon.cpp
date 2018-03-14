@@ -2,13 +2,16 @@
   Copyright (C) 2018, CERN
 */
 
-#include "prmon.h"
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
-#include "rapidjson/filewritestream.h"
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/filewritestream.h>
 #include <math.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <getopt.h>
+
+#include "prmon.h"
 
 using namespace rapidjson;
 
@@ -125,7 +128,7 @@ bool sigusr1 = false;
 
 void SignalCallbackHandler(int /*signal*/) { std::lock_guard<std::mutex> l(cv_m); sigusr1 = true; cv.notify_one(); }
 
-int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int interval){
+int MemoryMonitor(const pid_t mpid, const std::string filename, const std::string jsonSummary, const unsigned int interval){
      
      signal(SIGUSR1, SignalCallbackHandler);
 
@@ -282,34 +285,74 @@ int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary, unsigned int in
    return 0;
  }
 
+
+
 int main(int argc, char *argv[]){
+  // Set defaults
+  const char* default_filename = "prmon.txt";
+  const char* default_json_summary = "prmon.json";
+  const unsigned int default_interval = 1;
 
-    if(argc != 9) { 
-        std::cerr << "Usage: " << argv[0] << " --pid --filename --json-summary --interval \n " <<  std::endl;
-        return -1;}
+  pid_t pid=-1;
+  std::string filename{default_filename};
+  std::string jsonSummary{default_json_summary};
+  unsigned int interval{default_interval};
+  int do_help{0};
 
-    pid_t pid=-1; char* filename = NULL; char* jsonSummary=NULL; int interval = 600;
+  static struct option long_options[] = {
+      {"pid", required_argument, NULL, 'p'},
+      {"filename", required_argument, NULL, 'f'},
+      {"json-summary", required_argument, NULL, 'j'},
+      {"interval", required_argument, NULL, 'i'},
+      {"help", no_argument, NULL, 'h'},
+      {0, 0, 0, 0}
+  };
 
-    for (int i = 1; i < argc; ++i) {
-      if (strcmp(argv[i], "--pid") == 0) pid = atoi(argv[i+1]); 
-      else if (strcmp(argv[i],"--filename") == 0) filename = argv[i+1];
-      else if (strcmp(argv[i],"--json-summary") == 0) jsonSummary = argv[i+1];
-      else if (strcmp(argv[i], "--interval") == 0) interval = atoi(argv[i+1]);
-    }
-
-    if (pid < 2) {
-      std::cerr << "Bad PID.\n";
+  char c;
+  while ((c = getopt_long(argc, argv, "p:f:j:i:h", long_options, NULL)) != -1) {
+    switch (c) {
+    case 'p':
+      pid = std::stoi(optarg);
+      break;
+    case 'f':
+      filename = optarg;
+      break;
+    case 'j':
+      jsonSummary = optarg;
+      break;
+    case 'i':
+      interval = std::stoi(optarg);
+      break;
+    case 'h':
+      do_help = 1;
+      break;
+    default:
+      std::cerr << "Use '--help' for usage " << std::endl;
       return 1;
     }
+  }
 
-    if (!jsonSummary) {
-      std::cerr << "--json-summary switch missing.\n";
-      return 1;
-    }
-
-    MemoryMonitor(pid, filename, jsonSummary, interval);
-
+  if (do_help) {
+    std::cout << "prmon is a process monitor program that records runtime data\n"
+        << "from a process and its children, writing time stamped values\n"
+        << "for resource consumption into a logfile and a JSON summary\n"
+        << "format when the process exits.\n" << std::endl;
+    std::cout << "Options:\n"
+        << "--pid, -p PID             Monitored process ID\n"
+        << "[--filename, -f FILE]     Filename for detailed stats (default " << default_filename << ")\n"
+        << "[--json-summary, -j FILE] Filename for JSON summary (default " << default_json_summary << ")\n"
+        << "[--interval, -i TIME]     Seconds between samples (default " << default_interval << ")\n" << std::endl;
     return 0;
+  }
+
+  if (pid < 2) {
+    std::cerr << "Bad PID to monitor.\n";
+    return 1;
+  }
+
+  MemoryMonitor(pid, filename, jsonSummary, interval);
+
+  return 0;
 }
 
 

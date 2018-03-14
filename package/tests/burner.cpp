@@ -8,17 +8,13 @@
 #include <ratio>
 #include <thread>
 #include <vector>
+#include <string>
 #include <unistd.h>
-
-#include <boost/program_options.hpp>
+#include <getopt.h>
 
 #include "burner.h"
 
-namespace prog_opt = boost::program_options;
-
-const float default_runtime = 10.0;
-
-double burn(unsigned long iterations = 10'000'000lu) {
+double burn(unsigned long iterations = 10000000lu) {
   // Perform a time wasting bit of maths
   // Use volatile to prevent the compiler from optimising away
   volatile double sum{0.0};
@@ -41,33 +37,57 @@ double burn_for(float ms_interval = 1.0) {
   return burn_result;
 }
 
-int main(int argn, char *argv[]) {
-  float runtime{};
-  unsigned int threads{}, procs{};
+int main(int argc, char *argv[]) {
+  // Default values
+  const float default_runtime = 10.0f;
+  const unsigned int default_threads = 1;
+  const unsigned int default_procs = 1;
 
-  prog_opt::options_description desc(
-      "burner is a simple cpu burner program that can run in multiple threads\n"
-      "and/or processes.\n\n"
-      "If both threads and procs are sepecified then each process runs\n"
-      "multiple threads (so the load is threads * procs).\n\n"
-      "Allowed options:");
-  desc.add_options()
-      ("help,h", "print this help message")
-      ("threads,t", prog_opt::value<unsigned int>(&threads)->default_value(1),
-          "run in N threads (setting 0 will used the hardware concurrency value)")
-      ("procs,p", prog_opt::value<unsigned int>(&procs)->default_value(1),
-          "run in N processes (setting 0 will used the hardware concurrency value)")
-      ("time,r", prog_opt::value<float>(&runtime)->default_value(default_runtime), "run for T seconds")
-  ;
+  float runtime{default_runtime};
+  unsigned int threads{default_threads}, procs{default_procs};
+  int do_help{0};
 
-  // Parse command line
-  prog_opt::variables_map var_map;
-  prog_opt::store(prog_opt::parse_command_line(argn, argv, desc), var_map);
-  prog_opt::notify(var_map);
+  static struct option long_options[] = {
+      {"threads", required_argument, NULL, 't'},
+      {"procs", required_argument, NULL, 'p'},
+      {"time", required_argument, NULL, 'r'},
+      {"help", no_argument, NULL, 'h'},
+      {0, 0, 0, 0}
+  };
 
-  if (var_map.count("help")) {
-      std::cout << desc << "\n";
+  char c;
+  while ((c = getopt_long(argc, argv, "t:p:r:h", long_options, NULL)) != -1) {
+    switch (c) {
+    case 't':
+      threads = std::stoi(optarg);
+      break;
+    case 'p':
+      procs = std::stoi(optarg);
+      break;
+    case 'r':
+      runtime = std::stof(optarg);
+      break;
+    case 'h':
+      do_help = 1;
+      break;
+    default:
+      std::cerr << "Use '--help' for usage" << std::endl;
       return 1;
+    }
+  }
+
+  if (do_help) {
+    std::cout <<
+        "burner is a simple cpu burner program that can run in multiple threads\n"
+        "and/or processes.\n\n"
+        "If both threads and procs are specified then each process runs\n"
+        "multiple threads (so the load is threads * procs).\n" << std::endl;
+    std::cout << "Options:\n"
+        << " [--threads, -t N]  Number of threads to run (default " << default_threads << ")\n"
+        << " [--procs, -p N]    Number of processes to run (default " << default_procs << ")\n"
+        << " [--time, -r T]     Run for T seconds (default " << default_runtime << "\n\n"
+        << "If threads or procs is set to 0, the hardware concurrency value is used." << std::endl;
+    return 0;
   }
 
   if (runtime < 0.0f) {
