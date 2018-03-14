@@ -288,10 +288,15 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
 
 
 int main(int argc, char *argv[]){
+  // Set defaults
+  const char* default_filename = "prmon.txt";
+  const char* default_json_summary = "prmon.json";
+  const unsigned int default_interval = 1;
+
   pid_t pid=-1;
-  std::string filename{"prmon.txt"};
-  std::string jsonSummary{"prmon.json"};
-  unsigned int interval{1};
+  std::string filename{default_filename};
+  std::string jsonSummary{default_json_summary};
+  unsigned int interval{default_interval};
   int do_help{0};
 
   static struct option long_options[] = {
@@ -299,7 +304,7 @@ int main(int argc, char *argv[]){
       {"filename", required_argument, NULL, 'f'},
       {"json-summary", required_argument, NULL, 'j'},
       {"interval", required_argument, NULL, 'i'},
-      {"help", no_argument, &do_help, 1},
+      {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}
   };
 
@@ -321,19 +326,22 @@ int main(int argc, char *argv[]){
     case 'h':
       do_help = 1;
       break;
+    default:
+      std::cerr << "Use '--help' for usage " << std::endl;
+      return 1;
     }
   }
 
   if (do_help) {
     std::cout << "prmon is a process monitor program that records runtime data\n"
         << "from a process and its children, writing time stamped values\n"
-        << "for resource consumption into a logfile and summarises in JSON\n"
+        << "for resource consumption into a logfile and a JSON summary\n"
         << "format when the process exits.\n" << std::endl;
     std::cout << "Options:\n"
         << "--pid, -p PID             Monitored process ID\n"
-        << "[--filename, -f FILE]     Filename for detailed stats (default prmon.txt)\n"
-        << "[--json-summary, -j FILE] Filename for JSON summary (default prmon.json)\n"
-        << "[--interval, -i TIME]     Seconds between samples (default 1)\n" << std::endl;
+        << "[--filename, -f FILE]     Filename for detailed stats (default " << default_filename << ")\n"
+        << "[--json-summary, -j FILE] Filename for JSON summary (default " << default_json_summary << ")\n"
+        << "[--interval, -i TIME]     Seconds between samples (default " << default_interval << ")\n" << std::endl;
     return 0;
   }
 

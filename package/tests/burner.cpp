@@ -14,8 +14,6 @@
 
 #include "burner.h"
 
-const float default_runtime = 10.0;
-
 double burn(unsigned long iterations = 10000000lu) {
   // Perform a time wasting bit of maths
   // Use volatile to prevent the compiler from optimising away
@@ -40,20 +38,25 @@ double burn_for(float ms_interval = 1.0) {
 }
 
 int main(int argc, char *argv[]) {
-  float runtime{};
-  unsigned int threads{}, procs{};
+  // Default values
+  const float default_runtime = 10.0f;
+  const unsigned int default_threads = 1;
+  const unsigned int default_procs = 1;
+
+  float runtime{default_runtime};
+  unsigned int threads{default_threads}, procs{default_procs};
   int do_help{0};
 
   static struct option long_options[] = {
       {"threads", required_argument, NULL, 't'},
       {"procs", required_argument, NULL, 'p'},
       {"time", required_argument, NULL, 'r'},
-      {"help", no_argument, &do_help, 1},
+      {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}
   };
 
   char c;
-  while ((c = getopt_long(argc, argv, "t:p:t:h", long_options, NULL)) != -1) {
+  while ((c = getopt_long(argc, argv, "t:p:r:h", long_options, NULL)) != -1) {
     switch (c) {
     case 't':
       threads = std::stoi(optarg);
@@ -67,6 +70,9 @@ int main(int argc, char *argv[]) {
     case 'h':
       do_help = 1;
       break;
+    default:
+      std::cerr << "Use '--help' for usage" << std::endl;
+      return 1;
     }
   }
 
@@ -74,12 +80,12 @@ int main(int argc, char *argv[]) {
     std::cout <<
         "burner is a simple cpu burner program that can run in multiple threads\n"
         "and/or processes.\n\n"
-        "If both threads and procs are sepecified then each process runs\n"
+        "If both threads and procs are specified then each process runs\n"
         "multiple threads (so the load is threads * procs).\n" << std::endl;
     std::cout << "Options:\n"
-        << " [--threads, -t N]  Number of threads to run (default 1)\n"
-        << " [--procs, -p N]    Number of processes to run (default 1)\n"
-        << " [--time, -r T]     Run for T seconds (default " << default_runtime << "\n"
+        << " [--threads, -t N]  Number of threads to run (default " << default_threads << ")\n"
+        << " [--procs, -p N]    Number of processes to run (default " << default_procs << ")\n"
+        << " [--time, -r T]     Run for T seconds (default " << default_runtime << "\n\n"
         << "If threads or procs is set to 0, the hardware concurrency value is used." << std::endl;
     return 0;
   }
