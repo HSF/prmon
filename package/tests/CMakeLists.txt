@@ -1,10 +1,8 @@
 # CPU burner
-find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(Threads REQUIRED)
 
 add_executable(burner burner.cpp)
-target_include_directories(burner PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(burner PRIVATE ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(burner PRIVATE Threads::Threads)
 
 # Custom targets for handling scripted wrappers for tests
 function(script_install SCRIPT)
