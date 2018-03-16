@@ -112,6 +112,7 @@ int ReadProcs(const pid_t mother_pid, unsigned long values[4], unsigned long lon
               valuesCPU[3] += cstime;
             }
           }
+          fclose(file3);
         }
 
       } 
