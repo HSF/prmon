@@ -4,6 +4,9 @@ find_package(Threads REQUIRED)
 add_executable(burner burner.cpp)
 target_link_libraries(burner PRIVATE Threads::Threads)
 
+add_executable(io-burner io-burner.cpp)
+target_link_libraries(io-burner PRIVATE Threads::Threads)
+
 # Custom targets for handling scripted wrappers for tests
 function(script_install SCRIPT)
 	add_custom_command(
