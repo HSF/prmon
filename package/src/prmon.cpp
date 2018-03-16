@@ -153,7 +153,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
      // Open iteration output file     
      std::ofstream file;  
      file.open(filename);
-     file << "Time\t\t\t\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tstime\tcutime\tcstime" << std::endl;
+     file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tstime\tcutime\tcstime" << std::endl;
 
      const char json[] = "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, \"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, \"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" : 0, \"totCSTIME\" : 0 }, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": 0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": 0,\"rateRBYTES\": 0, \"rateWBYTES\": 0}}";
      
