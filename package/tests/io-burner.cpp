@@ -7,16 +7,15 @@
 #include <cstdlib>
 #include <chrono>
 #include <ratio>
-#include <thread>
-#include <chrono>
 #include <vector>
 #include <string>
+#include <thread>
 #include <unistd.h>
 #include <getopt.h>
 
 #include "io-burner.h"
 
-int io_burn(unsigned long bytes_to_write, unsigned int nsleep=0) {
+int io_burn(unsigned long bytes_to_write, std::chrono::nanoseconds nsleep, std::chrono::nanoseconds pause) {
   unsigned long bytes_written{0};
   std::string write_str{};
   write_str.insert(0, 1024, 'x');
@@ -33,15 +32,18 @@ int io_burn(unsigned long bytes_to_write, unsigned int nsleep=0) {
   while (bytes_written < bytes_to_write) {
     std::fputs(write_str.c_str(), tmp_file);
     bytes_written += write_len;
-    if (nsleep) std::this_thread::sleep_for(std::chrono::nanoseconds(nsleep));
+    std::this_thread::sleep_for(nsleep);
   }
+
+  std::this_thread::sleep_for(pause);
 
   std::rewind(tmp_file);
   while (!std::feof(tmp_file)) {
-    std::fgets(read_str, write_len, tmp_file);
-    if (nsleep) std::this_thread::sleep_for(std::chrono::nanoseconds(nsleep));
+    auto res = std::fgets(read_str, write_len, tmp_file);
+    std::this_thread::sleep_for(nsleep);
   }
 
+  std::this_thread::sleep_for(pause);
   fclose(tmp_file);
   return 0;
 }
@@ -51,24 +53,27 @@ int main(int argc, char *argv[]) {
   const unsigned long default_io_size = 1;
   const unsigned int default_threads = 1;
   const unsigned int default_procs = 1;
-  const float default_usleep = 1;
+  const float default_usleep = 1.;
+  const float default_pause = 1.;
 
   unsigned long io_size{default_io_size};
   unsigned int threads{default_threads}, procs{default_procs};
   int do_help{0};
-  float usleep = default_usleep;
+  float usleep{default_usleep};
+  float pause{default_pause};
 
   static struct option long_options[] = {
       {"io", required_argument, NULL, 'i'},
       {"threads", required_argument, NULL, 't'},
       {"procs", required_argument, NULL, 'p'},
       {"usleep", required_argument, NULL, 'u'},
+      {"pause", required_argument, NULL, 's'},
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}
   };
 
   char c;
-  while ((c = getopt_long(argc, argv, "i:t:p:u:h", long_options, NULL)) != -1) {
+  while ((c = getopt_long(argc, argv, "i:t:p:u:s:h", long_options, NULL)) != -1) {
     switch (c) {
     case 'i':
       if (std::stol(optarg) < 1) {
@@ -92,11 +97,18 @@ int main(int argc, char *argv[]) {
       procs = std::stoi(optarg);
       break;
     case 'u':
-      if (std::stoi(optarg) < 0) {
+      if (std::stof(optarg) < 0) {
         std::cerr << "usleep parameter must be greater than or equal to 0 (--help for usage)" << std::endl;
         return 1;
       }
       usleep = std::stof(optarg);
+      break;
+    case 's':
+      if (std::stof(optarg) < 0) {
+        std::cerr << "pause parameter must be greater than or equal to 0 (--help for usage)" << std::endl;
+        return 1;
+      }
+      pause = std::stof(optarg);
       break;
     case 'h':
       do_help = 1;
@@ -117,7 +129,9 @@ int main(int argc, char *argv[]) {
         << " [--io, -i N]        Number of megabytes to write per proc/thread (default " << default_io_size << "MB)\n"
         << " [--threads, -t N]   Number of threads to run (default " << default_threads << "\n"
         << " [--procs, -p N]     Number of processes to run (default " << default_procs << ")\n"
-        << " [--usleep, -u 1]    Sleep (in microseconds) between each KB of io (default " << default_usleep << ")\n\n"
+        << " [--usleep, -u N]    Sleep (in microseconds) between each KB of io (default " << default_usleep << ")\n"
+        << " [--pause, -s N]     Sleep (in seconds) at start, finish and between read/write cycles (default " << default_pause << ")\n"
+        << "                     Default value is recommended to get reliable values from /proc\n\n"
         << "If threads or procs is set to 0, the hardware concurrency value is used." << std::endl;
     return 0;
   }
@@ -130,6 +144,12 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Will write and read " << io_size << "MB * (" << procs <<
       " process(es) * " << threads << " thread(s)) with " << usleep << " microsecond sleeps" << std::endl;
+
+  unsigned long io_bytes = io_size * std::mega::num;
+  std::chrono::nanoseconds nano_sleep(static_cast<unsigned long>(usleep*std::milli::den));
+  std::chrono::nanoseconds nano_pause(static_cast<unsigned long>(pause*std::nano::den));
+
+  std::cout << io_bytes << " " << std::nano::den << " " << std::milli::den << std::endl;
 
   // First fork child processes
   if (procs > 1) {
@@ -144,9 +164,11 @@ int main(int argc, char *argv[]) {
   // Each process runs the requested number of threads
   std::vector<std::thread> pool;
   for (int i=0; i<threads; ++i)
-    pool.push_back(std::thread(io_burn, io_size*std::mega::num, usleep * std::kilo::num));
+    pool.push_back(std::thread(io_burn, io_bytes, nano_sleep, nano_pause));
   for (auto& th: pool)
     th.join();
+
+  std::this_thread::sleep_for(nano_pause);
 
   return 0;
 }
