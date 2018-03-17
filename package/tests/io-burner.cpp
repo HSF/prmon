@@ -23,6 +23,8 @@ int io_burn(unsigned long bytes_to_write, unsigned int nsleep=0) {
   const size_t write_len = write_str.length();
   char read_str[write_len];
 
+  // Implemented with C-style io as tmpfile() does not suffer from
+  // race conditions and will not leave any files on disk
   std::FILE* tmp_file = std::tmpfile();
   if (tmp_file == NULL) {
     std::cerr << "Failed to open a temporary file in io-burner" << std::endl;
@@ -69,15 +71,31 @@ int main(int argc, char *argv[]) {
   while ((c = getopt_long(argc, argv, "i:t:p:u:h", long_options, NULL)) != -1) {
     switch (c) {
     case 'i':
+      if (std::stol(optarg) < 1) {
+        std::cerr << "IO parameter must be greater than 0 (--help for usage)" << std::endl;
+        return 1;
+      }
       io_size = std::stol(optarg);
       break;
     case 't':
+      if (std::stoi(optarg) < 0) {
+        std::cerr << "threads parameter must be greater than or equal to 0 (--help for usage)" << std::endl;
+        return 1;
+      }
       threads = std::stoi(optarg);
       break;
     case 'p':
+      if (std::stoi(optarg) < 0) {
+        std::cerr << "procs parameter must be greater than or equal to 0 (--help for usage)" << std::endl;
+        return 1;
+      }
       procs = std::stoi(optarg);
       break;
     case 'u':
+      if (std::stoi(optarg) < 0) {
+        std::cerr << "usleep parameter must be greater than or equal to 0 (--help for usage)" << std::endl;
+        return 1;
+      }
       usleep = std::stof(optarg);
       break;
     case 'h':
@@ -111,7 +129,7 @@ int main(int argc, char *argv[]) {
   if (procs==0) procs=hw;
 
   std::cout << "Will write and read " << io_size << "MB * (" << procs <<
-      " process(es) * " << threads << " thread(s)) with " << usleep << "microsecond sleeps" << std::endl;
+      " process(es) * " << threads << " thread(s)) with " << usleep << " microsecond sleeps" << std::endl;
 
   // First fork child processes
   if (procs > 1) {
