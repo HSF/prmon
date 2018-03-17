@@ -21,6 +21,6 @@ endfunction(script_install)
 script_install(testCPU.py)
 
 # Test test
-add_test(NAME testCPUsingle COMMAND testCPU.py 1 1) 
-add_test(NAME testCPUmultithread COMMAND testCPU.py 2 1) 
-add_test(NAME testCPUmultiproc COMMAND testCPU.py 1 2) 
+add_test(NAME testCPUsingle COMMAND testCPU.py --threads 1 --procs 1) 
+add_test(NAME testCPUmultithread COMMAND testCPU.py --threads 2 --procs 1) 
+add_test(NAME testCPUmultiproc COMMAND testCPU.py --threads 1 --procs 2) 

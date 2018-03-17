@@ -15,10 +15,10 @@ def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75):
     class configurableProcessMonitor(unittest.TestCase):
         def test_runTestWithParams(self):
             burn_cmd = ['./burner', '--time', str(time)]
-            if procs != 1:
-                burn_cmd.extend(['--procs', str(procs)])
             if threads != 1:
                 burn_cmd.extend(['--threads', str(threads)])
+            if procs != 1:
+                burn_cmd.extend(['--procs', str(procs)])
             burn_p = subprocess.Popen(burn_cmd, shell = False)
     
             prmon_cmd = ['../prmon', '--pid', str(burn_p.pid)]
@@ -30,20 +30,24 @@ def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75):
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
             prmonJSON = json.load(open("prmon.json"))
             totCPU = prmonJSON["Max"]["totUTIME"] + prmonJSON["Max"]["totSTIME"]
-            self.assertLess(totCPU, time*threads*procs, "Too high value for CPU time")
-            self.assertGreater(totCPU, time*threads*procs*slack, "Too low value for CPU time")
+            self.assertLess(totCPU, time*threads*procs, "Too high value for CPU time "
+                            "(expected maximum of {0}, got {1})".format(time*threads*procs, totCPU))
+            self.assertGreater(totCPU, time*threads*procs*slack, "Too low value for CPU time "
+                               "(expected minimum of {0}, got {1}".format(time*threads*procs*slack, totCPU))
     
     return configurableProcessMonitor
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Configurable test runner")
-    parser.add_argument('threads', type=int)
-    parser.add_argument('procs', type=int)
+    parser.add_argument('--threads', type=int, default=1)
+    parser.add_argument('--procs', type=int, default=1)
+    parser.add_argument('--time', type=float, default=10)
+    parser.add_argument('--slack', type=float, default=0.75)
     args = parser.parse_args()
     # Stop unittest from being confused by the arguments
     sys.argv=sys.argv[:1]
     
-    cpm = setupConfigurableTest(args.threads,args.procs,10,0.75)
+    cpm = setupConfigurableTest(args.threads,args.procs,args.time,args.slack)
     
     unittest.main()
