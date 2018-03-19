@@ -1,4 +1,4 @@
-// Simple CPU burner to simulate workload
+// Simple IO burner to simulate workload
 // for testing prmon
 
 #include <cmath>
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
         "multiple threads (so the load is threads * procs).\n" << std::endl;
     std::cout << "Options:\n"
         << " [--io, -i N]        Number of megabytes to write per proc/thread (default " << default_io_size << "MB)\n"
-        << " [--threads, -t N]   Number of threads to run (default " << default_threads << "\n"
+        << " [--threads, -t N]   Number of threads to run (default " << default_threads << ")\n"
         << " [--procs, -p N]     Number of processes to run (default " << default_procs << ")\n"
         << " [--usleep, -u N]    Sleep (in microseconds) between each KB of io (default " << default_usleep << ")\n"
         << " [--pause, -s N]     Sleep (in seconds) at start, finish and between read/write cycles (default " << default_pause << ")\n"
