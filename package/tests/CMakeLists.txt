@@ -18,7 +18,9 @@ function(script_install SCRIPT)
 	)
 endfunction(script_install)
 
-script_install(basic_prmon.sh)
+script_install(testCPU.py)
 
 # Test test
-add_test(NAME basic_prmon COMMAND basic_prmon.sh) 
+add_test(NAME testCPUsingle COMMAND testCPU.py --threads 1 --procs 1) 
+add_test(NAME testCPUmultithread COMMAND testCPU.py --threads 2 --procs 1) 
+add_test(NAME testCPUmultiproc COMMAND testCPU.py --threads 1 --procs 2) 

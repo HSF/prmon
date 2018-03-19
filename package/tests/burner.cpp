@@ -59,12 +59,24 @@ int main(int argc, char *argv[]) {
   while ((c = getopt_long(argc, argv, "t:p:r:h", long_options, NULL)) != -1) {
     switch (c) {
     case 't':
+      if (std::stoi(optarg) < 0) {
+        std::cerr << "threads parameter must be greater than or equal to 0 (--help for usage)" << std::endl;
+        return 1;
+      }
       threads = std::stoi(optarg);
       break;
     case 'p':
+      if (std::stoi(optarg) < 0) {
+        std::cerr << "procs parameter must be greater than or equal to 0 (--help for usage)" << std::endl;
+        return 1;
+      }
       procs = std::stoi(optarg);
       break;
     case 'r':
+      if (std::stof(optarg) <= 0) {
+        std::cerr << "runtime parameter must be greater than 0 (--help for usage)" << std::endl;
+        return 1;
+      }
       runtime = std::stof(optarg);
       break;
     case 'h':
