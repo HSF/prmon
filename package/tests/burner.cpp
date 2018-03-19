@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Options:\n"
         << " [--threads, -t N]  Number of threads to run (default " << default_threads << ")\n"
         << " [--procs, -p N]    Number of processes to run (default " << default_procs << ")\n"
-        << " [--time, -r T]     Run for T seconds (default " << default_runtime << "\n\n"
+        << " [--time, -r T]     Run for T seconds (default " << default_runtime << ")\n\n"
         << "If threads or procs is set to 0, the hardware concurrency value is used." << std::endl;
     return 0;
   }
