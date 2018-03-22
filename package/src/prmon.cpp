@@ -201,7 +201,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
      // Get system uptime
      snprintf(stat_buffer,64,"/proc/uptime");
 
-     fopen(stat_buffer,"r");
+     stat_file = fopen(stat_buffer,"r");
      float uptime(0.);
 
      if(stat_file==0) {
