@@ -17,10 +17,11 @@
 
 int io_burn(unsigned long bytes_to_write, std::chrono::nanoseconds nsleep, std::chrono::nanoseconds pause) {
   unsigned long bytes_written{0};
-  std::string write_str{};
-  write_str.insert(0, 1024, 'x');
-  const size_t write_len = write_str.length();
-  char read_str[write_len];
+  const unsigned int chunk = 1024;
+  char write_str[chunk+1], read_str[chunk+1]; // Leave room for \0
+
+  for (unsigned int i = 0; i<chunk; ++i) write_str[i] = 'x';
+  write_str[chunk] = 0;
 
   // Implemented with C-style io as tmpfile() does not suffer from
   // race conditions and will not leave any files on disk
@@ -30,8 +31,12 @@ int io_burn(unsigned long bytes_to_write, std::chrono::nanoseconds nsleep, std::
     return 2;
   }
   while (bytes_written < bytes_to_write) {
-    std::fputs(write_str.c_str(), tmp_file);
-    bytes_written += write_len;
+    auto res = std::fputs(write_str, tmp_file);
+    if (res < 0) {
+      std::cerr << "Write problem to temporary file" << std::endl;
+      return 2;
+    }
+    bytes_written += chunk;
     std::this_thread::sleep_for(nsleep);
   }
 
@@ -39,7 +44,12 @@ int io_burn(unsigned long bytes_to_write, std::chrono::nanoseconds nsleep, std::
 
   std::rewind(tmp_file);
   while (!std::feof(tmp_file)) {
-    auto res = std::fgets(read_str, write_len, tmp_file);
+    // fgets will read only up to "chunk" bytes, so this is safe
+    auto res = std::fgets(read_str, chunk+1, tmp_file);
+    if (!res and !feof(tmp_file)) {
+      std::cerr << "Read problem from temporary file" << std::endl;
+      return 2;
+    }
     std::this_thread::sleep_for(nsleep);
   }
 
@@ -163,7 +173,7 @@ int main(int argc, char *argv[]) {
 
   // Each process runs the requested number of threads
   std::vector<std::thread> pool;
-  for (int i=0; i<threads; ++i)
+  for (unsigned int i=0; i<threads; ++i)
     pool.push_back(std::thread(io_burn, io_bytes, nano_sleep, nano_pause));
   for (auto& th: pool)
     th.join();

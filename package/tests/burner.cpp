@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
 
   // Each process runs the requested number of threads
   std::vector<std::thread> pool;
-  for (int i=0; i<threads; ++i)
+  for (unsigned int i=0; i<threads; ++i)
     pool.push_back(std::thread(burn_for, runtime*std::kilo::num));
   for (auto& th: pool)
     th.join();
