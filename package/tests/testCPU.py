@@ -29,11 +29,18 @@ def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75):
     
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
             prmonJSON = json.load(open("prmon.json"))
+            # CPU time tests
             totCPU = prmonJSON["Max"]["totUTIME"] + prmonJSON["Max"]["totSTIME"]
             self.assertLess(totCPU, time*threads*procs, "Too high value for CPU time "
                             "(expected maximum of {0}, got {1})".format(time*threads*procs, totCPU))
             self.assertGreater(totCPU, time*threads*procs*slack, "Too low value for CPU time "
                                "(expected minimum of {0}, got {1}".format(time*threads*procs*slack, totCPU))
+            # Wall time tests
+            totWALL = prmonJSON["Max"]["totWTIME"]
+            self.assertLessEqual(totWALL, time, "Too high value for wall time "
+                            "(expected maximum of {0}, got {1})".format(time, totWALL))
+            self.assertGreaterEqual(totWALL, time*slack, "Too low value for wall time "
+                               "(expected minimum of {0}, got {1}".format(time*slack, totWALL))
     
     return configurableProcessMonitor
 

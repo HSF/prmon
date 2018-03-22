@@ -154,9 +154,9 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
      // Open iteration output file     
      std::ofstream file;  
      file.open(filename);
-     file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tstime\tcutime\tcstime" << std::endl;
+     file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tstime\tcutime\tcstime\twtime" << std::endl;
 
-     const char json[] = "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, \"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, \"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" : 0, \"totCSTIME\" : 0 }, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": 0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": 0,\"rateRBYTES\": 0, \"rateWBYTES\": 0}}";
+     const char json[] = "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, \"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, \"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" : 0, \"totCSTIME\" : 0, \"totWTIME\" : 0 }, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": 0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": 0,\"rateRBYTES\": 0, \"rateWBYTES\": 0}}";
      
      Document d;
      d.Parse(json);
@@ -173,10 +173,56 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
      Value& v1 = d["Max"];
      Value& v2 = d["Avg"];
 
-     startTime = time(0);
+     // Get mother process start time
+     char stat_buffer[64], sbuffer[2048], *tsbuffer;
+
+     snprintf(stat_buffer,64,"/proc/%llu/stat",(unsigned long long)mpid);
+
+     FILE *stat_file = fopen(stat_buffer,"r");
+     unsigned long long thispid(0);
+     unsigned long long starttime(0);
+
+     if(stat_file==0) {
+       std::cerr << "Cannot open stat buffer for mother pid to get the starttime" << std::endl; 
+     }
+     else {
+       while(fgets(sbuffer,2048,stat_file)) {
+         if(sscanf(sbuffer, "%80llu", &thispid)) {
+           if(thispid!=(unsigned long long)mpid) continue;
+           tsbuffer = strchr (sbuffer, ')');
+           if(sscanf(tsbuffer + 2 , "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %*u %*d %*d %*d %*d %*d %*d %80llu", &starttime)) {
+             break;
+           }
+         }
+       }
+       fclose(stat_file);
+     }
+
+     // Get system uptime
+     snprintf(stat_buffer,64,"/proc/uptime");
+
+     stat_file = fopen(stat_buffer,"r");
+     float uptime(0.);
+
+     if(stat_file==0) {
+       std::cerr << "Cannot open stat buffer to get the uptime" << std::endl;
+     }
+     else {
+       while(fgets(sbuffer,2048,stat_file)) {
+         if(sscanf(sbuffer, "%f", &uptime)) {
+           break;
+         }
+       }
+       fclose(stat_file);
+     }
 
      long clock_ticks = sysconf (_SC_CLK_TCK);
      float inv_clock_ticks = 1./clock_ticks;
+
+     // Start time
+     startTime = time(0);
+     startTime += static_cast<time_t>(float(starttime)*inv_clock_ticks-uptime);
+
      // Monitoring loop until process exits
      while(kill(mpid, 0) == 0 && sigusr1 == false){
 
@@ -199,7 +245,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
 	       << valuesCPU[0]*inv_clock_ticks   << "\t"
 	       << valuesCPU[1]*inv_clock_ticks   << "\t"
 	       << valuesCPU[2]*inv_clock_ticks   << "\t"
-	       << valuesCPU[3]*inv_clock_ticks   << std::endl;
+	       << valuesCPU[3]*inv_clock_ticks   << "\t"
+         << difftime(currentTime,startTime)  << std::endl;
 
           // Compute statistics
           for(int i=0;i<4;i++){
@@ -211,7 +258,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
              if (valuesIO[i] > maxValuesIO[i])
                maxValuesIO[i] = valuesIO[i];
 
-	     avgValuesIO[i] =  (unsigned long long) maxValuesIO[i] / (currentTime-startTime) ;
+	     avgValuesIO[i] =  (unsigned long long) maxValuesIO[i] / difftime(currentTime,startTime) ;
 
              if (valuesCPU[i] > maxValuesCPU[i])
                maxValuesCPU[i] = valuesCPU[i];
@@ -248,7 +295,11 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
 
           // Total CPU measurements
           for(Value::MemberIterator it = v1.MemberBegin()+8; it != v1.MemberEnd(); ++it) {
-            it->value.SetFloat(maxValuesCPU[tmp]*inv_clock_ticks);
+            if(tmp < 4) {
+              it->value.SetFloat(maxValuesCPU[tmp]*inv_clock_ticks);
+            } else {
+              it->value.SetFloat(difftime(currentTime,startTime));
+            }
             tmp += 1;
           }
           tmp = 0;
