@@ -144,7 +144,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename, const std::strin
 
      unsigned long long    valuesCPU[4] = {0,0,0,0};
      unsigned long long maxValuesCPU[4] = {0,0,0,0};
-     unsigned long long avgValuesCPU[4] = {0,0,0,0};
 
      int iteration = 0;
      time_t lastIteration = time(0) - interval;
