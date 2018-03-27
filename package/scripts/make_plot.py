@@ -4,7 +4,6 @@ import argparse
 import sys
 import os
 try:
-    import numpy as np
     import pandas as pd
     import matplotlib as mpl
     mpl.use('Agg')
@@ -13,7 +12,7 @@ try:
     from matplotlib.dates import DateFormatter
     plt.style.use('ggplot')
 except ImportError:
-    print('This script needs numpy, pandas, and mathplotlib.  ')
+    print('This script needs pandas and mathplotlib.'          )
     print('Looks like at least one of these module is missing.')
     print('Please install these modules first and then retry. ')
     sys.exit(-1)
