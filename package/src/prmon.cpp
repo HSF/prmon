@@ -2,6 +2,7 @@
   Copyright (C) 2018, CERN
 */
 
+#include <dirent.h>
 #include <getopt.h>
 #include <math.h>
 #include <rapidjson/document.h>
@@ -10,10 +11,9 @@
 #include <rapidjson/writer.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dirent.h>
+#include <sstream>
 #include <unordered_map>
 #include <vector>
-#include <sstream>
 
 #include "prmon.h"
 
@@ -151,8 +151,8 @@ int ReadProcs(const pid_t mother_pid, unsigned long values[4],
 // to no longer support older compilers.
 std::vector<std::string> get_network_device_names() {
   std::vector<std::string> devices{};
-  DIR *d;
-  struct dirent *dir;
+  DIR* d;
+  struct dirent* dir;
   const char* netdir = "/sys/class/net";
   d = opendir(netdir);
   if (d) {
@@ -162,21 +162,22 @@ std::vector<std::string> get_network_device_names() {
     }
     closedir(d);
   } else {
-    std::cerr << "Failed to open " << netdir << " to get list of network devices. "
-        << "No network data will be available" << std::endl;
+    std::cerr << "Failed to open " << netdir
+              << " to get list of network devices. "
+              << "No network data will be available" << std::endl;
   }
   return devices;
 }
 
-int read_net_stats(const std::vector<std::string> devices,
-    std::unordered_map<std::string, unsigned long long> &values) {
+int read_net_stats(
+    const std::vector<std::string> devices,
+    std::unordered_map<std::string, unsigned long long>& values) {
   unsigned long long value_read{};
   std::string filename{};
 
-  for (auto& element : values)
-    values[element.first] = 0;
+  for (auto& element : values) values[element.first] = 0;
 
-  for (const auto& device: devices) {
+  for (const auto& device : devices) {
     for (auto& element : values) {
       filename = "/sys/class/net/" + device + "/statistics/" + element.first;
       std::ifstream input{filename, std::ios::binary};
@@ -186,7 +187,6 @@ int read_net_stats(const std::vector<std::string> devices,
   }
   return 0;
 }
-
 
 std::condition_variable cv;
 std::mutex cv_m;
@@ -213,10 +213,11 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long long valuesCPU[4] = {0, 0, 0, 0};
   unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
 
-  const std::vector<std::string> netstats{"rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
+  const std::vector<std::string> netstats{"rx_bytes", "rx_packets", "tx_bytes",
+                                          "tx_packets"};
   std::unordered_map<std::string, unsigned long long> values_netstats_start{},
-  values_netstats{}, avg_values_netstats{};
-  for (const auto &stat: netstats) {
+      values_netstats{}, avg_values_netstats{};
+  for (const auto& stat : netstats) {
     values_netstats_start.insert({stat, 0});
     values_netstats.insert({stat, 0});
     avg_values_netstats.insert({stat, 0});
@@ -234,23 +235,24 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   file.open(filename);
   file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tsti"
           "me\tcutime\tcstime\twtime";
-  for (const auto& stat: netstats)
-    file << "\t" << stat;
+  for (const auto& stat : netstats) file << "\t" << stat;
   file << std::endl;
 
   // Construct string representing JSON structure
   std::stringstream json{};
-  json << "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, \"maxSwap\": "
-      "0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, \"totWBYTES\": 0, "
-      "\"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" : 0, \"totCSTIME\" : "
-      "0, \"totWTIME\" : 0";
-  for (const auto& stat: netstats)
-    json << ", \"" << "tot_" << stat << "\" : 0";
+  json << "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, "
+          "\"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, "
+          "\"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" "
+          ": 0, \"totCSTIME\" : 0, \"totWTIME\" : 0";
+  for (const auto& stat : netstats)
+    json << ", \""
+         << "tot_" << stat << "\" : 0";
   json << "}, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": "
-      "0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": "
-      "0,\"rateRBYTES\": 0, \"rateWBYTES\": 0";
-  for (const auto& stat: netstats)
-    json << ", \"" << "avg_" << stat << "\" : 0";
+          "0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": "
+          "0,\"rateRBYTES\": 0, \"rateWBYTES\": 0";
+  for (const auto& stat : netstats)
+    json << ", \""
+         << "avg_" << stat << "\" : 0";
   json << "}}" << std::ends;
 
   Document d;
@@ -337,7 +339,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
            << valuesCPU[2] * inv_clock_ticks << "\t"
            << valuesCPU[3] * inv_clock_ticks << "\t"
            << difftime(currentTime, startTime);
-      for (const auto& stat: netstats)
+      for (const auto& stat : netstats)
         file << "\t" << values_netstats[stat] - values_netstats_start[stat];
       file << std::endl;
 
@@ -354,11 +356,12 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
         if (valuesCPU[i] > maxValuesCPU[i]) maxValuesCPU[i] = valuesCPU[i];
       }
-      for (const auto& stat: netstats) {
-        avg_values_netstats[stat] = static_cast<float>(values_netstats[stat] - values_netstats_start[stat])
-            /difftime(currentTime, startTime);
+      for (const auto& stat : netstats) {
+        avg_values_netstats[stat] =
+            static_cast<float>(values_netstats[stat] -
+                               values_netstats_start[stat]) /
+            difftime(currentTime, startTime);
       }
-
 
       // Reset buffer
       buffer.Clear();
@@ -399,11 +402,11 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       tmp = 0;
 
       // Network stats
-      for (const auto& stat: netstats) {
-        v1[("tot_"+stat).c_str()].SetUint64(values_netstats[stat] - values_netstats_start[stat]);
-        v2[("avg_"+stat).c_str()].SetFloat(avg_values_netstats[stat]);
+      for (const auto& stat : netstats) {
+        v1[("tot_" + stat).c_str()].SetUint64(values_netstats[stat] -
+                                              values_netstats_start[stat]);
+        v2[("avg_" + stat).c_str()].SetFloat(avg_values_netstats[stat]);
       }
-
 
       // Write JSON realtime summary to a temporary file (to avoid race
       // conditions with pilot trying to read from file at the same time)
