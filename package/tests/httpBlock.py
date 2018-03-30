@@ -1,11 +1,13 @@
 #! /usr/bin/env python
 #
+# Copyright (C) CERN, 2018
+#
 # Simple CGI script that delivers a known block
 # of data to the caller over HTTP
 #
 # One GET/POST parameter is recognised, which is "blocks"
 # that specifies how many  1KB blocks are returned to the
-# client (defaults to 1000, thus 1MB delivered)
+# client (defaults to 1000, thus ~1MB delivered)
 from __future__ import print_function, unicode_literals
 
 import cgi

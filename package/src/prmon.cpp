@@ -169,7 +169,7 @@ std::vector<std::string> get_network_device_names() {
 }
 
 int read_net_stats(const std::vector<std::string> devices,
-    std::unordered_map<std::string, unsigned long long> values) {
+    std::unordered_map<std::string, unsigned long long> &values) {
   unsigned long long value_read{};
   std::string filename{};
 
