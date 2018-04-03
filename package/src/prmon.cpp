@@ -5,15 +5,24 @@
 #include <dirent.h>
 #include <getopt.h>
 #include <math.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <condition_variable>
+#include <cstddef>
+#include <fstream>
+#include <iostream>
+#include <mutex>
+#include <sstream>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
 #include <rapidjson/document.h>
 #include <rapidjson/filewritestream.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sstream>
-#include <unordered_map>
-#include <vector>
 
 #include "prmon.h"
 
@@ -199,7 +208,8 @@ void SignalCallbackHandler(int /*signal*/) {
 }
 
 int MemoryMonitor(const pid_t mpid, const std::string filename,
-                  const std::string jsonSummary, const unsigned int interval) {
+                  const std::string jsonSummary, const unsigned int interval,
+                  const std::vector<std::string> netdevs) {
   signal(SIGUSR1, SignalCallbackHandler);
 
   unsigned long values[4] = {0, 0, 0, 0};
@@ -217,12 +227,17 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
                                           "tx_packets"};
   std::unordered_map<std::string, unsigned long long> values_netstats_start{},
       values_netstats{}, avg_values_netstats{};
+  std::vector<std::string> devices{};
   for (const auto& stat : netstats) {
     values_netstats_start.insert({stat, 0});
     values_netstats.insert({stat, 0});
     avg_values_netstats.insert({stat, 0});
   }
-  std::vector<std::string> devices = get_network_device_names();
+  if (netdevs.size() > 0) {
+    devices = netdevs;
+  } else {
+    devices = get_network_device_names();
+  }
   read_net_stats(devices, values_netstats_start);
 
   int iteration = 0;
@@ -450,6 +465,7 @@ int main(int argc, char* argv[]) {
   pid_t pid = -1;
   std::string filename{default_filename};
   std::string jsonSummary{default_json_summary};
+  std::vector<std::string> netdevs{};
   unsigned int interval{default_interval};
   int do_help{0};
 
@@ -458,11 +474,13 @@ int main(int argc, char* argv[]) {
       {"filename", required_argument, NULL, 'f'},
       {"json-summary", required_argument, NULL, 'j'},
       {"interval", required_argument, NULL, 'i'},
+      {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
 
   char c;
-  while ((c = getopt_long(argc, argv, "p:f:j:i:h", long_options, NULL)) != -1) {
+  while ((c = getopt_long(argc, argv, "p:f:j:i:n:h", long_options, NULL)) !=
+         -1) {
     switch (c) {
       case 'p':
         pid = std::stoi(optarg);
@@ -475,6 +493,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'i':
         interval = std::stoi(optarg);
+        break;
+      case 'n':
+        netdevs.push_back(optarg);
         break;
       case 'h':
         do_help = 1;
@@ -501,6 +522,8 @@ int main(int argc, char* argv[]) {
         << default_json_summary << ")\n"
         << "[--interval, -i TIME]     Seconds between samples (default "
         << default_interval << ")\n"
+        << "[--netdev, -n dev]        Network device to monitor (can be given\n"
+        << "                          multiple times; default ALL devices)\n"
         << std::endl;
     return 0;
   }
@@ -510,7 +533,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  MemoryMonitor(pid, filename, jsonSummary, interval);
+  MemoryMonitor(pid, filename, jsonSummary, interval, netdevs);
 
   return 0;
 }
