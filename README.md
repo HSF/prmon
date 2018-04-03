@@ -11,7 +11,7 @@ most useful features is to use smaps to correctly calculate the
 is a much better indication of the true memory consumption of
 a group of processes where children share many pages.
 
-prmon currently runs on linux machines as it requires access to the
+prmon currently runs on Linux machines as it requires access to the
 `/proc` interface to process statistics.
 
 ## Build and Deployment
@@ -54,13 +54,30 @@ To run the tests of the project, first build it and then invoke
 The `prmon` binary is invoked with the following arguments:
 
 ```sh
-prmon --pid PPP [--filename prmon.txt] [--json-summary prmon.json] [--interval 1]
+prmon --pid PPP [--filename prmon.txt] [--json-summary prmon.json] [--interval 1] [--netdev DEV]
 ```
 
 * `--pid` the 'mother' PID to monitor (all children in the same process tree are monitored as well)
 * `--filename` output file for timestamped monitored values
 * `--json-summmary` output file for summary data written in JSON format
 * `--interval` time (in seconds) between monitoring snapshots
+* `--netdev` restricts network statistics to one (or more) network devices
+
+## Outputs
+
+In the `filename` output file, plain text with statistics written every
+`interval` seconds are written. The first line gives the column names.
+
+In the `json-summmary` file values for the maximum and average statistics
+are given in JSON format. This file is rewritten every `interval` seconds
+with the current summary values.
+
+Monitoring of CPU, I/O and memory is reliably accurate, at least to within
+the sampling time. Monitoring of network I/O is **not reliable** unless the
+monitored process is isolated from other processes performing network I/O
+(it gives an upper bound on the network activity, but the monitoring is
+per network device as Linux does not give per-process network data by
+default).
 
 # Copyright
 

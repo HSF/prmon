@@ -2,14 +2,27 @@
   Copyright (C) 2018, CERN
 */
 
+#include <dirent.h>
 #include <getopt.h>
 #include <math.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <condition_variable>
+#include <cstddef>
+#include <fstream>
+#include <iostream>
+#include <mutex>
+#include <sstream>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
 #include <rapidjson/document.h>
 #include <rapidjson/filewritestream.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 #include "prmon.h"
 
@@ -141,6 +154,49 @@ int ReadProcs(const pid_t mother_pid, unsigned long values[4],
   return 0;
 }
 
+// This is all a bit yuk, using C style directory
+// parsing. From C++17 we should use the filesystem
+// library, but only when we decide it's reasonable
+// to no longer support older compilers.
+std::vector<std::string> get_network_device_names() {
+  std::vector<std::string> devices{};
+  DIR* d;
+  struct dirent* dir;
+  const char* netdir = "/sys/class/net";
+  d = opendir(netdir);
+  if (d) {
+    while ((dir = readdir(d)) != NULL) {
+      if (!(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")))
+        devices.push_back(dir->d_name);
+    }
+    closedir(d);
+  } else {
+    std::cerr << "Failed to open " << netdir
+              << " to get list of network devices. "
+              << "No network data will be available" << std::endl;
+  }
+  return devices;
+}
+
+int read_net_stats(
+    const std::vector<std::string> devices,
+    std::unordered_map<std::string, unsigned long long>& values) {
+  unsigned long long value_read{};
+  std::string filename{};
+
+  for (auto& element : values) values[element.first] = 0;
+
+  for (const auto& device : devices) {
+    for (auto& element : values) {
+      filename = "/sys/class/net/" + device + "/statistics/" + element.first;
+      std::ifstream input{filename, std::ios::binary};
+      input >> value_read;
+      values[element.first] += value_read;
+    }
+  }
+  return 0;
+}
+
 std::condition_variable cv;
 std::mutex cv_m;
 bool sigusr1 = false;
@@ -152,7 +208,8 @@ void SignalCallbackHandler(int /*signal*/) {
 }
 
 int MemoryMonitor(const pid_t mpid, const std::string filename,
-                  const std::string jsonSummary, const unsigned int interval) {
+                  const std::string jsonSummary, const unsigned int interval,
+                  const std::vector<std::string> netdevs) {
   signal(SIGUSR1, SignalCallbackHandler);
 
   unsigned long values[4] = {0, 0, 0, 0};
@@ -166,6 +223,23 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long long valuesCPU[4] = {0, 0, 0, 0};
   unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
 
+  const std::vector<std::string> netstats{"rx_bytes", "rx_packets", "tx_bytes",
+                                          "tx_packets"};
+  std::unordered_map<std::string, unsigned long long> values_netstats_start{},
+      values_netstats{}, avg_values_netstats{};
+  std::vector<std::string> devices{};
+  for (const auto& stat : netstats) {
+    values_netstats_start.insert({stat, 0});
+    values_netstats.insert({stat, 0});
+    avg_values_netstats.insert({stat, 0});
+  }
+  if (netdevs.size() > 0) {
+    devices = netdevs;
+  } else {
+    devices = get_network_device_names();
+  }
+  read_net_stats(devices, values_netstats_start);
+
   int iteration = 0;
   time_t lastIteration = time(0) - interval;
   time_t startTime;
@@ -175,19 +249,29 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   std::ofstream file;
   file.open(filename);
   file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tsti"
-          "me\tcutime\tcstime\twtime"
-       << std::endl;
+          "me\tcutime\tcstime\twtime";
+  for (const auto& stat : netstats) file << "\t" << stat;
+  file << std::endl;
 
-  const char json[] =
-      "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, \"maxSwap\": "
-      "0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, \"totWBYTES\": 0, "
-      "\"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" : 0, \"totCSTIME\" : "
-      "0, \"totWTIME\" : 0 }, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": "
-      "0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": "
-      "0,\"rateRBYTES\": 0, \"rateWBYTES\": 0}}";
+  // Construct string representing JSON structure
+  std::stringstream json{};
+  json << "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, "
+          "\"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, "
+          "\"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" "
+          ": 0, \"totCSTIME\" : 0, \"totWTIME\" : 0";
+  for (const auto& stat : netstats)
+    json << ", \""
+         << "tot_" << stat << "\" : 0";
+  json << "}, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": "
+          "0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": "
+          "0,\"rateRBYTES\": 0, \"rateWBYTES\": 0";
+  for (const auto& stat : netstats)
+    json << ", \""
+         << "avg_" << stat << "\" : 0";
+  json << "}}" << std::ends;
 
   Document d;
-  d.Parse(json);
+  d.Parse(json.str().c_str());
   std::ofstream file2;  // for realtime json dict
   StringBuffer buffer;
   Writer<StringBuffer> writer(buffer);
@@ -259,6 +343,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
     if (time(0) - lastIteration > interval) {
       iteration = iteration + 1;
       ReadProcs(mpid, values, valuesIO, valuesCPU);
+      read_net_stats(devices, values_netstats);
 
       currentTime = time(0);
       file << currentTime << "\t" << values[0] << "\t" << values[1] << "\t"
@@ -268,7 +353,10 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
            << valuesCPU[1] * inv_clock_ticks << "\t"
            << valuesCPU[2] * inv_clock_ticks << "\t"
            << valuesCPU[3] * inv_clock_ticks << "\t"
-           << difftime(currentTime, startTime) << std::endl;
+           << difftime(currentTime, startTime);
+      for (const auto& stat : netstats)
+        file << "\t" << values_netstats[stat] - values_netstats_start[stat];
+      file << std::endl;
 
       // Compute statistics
       for (int i = 0; i < 4; i++) {
@@ -282,6 +370,12 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
                          difftime(currentTime, startTime);
 
         if (valuesCPU[i] > maxValuesCPU[i]) maxValuesCPU[i] = valuesCPU[i];
+      }
+      for (const auto& stat : netstats) {
+        avg_values_netstats[stat] =
+            static_cast<float>(values_netstats[stat] -
+                               values_netstats_start[stat]) /
+            difftime(currentTime, startTime);
       }
 
       // Reset buffer
@@ -321,6 +415,13 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         tmp += 1;
       }
       tmp = 0;
+
+      // Network stats
+      for (const auto& stat : netstats) {
+        v1[("tot_" + stat).c_str()].SetUint64(values_netstats[stat] -
+                                              values_netstats_start[stat]);
+        v2[("avg_" + stat).c_str()].SetFloat(avg_values_netstats[stat]);
+      }
 
       // Write JSON realtime summary to a temporary file (to avoid race
       // conditions with pilot trying to read from file at the same time)
@@ -364,6 +465,7 @@ int main(int argc, char* argv[]) {
   pid_t pid = -1;
   std::string filename{default_filename};
   std::string jsonSummary{default_json_summary};
+  std::vector<std::string> netdevs{};
   unsigned int interval{default_interval};
   int do_help{0};
 
@@ -372,11 +474,13 @@ int main(int argc, char* argv[]) {
       {"filename", required_argument, NULL, 'f'},
       {"json-summary", required_argument, NULL, 'j'},
       {"interval", required_argument, NULL, 'i'},
+      {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
 
   char c;
-  while ((c = getopt_long(argc, argv, "p:f:j:i:h", long_options, NULL)) != -1) {
+  while ((c = getopt_long(argc, argv, "p:f:j:i:n:h", long_options, NULL)) !=
+         -1) {
     switch (c) {
       case 'p':
         pid = std::stoi(optarg);
@@ -389,6 +493,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'i':
         interval = std::stoi(optarg);
+        break;
+      case 'n':
+        netdevs.push_back(optarg);
         break;
       case 'h':
         do_help = 1;
@@ -415,6 +522,8 @@ int main(int argc, char* argv[]) {
         << default_json_summary << ")\n"
         << "[--interval, -i TIME]     Seconds between samples (default "
         << default_interval << ")\n"
+        << "[--netdev, -n dev]        Network device to monitor (can be given\n"
+        << "                          multiple times; default ALL devices)\n"
         << std::endl;
     return 0;
   }
@@ -424,7 +533,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  MemoryMonitor(pid, filename, jsonSummary, interval);
+  MemoryMonitor(pid, filename, jsonSummary, interval, netdevs);
 
   return 0;
 }
