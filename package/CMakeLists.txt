@@ -23,3 +23,5 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
+# Build useful scripts - currently plotting only
+add_subdirectory(scripts)
