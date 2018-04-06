@@ -2,12 +2,15 @@
   Copyright (C) 2018, CERN
 */
 
+#include <algorithm>
 #include <dirent.h>
 #include <getopt.h>
 #include <math.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <condition_variable>
 #include <cstddef>
@@ -466,6 +469,7 @@ int main(int argc, char* argv[]) {
   std::string filename{default_filename};
   std::string jsonSummary{default_json_summary};
   std::vector<std::string> netdevs{};
+  std::string invokeargs{""};
   unsigned int interval{default_interval};
   int do_help{0};
 
@@ -476,10 +480,11 @@ int main(int argc, char* argv[]) {
       {"interval", required_argument, NULL, 'i'},
       {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
+      {"args", required_argument, NULL, 'a'},
       {0, 0, 0, 0}};
 
   char c;
-  while ((c = getopt_long(argc, argv, "p:f:j:i:n:h", long_options, NULL)) !=
+  while ((c = getopt_long(argc, argv, "p:f:j:i:n:a:h", long_options, NULL)) !=
          -1) {
     switch (c) {
       case 'p':
@@ -499,6 +504,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'h':
         do_help = 1;
+        break;
+      case 'a':
+        invokeargs = optarg;
         break;
       default:
         std::cerr << "Use '--help' for usage " << std::endl;
@@ -529,11 +537,35 @@ int main(int argc, char* argv[]) {
   }
 
   if (pid < 2) {
-    std::cerr << "Bad PID to monitor.\n";
-    return 1;
-  }
+    if( invokeargs.empty() ) {
+      std::cerr << "Bad PID to monitor.\n";
+      return 1;
+    }
 
-  MemoryMonitor(pid, filename, jsonSummary, interval, netdevs);
+    pid_t child = fork();
+    //int child_status;
+
+    if( child == 0 ) {
+      // Child
+      char* cargs = strdup(invokeargs.c_str());
+      char* ctoken = strtok(cargs," ");
+      char* program[100] = { NULL };
+      unsigned int counter = 0;
+      while(ctoken != NULL) {
+        program[counter] = ctoken;
+        ctoken = strtok(NULL," ");
+        counter++;
+      }
+      execv(program[0],program);
+    } else if ( child > 0 ) {
+      // Parent
+      std::cout << "Listening to " << child << std::endl;
+      MemoryMonitor(child, filename, jsonSummary, interval, netdevs);
+      //waitpid(child, &child_status, 0);
+    }
+  } else {
+    MemoryMonitor(pid, filename, jsonSummary, interval, netdevs);
+  }
 
   return 0;
 }
