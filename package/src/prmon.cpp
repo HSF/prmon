@@ -210,10 +210,16 @@ void SignalCallbackHandler(int /*signal*/) {
   cv.notify_one();
 }
 
+void SignalChildHandler(int /*signal*/) {
+  int status;
+  wait3 (&status, WNOHANG, (struct rusage *)NULL );
+}
+
 int MemoryMonitor(const pid_t mpid, const std::string filename,
                   const std::string jsonSummary, const unsigned int interval,
                   const std::vector<std::string> netdevs) {
   signal(SIGUSR1, SignalCallbackHandler);
+  signal(SIGCHLD, SignalChildHandler);
 
   unsigned long values[4] = {0, 0, 0, 0};
   unsigned long maxValues[4] = {0, 0, 0, 0};
@@ -537,31 +543,25 @@ int main(int argc, char* argv[]) {
   }
 
   if (pid < 2) {
-    if( invokeargs.empty() ) {
+    char* program[100] = { NULL };
+    int counter = -1;
+    for(int i = 0; i < argc; i++ ) {
+      if(!strcmp(argv[i],"--")) { counter++; }
+      else if (counter < 0)     { continue;  }
+      else                      { program[counter] = argv[i]; counter++; }
+    }
+
+    if( counter < 0 ) {
       std::cerr << "Bad PID to monitor.\n";
       return 1;
     }
 
     pid_t child = fork();
-    //int child_status;
 
     if( child == 0 ) {
-      // Child
-      char* cargs = strdup(invokeargs.c_str());
-      char* ctoken = strtok(cargs," ");
-      char* program[100] = { NULL };
-      unsigned int counter = 0;
-      while(ctoken != NULL) {
-        program[counter] = ctoken;
-        ctoken = strtok(NULL," ");
-        counter++;
-      }
       execv(program[0],program);
     } else if ( child > 0 ) {
-      // Parent
-      std::cout << "Listening to " << child << std::endl;
       MemoryMonitor(child, filename, jsonSummary, interval, netdevs);
-      //waitpid(child, &child_status, 0);
     }
   } else {
     MemoryMonitor(pid, filename, jsonSummary, interval, netdevs);
