@@ -475,7 +475,6 @@ int main(int argc, char* argv[]) {
   std::string filename{default_filename};
   std::string jsonSummary{default_json_summary};
   std::vector<std::string> netdevs{};
-  std::string invokeargs{""};
   unsigned int interval{default_interval};
   int do_help{0};
 
@@ -486,11 +485,10 @@ int main(int argc, char* argv[]) {
       {"interval", required_argument, NULL, 'i'},
       {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
-      {"args", required_argument, NULL, 'a'},
       {0, 0, 0, 0}};
 
   char c;
-  while ((c = getopt_long(argc, argv, "p:f:j:i:n:a:h", long_options, NULL)) !=
+  while ((c = getopt_long(argc, argv, "p:f:j:i:n:h", long_options, NULL)) !=
          -1) {
     switch (c) {
       case 'p':
@@ -510,9 +508,6 @@ int main(int argc, char* argv[]) {
         break;
       case 'h':
         do_help = 1;
-        break;
-      case 'a':
-        invokeargs = optarg;
         break;
       default:
         std::cerr << "Use '--help' for usage " << std::endl;
