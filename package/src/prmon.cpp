@@ -213,6 +213,10 @@ void SignalCallbackHandler(int /*signal*/) {
 void SignalChildHandler(int /*signal*/) {
   int status;
   wait3 (&status, WNOHANG, (struct rusage *)NULL );
+  if (status) {
+    std::cerr << "Warning, monitored child process exited with non-zero "
+    "return value: " << status << std::endl;
+  }
 }
 
 int MemoryMonitor(const pid_t mpid, const std::string filename,
@@ -554,7 +558,7 @@ int main(int argc, char* argv[]) {
     pid_t child = fork();
 
     if( child == 0 ) {
-      execv(program[0],program);
+      execvp(program[0],&program[0]);
     } else if ( child > 0 ) {
       MemoryMonitor(child, filename, jsonSummary, interval, netdevs);
     }
