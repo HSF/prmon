@@ -54,7 +54,9 @@ To run the tests of the project, first build it and then invoke
 The `prmon` binary is invoked with the following arguments:
 
 ```sh
-prmon --pid PPP [--filename prmon.txt] [--json-summary prmon.json] [--interval 1] [--netdev DEV]
+prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
+      [--interval 1] [--netdev DEV] \
+      [-- prog arg arg ...]
 ```
 
 * `--pid` the 'mother' PID to monitor (all children in the same process tree are monitored as well)
@@ -62,6 +64,11 @@ prmon --pid PPP [--filename prmon.txt] [--json-summary prmon.json] [--interval 1
 * `--json-summmary` output file for summary data written in JSON format
 * `--interval` time (in seconds) between monitoring snapshots
 * `--netdev` restricts network statistics to one (or more) network devices
+* `--` after this argument the following arguments are treated as a program to invoke 
+  and remaining arguments are passed to it; `prmon` will then monitor this process
+  instead of being given a PID via `--pid` 
+
+
 
 ## Outputs
 
