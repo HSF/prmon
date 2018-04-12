@@ -10,7 +10,6 @@ const static std::vector<std::string> default_if_params{"rx_bytes", "rx_packets"
 
 netmon::netmon(std::vector<std::string> netdevs):
 interface_params{default_if_params},
-monitored_netdevs{},
 network_if_streams{}
 {
   if (netdevs.size() == 0) {
@@ -19,6 +18,8 @@ network_if_streams{}
     monitored_netdevs = netdevs;
   }
   open_interface_streams();
+
+  network_stats_start = read_raw_network_stats();
 }
 
 
@@ -58,14 +59,13 @@ void netmon::open_interface_streams() {
   }
 }
 
-
-std::unordered_map<std::string, unsigned long long> netmon::read_network_stats() {
+std::unordered_map<std::string, unsigned long long> netmon::read_raw_network_stats() {
   std::unordered_map<std::string, unsigned long long> stats{};
-  read_network_stats(stats);
+  read_raw_network_stats(stats);
   return stats;
 }
 
-void netmon::read_network_stats(std::unordered_map<std::string, unsigned long long>& stats) {
+void netmon::read_raw_network_stats(std::unordered_map<std::string, unsigned long long>& stats) {
   for (const auto& if_param: interface_params) {
     unsigned long long value_read{};
     stats[if_param] = 0;
@@ -75,5 +75,17 @@ void netmon::read_network_stats(std::unordered_map<std::string, unsigned long lo
       stats[if_param] += value_read;
     }
   }
+}
+
+std::unordered_map<std::string, unsigned long long> netmon::read_network_stats() {
+  std::unordered_map<std::string, unsigned long long> stats{};
+  read_network_stats(stats);
+  return stats;
+}
+
+void netmon::read_network_stats(std::unordered_map<std::string, unsigned long long>& stats) {
+  read_raw_network_stats(stats);
+  for (const auto& if_param: interface_params)
+    stats[if_param] -= network_stats_start[if_param];
 }
 

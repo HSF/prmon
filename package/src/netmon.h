@@ -27,6 +27,9 @@ private:
   // Nested dictionary of network_if_streams[PARMETER][DEVICE][ISTREAM*]
   std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<std::istream>>> network_if_streams;
 
+  // Container for starting value stats, that are subtracted from measured values
+  std::unordered_map<std::string, unsigned long long> network_stats_start;
+
   // Find all network interfaces on the system
   std::vector<std::string> const get_all_network_devs();
 
@@ -34,10 +37,14 @@ private:
   void open_interface_streams();
 
   // Helper to map a device and parameter to a /sys filename
-  inline std::string get_sys_filename(std::string device, std::string param) {
+  inline std::string const get_sys_filename(std::string device, std::string param) {
     std::string filename = "/sys/class/net/" + device + "/statistics/" + param;
     return filename;
   }
+
+  // Internal methods to read "raw" network stats
+  std::unordered_map<std::string, unsigned long long> read_raw_network_stats();
+  void read_raw_network_stats(std::unordered_map<std::string, unsigned long long>& values);
 
 
 public:

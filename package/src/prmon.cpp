@@ -182,9 +182,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
 
   netmon network_monitor{netdevs};
-  auto values_netstats_start = network_monitor.read_network_stats();
-  auto values_netstats = values_netstats_start;
-  auto avg_values_netstats = values_netstats_start;
+  std::unordered_map<std::string, unsigned long long> values_netstats{}, avg_values_netstats{};
 
   int iteration = 0;
   time_t lastIteration = time(0) - interval;
@@ -301,7 +299,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
            << valuesCPU[3] * inv_clock_ticks << "\t"
            << difftime(currentTime, startTime);
       for (const auto& stat : network_monitor.get_interface_paramter_names())
-        file << "\t" << values_netstats[stat] - values_netstats_start[stat];
+        file << "\t" << values_netstats[stat];
       file << std::endl;
 
       // Compute statistics
@@ -319,8 +317,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       }
       for (const auto& stat : network_monitor.get_interface_paramter_names()) {
         avg_values_netstats[stat] =
-            static_cast<float>(values_netstats[stat] -
-                               values_netstats_start[stat]) /
+            static_cast<float>(values_netstats[stat]) /
             difftime(currentTime, startTime);
       }
 
@@ -364,8 +361,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
       // Network stats
       for (const auto& stat : network_monitor.get_interface_paramter_names()) {
-        v1[("tot_" + stat).c_str()].SetUint64(values_netstats[stat] -
-                                              values_netstats_start[stat]);
+        v1[("tot_" + stat).c_str()].SetUint64(values_netstats[stat]);
         v2[("avg_" + stat).c_str()].SetFloat(avg_values_netstats[stat]);
       }
 
