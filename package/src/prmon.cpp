@@ -25,6 +25,7 @@
 #include <rapidjson/writer.h>
 
 #include "prmon.h"
+#include "netmon.h"
 
 using namespace rapidjson;
 
@@ -154,49 +155,6 @@ int ReadProcs(const pid_t mother_pid, unsigned long values[4],
   return 0;
 }
 
-// This is all a bit yuk, using C style directory
-// parsing. From C++17 we should use the filesystem
-// library, but only when we decide it's reasonable
-// to no longer support older compilers.
-std::vector<std::string> get_network_device_names() {
-  std::vector<std::string> devices{};
-  DIR* d;
-  struct dirent* dir;
-  const char* netdir = "/sys/class/net";
-  d = opendir(netdir);
-  if (d) {
-    while ((dir = readdir(d)) != NULL) {
-      if (!(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")))
-        devices.push_back(dir->d_name);
-    }
-    closedir(d);
-  } else {
-    std::cerr << "Failed to open " << netdir
-              << " to get list of network devices. "
-              << "No network data will be available" << std::endl;
-  }
-  return devices;
-}
-
-int read_net_stats(
-    const std::vector<std::string> devices,
-    std::unordered_map<std::string, unsigned long long>& values) {
-  unsigned long long value_read{};
-  std::string filename{};
-
-  for (auto& element : values) values[element.first] = 0;
-
-  for (const auto& device : devices) {
-    for (auto& element : values) {
-      filename = "/sys/class/net/" + device + "/statistics/" + element.first;
-      std::ifstream input{filename, std::ios::binary};
-      input >> value_read;
-      values[element.first] += value_read;
-    }
-  }
-  return 0;
-}
-
 std::condition_variable cv;
 std::mutex cv_m;
 bool sigusr1 = false;
@@ -223,22 +181,10 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long long valuesCPU[4] = {0, 0, 0, 0};
   unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
 
-  const std::vector<std::string> netstats{"rx_bytes", "rx_packets", "tx_bytes",
-                                          "tx_packets"};
-  std::unordered_map<std::string, unsigned long long> values_netstats_start{},
-      values_netstats{}, avg_values_netstats{};
-  std::vector<std::string> devices{};
-  for (const auto& stat : netstats) {
-    values_netstats_start.insert({stat, 0});
-    values_netstats.insert({stat, 0});
-    avg_values_netstats.insert({stat, 0});
-  }
-  if (netdevs.size() > 0) {
-    devices = netdevs;
-  } else {
-    devices = get_network_device_names();
-  }
-  read_net_stats(devices, values_netstats_start);
+  netmon network_monitor{netdevs};
+  auto values_netstats_start = network_monitor.read_network_stats();
+  auto values_netstats = values_netstats_start;
+  auto avg_values_netstats = values_netstats_start;
 
   int iteration = 0;
   time_t lastIteration = time(0) - interval;
@@ -250,7 +196,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   file.open(filename);
   file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tsti"
           "me\tcutime\tcstime\twtime";
-  for (const auto& stat : netstats) file << "\t" << stat;
+  for (const auto& stat : network_monitor.get_interface_paramter_names()) file << "\t" << stat;
   file << std::endl;
 
   // Construct string representing JSON structure
@@ -259,13 +205,13 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
           "\"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, "
           "\"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" "
           ": 0, \"totCSTIME\" : 0, \"totWTIME\" : 0";
-  for (const auto& stat : netstats)
+  for (const auto& stat : network_monitor.get_interface_paramter_names())
     json << ", \""
          << "tot_" << stat << "\" : 0";
   json << "}, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": "
           "0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": "
           "0,\"rateRBYTES\": 0, \"rateWBYTES\": 0";
-  for (const auto& stat : netstats)
+  for (const auto& stat : network_monitor.get_interface_paramter_names())
     json << ", \""
          << "avg_" << stat << "\" : 0";
   json << "}}" << std::ends;
@@ -343,7 +289,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
     if (time(0) - lastIteration > interval) {
       iteration = iteration + 1;
       ReadProcs(mpid, values, valuesIO, valuesCPU);
-      read_net_stats(devices, values_netstats);
+      network_monitor.read_network_stats(values_netstats);
 
       currentTime = time(0);
       file << currentTime << "\t" << values[0] << "\t" << values[1] << "\t"
@@ -354,7 +300,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
            << valuesCPU[2] * inv_clock_ticks << "\t"
            << valuesCPU[3] * inv_clock_ticks << "\t"
            << difftime(currentTime, startTime);
-      for (const auto& stat : netstats)
+      for (const auto& stat : network_monitor.get_interface_paramter_names())
         file << "\t" << values_netstats[stat] - values_netstats_start[stat];
       file << std::endl;
 
@@ -371,7 +317,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
         if (valuesCPU[i] > maxValuesCPU[i]) maxValuesCPU[i] = valuesCPU[i];
       }
-      for (const auto& stat : netstats) {
+      for (const auto& stat : network_monitor.get_interface_paramter_names()) {
         avg_values_netstats[stat] =
             static_cast<float>(values_netstats[stat] -
                                values_netstats_start[stat]) /
@@ -417,7 +363,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       tmp = 0;
 
       // Network stats
-      for (const auto& stat : netstats) {
+      for (const auto& stat : network_monitor.get_interface_paramter_names()) {
         v1[("tot_" + stat).c_str()].SetUint64(values_netstats[stat] -
                                               values_netstats_start[stat]);
         v2[("avg_" + stat).c_str()].SetFloat(avg_values_netstats[stat]);

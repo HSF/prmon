@@ -28,7 +28,7 @@ private:
   std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<std::istream>>> network_if_streams;
 
   // Find all network interfaces on the system
-  void get_network_devs();
+  std::vector<std::string> const get_all_network_devs();
 
   // Open streams for each of the network interfaces and parameters
   void open_interface_streams();
@@ -41,9 +41,8 @@ private:
 
 
 public:
-  netmon();
   netmon(std::vector<std::string> netdevs);
-  ~netmon();
+  netmon() : netmon(std::vector<std::string>{}) {};
 
   const std::vector<std::string> get_interface_paramter_names() {
     return interface_params;

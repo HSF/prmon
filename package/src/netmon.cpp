@@ -8,25 +8,16 @@
 
 const static std::vector<std::string> default_if_params{"rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
 
-netmon::netmon():
-interface_params{default_if_params},
-monitored_netdevs{},
-network_if_streams{}
-{
-  // Default constructor will monitor all devices
-  get_network_devs();
-
-  // Open all istreams we need for monitoring
-  open_interface_streams();
-}
-
-
 netmon::netmon(std::vector<std::string> netdevs):
 interface_params{default_if_params},
 monitored_netdevs{},
 network_if_streams{}
 {
-  monitored_netdevs = netdevs;
+  if (netdevs.size() == 0) {
+    monitored_netdevs = get_all_network_devs();
+  } else {
+    monitored_netdevs = netdevs;
+  }
   open_interface_streams();
 }
 
@@ -36,7 +27,8 @@ network_if_streams{}
 // parsing. From C++17 we should use the filesystem
 // library, but only when we decide it's reasonable
 // to no longer support older compilers.
-void netmon::get_network_devs() {
+std::vector<std::string> const netmon::get_all_network_devs() {
+  std::vector<std::string> devices{};
   DIR* d;
   struct dirent* dir;
   const char* netdir = "/sys/class/net";
@@ -44,7 +36,7 @@ void netmon::get_network_devs() {
   if (d) {
     while ((dir = readdir(d)) != NULL) {
       if (!(!std::strcmp(dir->d_name, ".") || !std::strcmp(dir->d_name, "..")))
-        monitored_netdevs.push_back(dir->d_name);
+        devices.push_back(dir->d_name);
     }
     closedir(d);
   } else {
@@ -52,6 +44,7 @@ void netmon::get_network_devs() {
               << " to get list of network devices. "
               << "No network data will be available" << std::endl;
   }
+  return devices;
 }
 
 void netmon::open_interface_streams() {
