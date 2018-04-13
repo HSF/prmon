@@ -2,16 +2,18 @@
 
 #include "netmon.h"
 
-#include <cstring>
 #include <dirent.h>
+#include <cstring>
 #include <memory>
 
-const static std::vector<std::string> default_if_params{"rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
+const static std::vector<std::string> default_if_params{
+    "rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
 
-netmon::netmon(std::vector<std::string> netdevs):
-interface_params{default_if_params},
-network_if_streams{}
-{
+// Constructor; uses RAII pattern to open all monitored
+// network device streams and to take initial values
+// to the monitor relative differences
+netmon::netmon(std::vector<std::string> netdevs)
+    : interface_params{default_if_params}, network_if_streams{} {
   if (netdevs.size() == 0) {
     monitored_netdevs = get_all_network_devs();
   } else {
@@ -21,7 +23,6 @@ network_if_streams{}
 
   network_stats_start = read_raw_network_stats();
 }
-
 
 // Get all available network devices
 // This is all a bit yuk, using C style directory
@@ -48,28 +49,36 @@ std::vector<std::string> const netmon::get_all_network_devs() {
   return devices;
 }
 
+// Opens an ifstream for all monitored network parameters
+// Stored as unique_ptrs to ensure they are closed when
+// the instance is destroyed
 void netmon::open_interface_streams() {
-  for (const auto& if_param: interface_params) {
-    for (const auto& device: monitored_netdevs) {
-      // make_unique is better, but mandates C++14
-      //std::unique_ptr<std::istream> u_strm_ptr = std::make_unique<std::ifstream>(filename);
-      std::unique_ptr<std::istream> u_strm_ptr = std::unique_ptr<std::ifstream>(new std::ifstream(get_sys_filename(device, if_param)));
+  for (const auto& if_param : interface_params) {
+    for (const auto& device : monitored_netdevs) {
+      // make_unique would be better, but mandates C++14
+      std::unique_ptr<std::ifstream> u_strm_ptr =
+          std::unique_ptr<std::ifstream>(
+              new std::ifstream(get_sys_filename(device, if_param)));
       network_if_streams[if_param][device] = std::move(u_strm_ptr);
     }
   }
 }
 
-std::unordered_map<std::string, unsigned long long> netmon::read_raw_network_stats() {
+// Wrapper to return raw stats container
+std::unordered_map<std::string, unsigned long long>
+netmon::read_raw_network_stats() {
   std::unordered_map<std::string, unsigned long long> stats{};
   read_raw_network_stats(stats);
   return stats;
 }
 
-void netmon::read_raw_network_stats(std::unordered_map<std::string, unsigned long long>& stats) {
-  for (const auto& if_param: interface_params) {
+// Read raw stat values
+void netmon::read_raw_network_stats(
+    std::unordered_map<std::string, unsigned long long>& stats) {
+  for (const auto& if_param : interface_params) {
     unsigned long long value_read{};
     stats[if_param] = 0;
-    for (const auto& device: monitored_netdevs) {
+    for (const auto& device : monitored_netdevs) {
       network_if_streams[if_param][device]->seekg(0);
       *network_if_streams[if_param][device] >> value_read;
       stats[if_param] += value_read;
@@ -77,15 +86,18 @@ void netmon::read_raw_network_stats(std::unordered_map<std::string, unsigned lon
   }
 }
 
-std::unordered_map<std::string, unsigned long long> netmon::read_network_stats() {
+// Wrapper to return stats container
+std::unordered_map<std::string, unsigned long long>
+netmon::read_network_stats() {
   std::unordered_map<std::string, unsigned long long> stats{};
   read_network_stats(stats);
   return stats;
 }
 
-void netmon::read_network_stats(std::unordered_map<std::string, unsigned long long>& stats) {
+// Read stats and return relative increases in counters
+void netmon::read_network_stats(
+    std::unordered_map<std::string, unsigned long long>& stats) {
   read_raw_network_stats(stats);
-  for (const auto& if_param: interface_params)
+  for (const auto& if_param : interface_params)
     stats[if_param] -= network_stats_start[if_param];
 }
-

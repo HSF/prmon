@@ -17,7 +17,7 @@
 #include <vector>
 
 class netmon {
-private:
+ private:
   // Which network interface paramters to measure
   const std::vector<std::string> interface_params;
 
@@ -25,9 +25,13 @@ private:
   std::vector<std::string> monitored_netdevs;
 
   // Nested dictionary of network_if_streams[PARMETER][DEVICE][ISTREAM*]
-  std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<std::istream>>> network_if_streams;
+  std::unordered_map<
+      std::string,
+      std::unordered_map<std::string, std::unique_ptr<std::ifstream>>>
+      network_if_streams;
 
-  // Container for starting value stats, that are subtracted from measured values
+  // Container for starting value stats, that are subtracted from measured
+  // values
   std::unordered_map<std::string, unsigned long long> network_stats_start;
 
   // Find all network interfaces on the system
@@ -37,19 +41,20 @@ private:
   void open_interface_streams();
 
   // Helper to map a device and parameter to a /sys filename
-  inline std::string const get_sys_filename(std::string device, std::string param) {
+  inline std::string const get_sys_filename(std::string device,
+                                            std::string param) {
     std::string filename = "/sys/class/net/" + device + "/statistics/" + param;
     return filename;
   }
 
   // Internal methods to read "raw" network stats
   std::unordered_map<std::string, unsigned long long> read_raw_network_stats();
-  void read_raw_network_stats(std::unordered_map<std::string, unsigned long long>& values);
+  void read_raw_network_stats(
+      std::unordered_map<std::string, unsigned long long>& values);
 
-
-public:
+ public:
   netmon(std::vector<std::string> netdevs);
-  netmon() : netmon(std::vector<std::string>{}) {};
+  netmon() : netmon(std::vector<std::string>{}){};
 
   const std::vector<std::string> get_interface_paramter_names() {
     return interface_params;
@@ -63,8 +68,8 @@ public:
   std::unordered_map<std::string, unsigned long long> read_network_stats();
 
   // Return network stats by modifying a reference
-  void read_network_stats(std::unordered_map<std::string, unsigned long long>& values);
-
+  void read_network_stats(
+      std::unordered_map<std::string, unsigned long long>& values);
 };
 
-#endif // PRMON_NETMON_H
+#endif  // PRMON_NETMON_H

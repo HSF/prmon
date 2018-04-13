@@ -24,8 +24,8 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
-#include "prmon.h"
 #include "netmon.h"
+#include "prmon.h"
 
 using namespace rapidjson;
 
@@ -182,7 +182,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
 
   netmon network_monitor{netdevs};
-  std::unordered_map<std::string, unsigned long long> values_netstats{}, avg_values_netstats{};
+  std::unordered_map<std::string, unsigned long long> values_netstats{},
+      avg_values_netstats{};
 
   int iteration = 0;
   time_t lastIteration = time(0) - interval;
@@ -194,7 +195,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   file.open(filename);
   file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tsti"
           "me\tcutime\tcstime\twtime";
-  for (const auto& stat : network_monitor.get_interface_paramter_names()) file << "\t" << stat;
+  for (const auto& stat : network_monitor.get_interface_paramter_names())
+    file << "\t" << stat;
   file << std::endl;
 
   // Construct string representing JSON structure
@@ -316,9 +318,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         if (valuesCPU[i] > maxValuesCPU[i]) maxValuesCPU[i] = valuesCPU[i];
       }
       for (const auto& stat : network_monitor.get_interface_paramter_names()) {
-        avg_values_netstats[stat] =
-            static_cast<float>(values_netstats[stat]) /
-            difftime(currentTime, startTime);
+        avg_values_netstats[stat] = static_cast<float>(values_netstats[stat]) /
+                                    difftime(currentTime, startTime);
       }
 
       // Reset buffer
