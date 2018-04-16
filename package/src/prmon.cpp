@@ -8,6 +8,8 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <condition_variable>
 #include <cstddef>
@@ -207,10 +209,20 @@ void SignalCallbackHandler(int /*signal*/) {
   cv.notify_one();
 }
 
+void SignalChildHandler(int /*signal*/) {
+  int status;
+  wait3 (&status, WNOHANG, (struct rusage *)NULL );
+  if (status) {
+    std::cerr << "Warning, monitored child process exited with non-zero "
+    "return value: " << status << std::endl;
+  }
+}
+
 int MemoryMonitor(const pid_t mpid, const std::string filename,
                   const std::string jsonSummary, const unsigned int interval,
                   const std::vector<std::string> netdevs) {
   signal(SIGUSR1, SignalCallbackHandler);
+  signal(SIGCHLD, SignalChildHandler);
 
   unsigned long values[4] = {0, 0, 0, 0};
   unsigned long maxValues[4] = {0, 0, 0, 0};
@@ -463,6 +475,7 @@ int main(int argc, char* argv[]) {
   const unsigned int default_interval = 1;
 
   pid_t pid = -1;
+  bool got_pid = false;
   std::string filename{default_filename};
   std::string jsonSummary{default_json_summary};
   std::vector<std::string> netdevs{};
@@ -484,6 +497,7 @@ int main(int argc, char* argv[]) {
     switch (c) {
       case 'p':
         pid = std::stoi(optarg);
+        got_pid = true;
         break;
       case 'f':
         filename = optarg;
@@ -515,7 +529,7 @@ int main(int argc, char* argv[]) {
         << std::endl;
     std::cout
         << "Options:\n"
-        << "--pid, -p PID             Monitored process ID\n"
+        << "[--pid, -p PID]           Monitored process ID\n"
         << "[--filename, -f FILE]     Filename for detailed stats (default "
         << default_filename << ")\n"
         << "[--json-summary, -j FILE] Filename for JSON summary (default "
@@ -524,16 +538,52 @@ int main(int argc, char* argv[]) {
         << default_interval << ")\n"
         << "[--netdev, -n dev]        Network device to monitor (can be given\n"
         << "                          multiple times; default ALL devices)\n"
+        << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
+        << "                          execute the given program + args and\n"
+        << "                          monitor this (must come after other \n"
+        << "                          arguments)\n"
+        << "\n"
+        << "One of --pid or a child program must be given (but not both)\n"
         << std::endl;
     return 0;
   }
 
-  if (pid < 2) {
-    std::cerr << "Bad PID to monitor.\n";
-    return 1;
+  int child_args = -1;
+  for (int i = 0; i < argc; i++ ) {
+    if (!strcmp(argv[i], "--")) {
+      child_args = i+1;
+      break;
+    }
   }
 
-  MemoryMonitor(pid, filename, jsonSummary, interval, netdevs);
+  if ((!got_pid && child_args == -1) || (got_pid && child_args > 0)) {
+    std::cerr << "One and only one PID or child program is required - ";
+    if (got_pid)
+      std::cerr << "found both";
+    else
+      std::cerr << "found none";
+    std::cerr << std::endl;
+    return 0;
+  }
+
+  if (got_pid) {
+    if (pid < 2) {
+      std::cerr << "Bad PID to monitor.\n";
+      return 1;
+    }
+    MemoryMonitor(pid, filename, jsonSummary, interval, netdevs);
+  } else {
+    if (child_args == argc) {
+      std::cerr << "Found marker for child program to execute, but with no program argument.\n";
+      return 1;
+    }
+    pid_t child = fork();
+    if( child == 0 ) {
+      execvp(argv[child_args],&argv[child_args]);
+    } else if ( child > 0 ) {
+      MemoryMonitor(child, filename, jsonSummary, interval, netdevs);
+    }
+  }
 
   return 0;
 }

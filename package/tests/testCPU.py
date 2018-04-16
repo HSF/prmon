@@ -10,7 +10,7 @@ import subprocess
 import sys
 import unittest
 
-def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75):
+def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75, invoke=False):
     '''Wrap the class definition in a function to allow arguments to be passed'''
     class configurableProcessMonitor(unittest.TestCase):
         def test_runTestWithParams(self):
@@ -19,13 +19,21 @@ def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75):
                 burn_cmd.extend(['--threads', str(threads)])
             if procs != 1:
                 burn_cmd.extend(['--procs', str(procs)])
-            burn_p = subprocess.Popen(burn_cmd, shell = False)
+
+            if invoke:
+                prmon_cmd = ['../prmon', '--']
+                prmon_cmd.extend(burn_cmd)
+                prmon_p = subprocess.Popen(prmon_cmd, shell = False)
+
+                prmon_rc = prmon_p.wait()
+            else:
+                burn_p = subprocess.Popen(burn_cmd, shell = False)
     
-            prmon_cmd = ['../prmon', '--pid', str(burn_p.pid)]
-            prmon_p = subprocess.Popen(prmon_cmd, shell = False)
+                prmon_cmd = ['../prmon', '--pid', str(burn_p.pid)]
+                prmon_p = subprocess.Popen(prmon_cmd, shell = False)
     
-            burn_rc = burn_p.wait()
-            prmon_rc = prmon_p.wait()
+                burn_rc = burn_p.wait()
+                prmon_rc = prmon_p.wait()
     
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
             prmonJSON = json.load(open("prmon.json"))
@@ -51,10 +59,12 @@ if __name__ == '__main__':
     parser.add_argument('--procs', type=int, default=1)
     parser.add_argument('--time', type=float, default=10)
     parser.add_argument('--slack', type=float, default=0.75)
+    parser.add_argument('--invoke', dest='invoke', action='store_true', default=False)
+
     args = parser.parse_args()
     # Stop unittest from being confused by the arguments
     sys.argv=sys.argv[:1]
     
-    cpm = setupConfigurableTest(args.threads,args.procs,args.time,args.slack)
+    cpm = setupConfigurableTest(args.threads,args.procs,args.time,args.slack,args.invoke)
     
     unittest.main()

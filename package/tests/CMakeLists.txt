@@ -39,6 +39,7 @@ script_install(SCRIPT httpBlock.py DESTINATION cgi-bin)
 add_test(NAME testCPUsingle COMMAND testCPU.py --threads 1 --procs 1) 
 add_test(NAME testCPUmultithread COMMAND testCPU.py --threads 2 --procs 1) 
 add_test(NAME testCPUmultiproc COMMAND testCPU.py --threads 1 --procs 2) 
+add_test(NAME testCPUinvoke COMMAND testCPU.py --invoke) 
 
 # IO Tests
 add_test(NAME basicIOsingle COMMAND testIO.py --usleep 100 --io 10)
