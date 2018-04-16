@@ -2,7 +2,6 @@
   Copyright (C) 2018, CERN
 */
 
-#include <algorithm>
 #include <dirent.h>
 #include <getopt.h>
 #include <math.h>
