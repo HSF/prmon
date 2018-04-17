@@ -16,7 +16,9 @@
 #include <unordered_map>
 #include <vector>
 
-class netmon {
+#include "Imonitor.h"
+
+class netmon : public Imonitor {
  private:
   // Which network interface paramters to measure
   const std::vector<std::string> interface_params;
@@ -54,6 +56,22 @@ class netmon {
  public:
   netmon(std::vector<std::string> netdevs);
   netmon() : netmon(std::vector<std::string>{}){};
+
+  std::vector<std::string> const get_text_headers() final {
+    return interface_params;
+  }
+
+  std::vector<std::string> const get_json_keys() final {
+    return interface_params;
+  }
+
+  std::unordered_map<std::string, unsigned long long> read_stats() final {
+    return read_network_stats();
+  }
+
+  void read_stats(std::unordered_map<std::string, unsigned long long>& values) final {
+    return read_network_stats(values);
+  }
 
   const std::vector<std::string> get_interface_paramter_names() {
     return interface_params;
