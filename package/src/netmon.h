@@ -47,8 +47,7 @@ class netmon {
     return filename;
   }
 
-  // Internal methods to read "raw" network stats
-  std::unordered_map<std::string, unsigned long long> read_raw_network_stats();
+  // Internal method to read "raw" network stats
   void read_raw_network_stats(
       std::unordered_map<std::string, unsigned long long>& values);
 
@@ -64,10 +63,7 @@ class netmon {
     return monitored_netdevs;
   }
 
-  // Return network stats in a variable
-  std::unordered_map<std::string, unsigned long long> read_network_stats();
-
-  // Return network stats by modifying a reference
+  // Return network stats
   void read_network_stats(
       std::unordered_map<std::string, unsigned long long>& values);
 };

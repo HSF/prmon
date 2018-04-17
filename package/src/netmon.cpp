@@ -21,7 +21,7 @@ netmon::netmon(std::vector<std::string> netdevs)
   }
   open_interface_streams();
 
-  network_stats_start = read_raw_network_stats();
+  read_raw_network_stats(network_stats_start);
 }
 
 // Get all available network devices
@@ -64,14 +64,6 @@ void netmon::open_interface_streams() {
   }
 }
 
-// Wrapper to return raw stats container
-std::unordered_map<std::string, unsigned long long>
-netmon::read_raw_network_stats() {
-  std::unordered_map<std::string, unsigned long long> stats{};
-  read_raw_network_stats(stats);
-  return stats;
-}
-
 // Read raw stat values
 void netmon::read_raw_network_stats(
     std::unordered_map<std::string, unsigned long long>& stats) {
@@ -84,14 +76,6 @@ void netmon::read_raw_network_stats(
       stats[if_param] += value_read;
     }
   }
-}
-
-// Wrapper to return stats container
-std::unordered_map<std::string, unsigned long long>
-netmon::read_network_stats() {
-  std::unordered_map<std::string, unsigned long long> stats{};
-  read_network_stats(stats);
-  return stats;
 }
 
 // Read stats and return relative increases in counters
