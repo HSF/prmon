@@ -31,22 +31,14 @@
 
 using namespace rapidjson;
 
-int ReadProcs(const pid_t mother_pid, unsigned long values[4],
-              unsigned long long valuesIO[4], unsigned long long valuesCPU[4],
-              const bool verbose) {
+std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
   // Get child process IDs
   std::vector<pid_t> cpids;
   char smaps_buffer[64];
-  char io_buffer[64];
-  char stat_buffer[64];
   snprintf(smaps_buffer, 64, "pstree -A -p %ld | tr \\- \\\\n",
            (long)mother_pid);
   FILE* pipe = popen(smaps_buffer, "r");
-  if (pipe == 0) {
-    if (verbose)
-      std::cerr << "MemoryMonitor: unable to open pstree pipe!" << std::endl;
-    return 1;
-  }
+  if (pipe == 0) return cpids;
 
   char buffer[256];
   std::string result = "";
@@ -70,6 +62,19 @@ int ReadProcs(const pid_t mother_pid, unsigned long values[4],
     }
   }
   pclose(pipe);
+  return cpids;
+}
+
+int ReadProcs(const pid_t mother_pid, unsigned long values[4],
+              unsigned long long valuesIO[4], unsigned long long valuesCPU[4],
+              const bool verbose) {
+  // Get child process IDs
+  char smaps_buffer[64];
+  char io_buffer[64];
+  char stat_buffer[64];
+  char buffer[256];
+
+  std::vector<pid_t> cpids = offspring_pids(mother_pid);
 
   unsigned long tsize(0);
   unsigned long trss(0);
