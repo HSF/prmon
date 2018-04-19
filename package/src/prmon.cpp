@@ -18,7 +18,7 @@
 #include <mutex>
 #include <sstream>
 #include <thread>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #include <rapidjson/document.h>
@@ -65,7 +65,7 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
   return cpids;
 }
 
-int ReadProcs(const pid_t mother_pid, unsigned long values[4],
+int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
               unsigned long long valuesIO[4], unsigned long long valuesCPU[4],
               const bool verbose) {
   // Get child process IDs
@@ -73,8 +73,6 @@ int ReadProcs(const pid_t mother_pid, unsigned long values[4],
   char io_buffer[64];
   char stat_buffer[64];
   char buffer[256];
-
-  std::vector<pid_t> cpids = offspring_pids(mother_pid);
 
   unsigned long tsize(0);
   unsigned long trss(0);
@@ -198,9 +196,16 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long long valuesCPU[4] = {0, 0, 0, 0};
   unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
 
+  // This is the vector of all monitoring components
+  std::vector<Imonitor*> monitors{};
+
+  // Network monitoring
   netmon network_monitor{netdevs};
   std::unordered_map<std::string, unsigned long long> values_netstats{},
       avg_values_netstats{};
+  monitors.push_back(&network_monitor);
+
+
 
   int iteration = 0;
   time_t lastIteration = time(0) - interval;
@@ -212,8 +217,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   file.open(filename);
   file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tsti"
           "me\tcutime\tcstime\twtime";
-  for (const auto& stat : network_monitor.get_interface_paramter_names())
-    file << "\t" << stat;
+  for (const auto& stat : monitors[0]->get_text_stats())
+    file << "\t" << stat.first;
   file << std::endl;
 
   // Construct string representing JSON structure
@@ -222,15 +227,13 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
           "\"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, "
           "\"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" "
           ": 0, \"totCSTIME\" : 0, \"totWTIME\" : 0";
-  for (const auto& stat : network_monitor.get_interface_paramter_names())
-    json << ", \""
-         << "tot_" << stat << "\" : 0";
+  for (const auto& stat : monitors[0]->get_json_total_stats())
+    json << ", \"" << stat.first << "\" : 0";
   json << "}, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": "
           "0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": "
           "0,\"rateRBYTES\": 0, \"rateWBYTES\": 0";
-  for (const auto& stat : network_monitor.get_interface_paramter_names())
-    json << ", \""
-         << "avg_" << stat << "\" : 0";
+  for (const auto& stat : monitors[0]->get_json_average_stats(1))
+    json << ", \"" << stat.first << "\" : 0";
   json << "}}" << std::ends;
 
   Document d;
@@ -304,9 +307,12 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   while (kill(mpid, 0) == 0 && sigusr1 == false) {
     bool wroteFile = false;
     if (time(0) - lastIteration > interval) {
-      iteration = iteration + 1;
-      ReadProcs(mpid, values, valuesIO, valuesCPU);
-      network_monitor.read_network_stats(values_netstats);
+      iteration++;
+
+      std::vector<pid_t> cpids = offspring_pids(mpid);
+
+      ReadProcs(cpids, values, valuesIO, valuesCPU);
+      network_monitor.update_stats(cpids);
 
       currentTime = time(0);
       file << currentTime << "\t" << values[0] << "\t" << values[1] << "\t"
@@ -317,8 +323,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
            << valuesCPU[2] * inv_clock_ticks << "\t"
            << valuesCPU[3] * inv_clock_ticks << "\t"
            << difftime(currentTime, startTime);
-      for (const auto& stat : network_monitor.get_interface_paramter_names())
-        file << "\t" << values_netstats[stat];
+      for (const auto& stat : network_monitor.get_text_stats())
+        file << "\t" << stat.second;
       file << std::endl;
 
       // Compute statistics
@@ -333,10 +339,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
                          difftime(currentTime, startTime);
 
         if (valuesCPU[i] > maxValuesCPU[i]) maxValuesCPU[i] = valuesCPU[i];
-      }
-      for (const auto& stat : network_monitor.get_interface_paramter_names()) {
-        avg_values_netstats[stat] = static_cast<float>(values_netstats[stat]) /
-                                    difftime(currentTime, startTime);
       }
 
       // Reset buffer
@@ -378,10 +380,10 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       tmp = 0;
 
       // Network stats
-      for (const auto& stat : network_monitor.get_interface_paramter_names()) {
-        v1[("tot_" + stat).c_str()].SetUint64(values_netstats[stat]);
-        v2[("avg_" + stat).c_str()].SetFloat(avg_values_netstats[stat]);
-      }
+      for (const auto& stat : network_monitor.get_json_total_stats())
+        v1[(stat.first).c_str()].SetUint64(stat.second);
+      for (const auto& stat : network_monitor.get_json_average_stats(difftime(currentTime, startTime)))
+        v2[(stat.first).c_str()].SetUint64(stat.second);
 
       // Write JSON realtime summary to a temporary file (to avoid race
       // conditions with pilot trying to read from file at the same time)

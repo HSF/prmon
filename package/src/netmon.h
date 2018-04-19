@@ -13,6 +13,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <map>
 #include <unordered_map>
 #include <vector>
 
@@ -20,21 +21,23 @@
 
 class netmon final : public Imonitor {
  private:
-  // Which network interface paramters to measure
-  const std::vector<std::string> interface_params;
+  // Which network interface paramters to measure and output key names
+  std::vector<std::string> interface_params;
+  std::vector<std::string> json_total_keys;
+  std::vector<std::string> json_average_keys;
 
   // Which network interfaces to monitor
   std::vector<std::string> monitored_netdevs;
 
   // Nested dictionary of network_if_streams[PARMETER][DEVICE][ISTREAM*]
-  std::unordered_map<
+  std::map<
       std::string,
       std::unordered_map<std::string, std::unique_ptr<std::ifstream>>>
       network_if_streams;
 
-  // Container for starting value stats, that are subtracted from measured
-  // values
-  std::unordered_map<std::string, unsigned long long> network_stats_start;
+  // Container for stats, initial and current
+  std::map<std::string, unsigned long long> network_stats_start,
+      network_stats;
 
   // Find all network interfaces on the system
   std::vector<std::string> const get_all_network_devs();
@@ -49,37 +52,33 @@ class netmon final : public Imonitor {
     return filename;
   }
 
+  // Helper to map parameters to JSON keys
+  inline std::string const json_total_key(std::string param) {
+    return std::string("tot_" + param);
+  }
+
+  // Helper to map parameters to JSON keys
+  inline std::string const json_average_key(std::string param) {
+    return std::string("avg_" + param);
+  }
+
   // Internal method to read "raw" network stats
   void read_raw_network_stats(
-      std::unordered_map<std::string, unsigned long long>& values);
+      std::map<std::string, unsigned long long>& values);
 
  public:
   netmon(std::vector<std::string> netdevs);
   netmon() : netmon(std::vector<std::string>{}){};
 
-  std::vector<std::string> const get_text_headers() {
-    return interface_params;
+  void update_stats(const std::vector<pid_t>& pids) {
+    read_raw_network_stats(network_stats);
   }
 
-  std::vector<std::string> const get_json_keys() {
-    return interface_params;
-  }
+  // These are the stat getter methods which retrieve current statistics
+  std::map<std::string, unsigned long long> const get_text_stats();
+  std::map<std::string, unsigned long long> const get_json_total_stats();
+  std::map<std::string, unsigned long long> const get_json_average_stats(time_t elapsed);
 
-  void read_stats(std::unordered_map<std::string, unsigned long long>& values) {
-    return read_network_stats(values);
-  }
-
-  const std::vector<std::string> get_interface_paramter_names() {
-    return interface_params;
-  }
-
-  const std::vector<std::string> get_interface_names() {
-    return monitored_netdevs;
-  }
-
-  // Return network stats
-  void read_network_stats(
-      std::unordered_map<std::string, unsigned long long>& values);
 };
 
 #endif  // PRMON_NETMON_H

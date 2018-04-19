@@ -3,6 +3,8 @@
 #include "netmon.h"
 
 #include <dirent.h>
+#include <time.h>
+
 #include <cstring>
 #include <memory>
 
@@ -13,7 +15,10 @@ const static std::vector<std::string> default_if_params{
 // network device streams and to take initial values
 // to the monitor relative differences
 netmon::netmon(std::vector<std::string> netdevs)
-    : interface_params{default_if_params}, network_if_streams{} {
+    : interface_params{default_if_params},
+      json_total_keys{},
+      json_average_keys{},
+      network_if_streams{} {
   if (netdevs.size() == 0) {
     monitored_netdevs = get_all_network_devs();
   } else {
@@ -21,7 +26,14 @@ netmon::netmon(std::vector<std::string> netdevs)
   }
   open_interface_streams();
 
+  for (const auto& if_param: interface_params) {
+    json_total_keys.push_back(json_total_key(if_param));
+    json_average_keys.push_back(json_average_key(if_param));
+  }
+
+  // Ensure internal stat counters are initialised properly
   read_raw_network_stats(network_stats_start);
+  read_raw_network_stats(network_stats);
 }
 
 // Get all available network devices
@@ -66,7 +78,7 @@ void netmon::open_interface_streams() {
 
 // Read raw stat values
 void netmon::read_raw_network_stats(
-    std::unordered_map<std::string, unsigned long long>& stats) {
+    std::map<std::string, unsigned long long>& stats) {
   for (const auto& if_param : interface_params) {
     unsigned long long value_read{};
     stats[if_param] = 0;
@@ -78,10 +90,29 @@ void netmon::read_raw_network_stats(
   }
 }
 
-// Read stats and return relative increases in counters
-void netmon::read_network_stats(
-    std::unordered_map<std::string, unsigned long long>& stats) {
-  read_raw_network_stats(stats);
-  for (const auto& if_param : interface_params)
-    stats[if_param] -= network_stats_start[if_param];
+// Relative counter statistics for text file
+std::map<std::string, unsigned long long> const netmon::get_text_stats() {
+  std::map<std::string, unsigned long long> text_stats{};
+  for (const auto& if_param : interface_params) {
+    text_stats[if_param] = network_stats[if_param] - network_stats_start[if_param];
+  }
+  return text_stats;
+}
+
+// Also relative counters for JSON totals
+std::map<std::string, unsigned long long> const netmon::get_json_total_stats() {
+  std::map<std::string, unsigned long long> json_total_stats{};
+  for (const auto& if_param : interface_params) {
+    json_total_stats[json_total_key(if_param)] = network_stats[if_param] - network_stats_start[if_param];
+  }
+  return json_total_stats;
+}
+
+// For JSON averages, divide by elapsed time
+std::map<std::string, unsigned long long> const netmon::get_json_average_stats(time_t elapsed) {
+  std::map<std::string, unsigned long long> json_average_stats{};
+  for (const auto& if_param : interface_params) {
+    json_average_stats[json_average_key(if_param)] = (network_stats[if_param] - network_stats_start[if_param]) / elapsed;
+  }
+  return json_average_stats;
 }

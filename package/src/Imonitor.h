@@ -8,6 +8,10 @@
 #ifndef PRMON_IMONITOR_H
 #define PRMON_IMONITOR_H 1
 
+#include <sys/types.h>
+#include <time.h>
+
+#include <map>
 #include <string>
 #include <vector>
 
@@ -15,10 +19,12 @@ class Imonitor {
  public:
   virtual ~Imonitor() {};
 
-  virtual std::vector<std::string> const get_text_headers() = 0;
-  virtual std::vector<std::string> const get_json_keys() = 0;
+  virtual void update_stats(const std::vector<pid_t>& pids) = 0;
 
-  virtual void read_stats(std::unordered_map<std::string, unsigned long long>& stats) = 0;
+  virtual std::map<std::string, unsigned long long> const get_text_stats() = 0;
+  virtual std::map<std::string, unsigned long long> const get_json_total_stats() = 0;
+  virtual std::map<std::string, unsigned long long> const get_json_average_stats(time_t elapsed) = 0;
+
 };
 
 #endif  // PRMON_IMONITOR_H
