@@ -8,7 +8,7 @@
 #include <string>
 
 int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
-              unsigned long long valuesIO[4], unsigned long long valuesCPU[4],
+              unsigned long long valuesCPU[4],
               const bool verbose = false);
 int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary,
                   unsigned int interval,

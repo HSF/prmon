@@ -67,11 +67,10 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
 }
 
 int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
-              unsigned long long valuesIO[4], unsigned long long valuesCPU[4],
+              unsigned long long valuesCPU[4],
               const bool verbose) {
   // Get child process IDs
   char smaps_buffer[64];
-  char io_buffer[64];
   char stat_buffer[64];
   char buffer[256];
 
@@ -79,11 +78,6 @@ int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
   unsigned long trss(0);
   unsigned long tpss(0);
   unsigned long tswap(0);
-
-  unsigned long long trchar(0);
-  unsigned long long twchar(0);
-  unsigned long long trbyte(0);
-  unsigned long long twbyte(0);
 
   unsigned long long utime(0);
   unsigned long long stime(0);
@@ -108,25 +102,6 @@ int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
         if (sscanf(buffer, "Swap: %80lu kB", &tswap) == 1) values[3] += tswap;
       }
       fclose(file);
-    }
-
-    snprintf(io_buffer, 64, "/proc/%llu/io", (unsigned long long)*it);
-
-    FILE* file2 = fopen(io_buffer, "r");
-    if (file2 == 0) {
-      openFails.push_back(std::string(io_buffer));
-    } else {
-      while (fgets(buffer, 256, file2)) {
-        if (sscanf(buffer, "rchar: %80llu", &trchar) == 1)
-          valuesIO[0] += trchar;
-        if (sscanf(buffer, "wchar: %80llu", &twchar) == 1)
-          valuesIO[1] += twchar;
-        if (sscanf(buffer, "read_bytes: %80llu", &trbyte) == 1)
-          valuesIO[2] += trbyte;
-        if (sscanf(buffer, "write_bytes: %80llu", &twbyte) == 1)
-          valuesIO[3] += twbyte;
-      }
-      fclose(file2);
     }
 
     snprintf(stat_buffer, 64, "/proc/%llu/stat", (unsigned long long)*it);
@@ -189,10 +164,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long values[4] = {0, 0, 0, 0};
   unsigned long maxValues[4] = {0, 0, 0, 0};
   unsigned long avgValues[4] = {0, 0, 0, 0};
-
-  unsigned long long valuesIO[4] = {0, 0, 0, 0};
-  unsigned long long maxValuesIO[4] = {0, 0, 0, 0};
-  unsigned long long avgValuesIO[4] = {0, 0, 0, 0};
 
   unsigned long long valuesCPU[4] = {0, 0, 0, 0};
   unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
@@ -316,7 +287,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
       std::vector<pid_t> cpids = offspring_pids(mpid);
 
-      ReadProcs(cpids, values, valuesIO, valuesCPU);
+      ReadProcs(cpids, values, valuesCPU);
 
       for (const auto monitor : monitors)
         monitor->update_stats(cpids);
@@ -361,9 +332,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         if (tmp < 4) {
           i.first->value.SetUint64(maxValues[tmp]);
           i.second->value.SetUint64(avgValues[tmp] / iteration);
-        } else if (tmp < 8) {
-          i.first->value.SetUint64(maxValuesIO[tmp - 4]);
-          i.second->value.SetUint64(avgValuesIO[tmp - 4]);
         }
         tmp += 1;
       }
