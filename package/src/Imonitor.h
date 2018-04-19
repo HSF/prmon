@@ -18,7 +18,6 @@ class Imonitor {
   virtual std::vector<std::string> const get_text_headers() = 0;
   virtual std::vector<std::string> const get_json_keys() = 0;
 
-  virtual std::unordered_map<std::string, unsigned long long> read_stats() = 0;
   virtual void read_stats(std::unordered_map<std::string, unsigned long long>& stats) = 0;
 };
 
