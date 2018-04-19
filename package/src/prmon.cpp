@@ -26,6 +26,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
+#include "cpumon.h"
 #include "iomon.h"
 #include "netmon.h"
 #include "prmon.h"
@@ -180,6 +181,10 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // This is the vector of all monitoring components
   std::vector<Imonitor*> monitors{};
 
+  // CPU monitoring
+  cpumon cpu_monitor{};
+  monitors.push_back(&cpu_monitor);
+
   // IO monitoring
   iomon io_monitor{};
   monitors.push_back(&io_monitor);
@@ -196,8 +201,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // Open iteration output file
   std::ofstream file;
   file.open(filename);
-  file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tsti"
-          "me\tcutime\tcstime\twtime";
+  file << "Time\tVMEM\tPSS\tRSS\tSwap\twtime";
   for (const auto monitor : monitors) {
     for (const auto& stat : monitor->get_text_stats())
       file << "\t" << stat.first;
@@ -207,8 +211,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // Construct string representing JSON structure
   std::stringstream json{};
   json << "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, "
-          "\"maxSwap\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" "
-          ": 0, \"totCSTIME\" : 0, \"totWTIME\" : 0";
+          "\"maxSwap\": 0,\"wtime\" : 0";
   for (const auto monitor : monitors) {
     for (const auto& stat : monitor->get_json_total_stats())
       json << ", \"" << stat.first << "\" : 0";
@@ -304,10 +307,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       currentTime = time(0);
       file << currentTime << "\t" << values[0] << "\t" << values[1] << "\t"
            << values[2] << "\t" << values[3] << "\t"
-           << valuesCPU[0] * inv_clock_ticks << "\t"
-           << valuesCPU[1] * inv_clock_ticks << "\t"
-           << valuesCPU[2] * inv_clock_ticks << "\t"
-           << valuesCPU[3] * inv_clock_ticks << "\t"
            << difftime(currentTime, startTime);
       for (const auto monitor : monitors) {
         for (const auto& stat : monitor->get_text_stats())
