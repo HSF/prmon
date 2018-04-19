@@ -26,6 +26,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
+#include "iomon.h"
 #include "netmon.h"
 #include "prmon.h"
 
@@ -199,13 +200,13 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // This is the vector of all monitoring components
   std::vector<Imonitor*> monitors{};
 
+  // IO monitoring
+  iomon io_monitor{};
+  monitors.push_back(&io_monitor);
+
   // Network monitoring
   netmon network_monitor{netdevs};
-  std::unordered_map<std::string, unsigned long long> values_netstats{},
-      avg_values_netstats{};
   monitors.push_back(&network_monitor);
-
-
 
   int iteration = 0;
   time_t lastIteration = time(0) - interval;
@@ -217,23 +218,27 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   file.open(filename);
   file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tsti"
           "me\tcutime\tcstime\twtime";
-  for (const auto& stat : monitors[0]->get_text_stats())
-    file << "\t" << stat.first;
+  for (const auto monitor : monitors) {
+    for (const auto& stat : monitor->get_text_stats())
+      file << "\t" << stat.first;
+  }
   file << std::endl;
 
   // Construct string representing JSON structure
   std::stringstream json{};
   json << "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, "
-          "\"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, "
-          "\"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" "
+          "\"maxSwap\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" "
           ": 0, \"totCSTIME\" : 0, \"totWTIME\" : 0";
-  for (const auto& stat : monitors[0]->get_json_total_stats())
-    json << ", \"" << stat.first << "\" : 0";
+  for (const auto monitor : monitors) {
+    for (const auto& stat : monitor->get_json_total_stats())
+      json << ", \"" << stat.first << "\" : 0";
+  }
   json << "}, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": "
-          "0,\"avgRSS\": 0, \"avgSwap\": 0, \"rateRCHAR\": 0, \"rateWCHAR\": "
-          "0,\"rateRBYTES\": 0, \"rateWBYTES\": 0";
-  for (const auto& stat : monitors[0]->get_json_average_stats(1))
-    json << ", \"" << stat.first << "\" : 0";
+          "0,\"avgRSS\": 0, \"avgSwap\": 0";
+  for (const auto monitor : monitors) {
+    for (const auto& stat : monitor->get_json_average_stats(1))
+      json << ", \"" << stat.first << "\" : 0";
+  }
   json << "}}" << std::ends;
 
   Document d;
@@ -312,19 +317,22 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       std::vector<pid_t> cpids = offspring_pids(mpid);
 
       ReadProcs(cpids, values, valuesIO, valuesCPU);
-      network_monitor.update_stats(cpids);
+
+      for (const auto monitor : monitors)
+        monitor->update_stats(cpids);
 
       currentTime = time(0);
       file << currentTime << "\t" << values[0] << "\t" << values[1] << "\t"
-           << values[2] << "\t" << values[3] << "\t" << valuesIO[0] << "\t"
-           << valuesIO[1] << "\t" << valuesIO[2] << "\t" << valuesIO[3] << "\t"
+           << values[2] << "\t" << values[3] << "\t"
            << valuesCPU[0] * inv_clock_ticks << "\t"
            << valuesCPU[1] * inv_clock_ticks << "\t"
            << valuesCPU[2] * inv_clock_ticks << "\t"
            << valuesCPU[3] * inv_clock_ticks << "\t"
            << difftime(currentTime, startTime);
-      for (const auto& stat : network_monitor.get_text_stats())
-        file << "\t" << stat.second;
+      for (const auto monitor : monitors) {
+        for (const auto& stat : monitor->get_text_stats())
+          file << "\t" << stat.second;
+      }
       file << std::endl;
 
       // Compute statistics
@@ -332,11 +340,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         avgValues[i] = avgValues[i] + values[i];
         if (values[i] > maxValues[i]) maxValues[i] = values[i];
         lastIteration = time(0);
-
-        if (valuesIO[i] > maxValuesIO[i]) maxValuesIO[i] = valuesIO[i];
-
-        avgValuesIO[i] = (unsigned long long)maxValuesIO[i] /
-                         difftime(currentTime, startTime);
 
         if (valuesCPU[i] > maxValuesCPU[i]) maxValuesCPU[i] = valuesCPU[i];
       }
@@ -347,7 +350,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
       for (int i = 0; i < 4; i++) {
         values[i] = 0;
-        valuesIO[i] = 0;
         valuesCPU[i] = 0;
       }
 
@@ -379,10 +381,13 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       }
       tmp = 0;
 
-      // Network stats
-      for (const auto& stat : network_monitor.get_json_total_stats())
-        v1[(stat.first).c_str()].SetUint64(stat.second);
-      for (const auto& stat : network_monitor.get_json_average_stats(difftime(currentTime, startTime)))
+      // JSON statistics
+      for (const auto monitor : monitors)
+        for (const auto& stat : monitor->get_json_total_stats())
+          v1[(stat.first).c_str()].SetUint64(stat.second);
+      for (const auto monitor : monitors)
+        for (const auto& stat : monitor->get_json_average_stats(
+               difftime(currentTime, startTime)))
         v2[(stat.first).c_str()].SetUint64(stat.second);
 
       // Write JSON realtime summary to a temporary file (to avoid race

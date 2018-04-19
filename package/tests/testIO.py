@@ -30,10 +30,10 @@ def setupConfigurableTest(io=10, threads=1, procs=1, usleep=10, pause=1, slack=0
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
             prmonJSON = json.load(open("prmon.json"))
             expectedBytes = io*threads*procs*slack * 1.0e6
-            self.assertGreater(prmonJSON["Max"]["totWCHAR"], expectedBytes, "Too low value for IO bytes written "
-                               "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["totWCHAR"]))
-            self.assertGreater(prmonJSON["Max"]["totRCHAR"], expectedBytes, "Too low value for IO bytes read "
-                               "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["totRCHAR"]))
+            self.assertGreater(prmonJSON["Max"]["wchar"], expectedBytes, "Too low value for IO bytes written "
+                               "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["wchar"]))
+            self.assertGreater(prmonJSON["Max"]["rchar"], expectedBytes, "Too low value for IO bytes read "
+                               "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["rchar"]))
     
     return configurableProcessMonitor
 
