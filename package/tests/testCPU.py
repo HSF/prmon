@@ -10,7 +10,7 @@ import subprocess
 import sys
 import unittest
 
-def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75, invoke=False):
+def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, slack=0.75, invoke=False):
     '''Wrap the class definition in a function to allow arguments to be passed'''
     class configurableProcessMonitor(unittest.TestCase):
         def test_runTestWithParams(self):
@@ -19,6 +19,8 @@ def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75, invoke=False)
                 burn_cmd.extend(['--threads', str(threads)])
             if procs != 1:
                 burn_cmd.extend(['--procs', str(procs)])
+            if child_fraction != 1.0:
+                burn_cmd.extend(['--child-fraction', str(child_fraction)])
 
             if invoke:
                 prmon_cmd = ['../prmon', '--']
@@ -39,10 +41,11 @@ def setupConfigurableTest(threads=1, procs=1, time=10, slack=0.75, invoke=False)
             prmonJSON = json.load(open("prmon.json"))
             # CPU time tests
             totCPU = prmonJSON["Max"]["utime"] + prmonJSON["Max"]["stime"]
-            self.assertLess(totCPU, time*threads*procs, "Too high value for CPU time "
-                            "(expected maximum of {0}, got {1})".format(time*threads*procs, totCPU))
-            self.assertGreater(totCPU, time*threads*procs*slack, "Too low value for CPU time "
-                               "(expected minimum of {0}, got {1}".format(time*threads*procs*slack, totCPU))
+            expectCPU = (1.0 + (procs-1)*child_fraction) * time * threads
+            self.assertLess(totCPU, expectCPU, "Too high value for CPU time "
+                            "(expected maximum of {0}, got {1})".format(expectCPU, totCPU))
+            self.assertGreater(totCPU, expectCPU*slack, "Too low value for CPU time "
+                               "(expected minimum of {0}, got {1}".format(expectCPU*slack, totCPU))
             # Wall time tests
             totWALL = prmonJSON["Max"]["wtime"]
             self.assertLessEqual(totWALL, time, "Too high value for wall time "
@@ -57,6 +60,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Configurable test runner")
     parser.add_argument('--threads', type=int, default=1)
     parser.add_argument('--procs', type=int, default=1)
+    parser.add_argument('--child-fraction', type=float, default=1.0)
     parser.add_argument('--time', type=float, default=10)
     parser.add_argument('--slack', type=float, default=0.75)
     parser.add_argument('--invoke', dest='invoke', action='store_true', default=False)
@@ -65,6 +69,6 @@ if __name__ == '__main__':
     # Stop unittest from being confused by the arguments
     sys.argv=sys.argv[:1]
     
-    cpm = setupConfigurableTest(args.threads,args.procs,args.time,args.slack,args.invoke)
+    cpm = setupConfigurableTest(args.threads,args.procs,args.child_fraction,args.time,args.slack,args.invoke)
     
     unittest.main()
