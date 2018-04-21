@@ -21,10 +21,9 @@
 
 class netmon final : public Imonitor {
  private:
-  // Which network interface paramters to measure and output key names
+  // Which network interface paramters to measure (in this simple case
+  // these are also the output key names)
   std::vector<std::string> interface_params;
-  std::vector<std::string> json_total_keys;
-  std::vector<std::string> json_average_keys;
 
   // Which network interfaces to monitor
   std::vector<std::string> monitored_netdevs;
@@ -50,16 +49,6 @@ class netmon final : public Imonitor {
                                             std::string param) {
     std::string filename = "/sys/class/net/" + device + "/statistics/" + param;
     return filename;
-  }
-
-  // Helper to map parameters to JSON keys
-  inline std::string const json_total_key(std::string param) {
-    return std::string("tot_" + param);
-  }
-
-  // Helper to map parameters to JSON keys
-  inline std::string const json_average_key(std::string param) {
-    return std::string("avg_" + param);
   }
 
   // Internal method to read "raw" network stats
