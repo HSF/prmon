@@ -2,7 +2,10 @@
 // for testing prmon
 
 #include <getopt.h>
+#include <signal.h>
+#include <sys/wait.h>
 #include <unistd.h>
+
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -57,6 +60,22 @@ int io_burn(unsigned long bytes_to_write, std::chrono::nanoseconds nsleep,
   std::this_thread::sleep_for(pause);
   fclose(tmp_file);
   return 0;
+}
+
+void SignalChildHandler(int /*signal*/) {
+  int status;
+  waitpid(-1, &status, 0);
+  if (status) {
+    if (WIFEXITED(status))
+      std::cerr << "Warning, monitored child process had non-zero "
+      "return value: " << WEXITSTATUS(status) << std::endl;
+    else if (WIFSIGNALED(status))
+      std::cerr << "Warning, monitored child process exited from signal "
+      << WTERMSIG(status) << std::endl;
+    else
+      std::cerr << "Warning, weird things are happening... "
+      << status << std::endl;
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -185,23 +204,25 @@ int main(int argc, char* argv[]) {
   std::chrono::nanoseconds nano_pause(
       static_cast<unsigned long>(pause * std::nano::den));
 
-  std::cout << io_bytes << " " << std::nano::den << " " << std::milli::den
-            << std::endl;
-
   // First fork child processes
+  pid_t pid = getpid();
+  unsigned int children{0};
   if (procs > 1) {
-    unsigned int children{0};
-    pid_t pid{0};
-    while (children < procs - 1 && pid == 0) {
+    while (children < procs - 1 && pid != 0) {
       pid = fork();
       ++children;
+      std::cout << children << " - " << pid << std::endl;
     }
   }
+
+  // Parent should respond to child exits
+  if (pid)
+    signal(SIGCHLD, SignalChildHandler);
 
   // Each process runs the requested number of threads
   std::vector<std::thread> pool;
   for (unsigned int i = 0; i < threads; ++i)
-    pool.push_back(std::thread(io_burn, io_bytes, nano_sleep, nano_pause));
+    pool.push_back(std::thread(io_burn, io_bytes, nano_sleep / (pid ? 1 : children), nano_pause ));
   for (auto& th : pool) th.join();
 
   std::this_thread::sleep_for(nano_pause);
