@@ -16,21 +16,9 @@ class iomon final : public Imonitor {
  private:
   // Which network io paramters to measure and output key names
   std::vector<std::string> io_params;
-  std::vector<std::string> json_total_keys;
-  std::vector<std::string> json_average_keys;
 
   // Container for stats
   std::map<std::string, unsigned long long> io_stats;
-
-  // Helper to map parameters to JSON keys
-  inline std::string const json_total_key(std::string param) {
-    return std::string("tot_" + param);
-  }
-
-  // Helper to map parameters to JSON keys
-  inline std::string const json_average_key(std::string param) {
-    return std::string("avg_" + param);
-  }
 
  public:
   iomon();

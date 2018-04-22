@@ -54,7 +54,7 @@ std::map<std::string, unsigned long long> const iomon::get_json_average_stats(
     time_t elapsed) {
   std::map<std::string, unsigned long long> json_average_stats{};
   for (const auto& io_param : io_stats) {
-    json_average_stats[json_average_key(io_param.first)] =
+    json_average_stats[io_param.first] =
         io_param.second / elapsed;
   }
   return json_average_stats;
