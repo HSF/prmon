@@ -30,6 +30,7 @@
 #include "iomon.h"
 #include "netmon.h"
 #include "prmon.h"
+#include "wallmon.h"
 
 using namespace rapidjson;
 
@@ -147,6 +148,10 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // This is the vector of all monitoring components
   std::vector<Imonitor*> monitors{};
 
+  // Wall clock monitoring
+  wallmon wall_monitor{};
+  monitors.push_back(&wall_monitor);
+
   // CPU monitoring
   cpumon cpu_monitor{};
   monitors.push_back(&cpu_monitor);
@@ -161,7 +166,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
   int iteration = 0;
   time_t lastIteration = time(0) - interval;
-  time_t startTime;
   time_t currentTime;
 
   // Open iteration output file
@@ -177,7 +181,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // Construct string representing JSON structure
   std::stringstream json{};
   json << "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, "
-          "\"maxSwap\": 0,\"wtime\" : 0";
+          "\"maxSwap\": 0";
   for (const auto monitor : monitors) {
     for (const auto& stat : monitor->get_json_total_stats())
       json << ", \"" << stat.first << "\" : 0";
@@ -205,58 +209,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   Value& v1 = d["Max"];
   Value& v2 = d["Avg"];
 
-  // Get mother process start time
-  char stat_buffer[64], sbuffer[2048], *tsbuffer;
-
-  snprintf(stat_buffer, 64, "/proc/%llu/stat", (unsigned long long)mpid);
-
-  FILE* stat_file = fopen(stat_buffer, "r");
-  unsigned long long thispid(0);
-  unsigned long long starttime(0);
-
-  if (stat_file == 0) {
-    std::cerr << "Cannot open stat buffer for mother pid to get the starttime"
-              << std::endl;
-  } else {
-    while (fgets(sbuffer, 2048, stat_file)) {
-      if (sscanf(sbuffer, "%80llu", &thispid)) {
-        if (thispid != (unsigned long long)mpid) continue;
-        tsbuffer = strchr(sbuffer, ')');
-        if (sscanf(tsbuffer + 2,
-                   "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %*u %*d "
-                   "%*d %*d %*d %*d %*d %80llu",
-                   &starttime)) {
-          break;
-        }
-      }
-    }
-    fclose(stat_file);
-  }
-
-  // Get system uptime
-  snprintf(stat_buffer, 64, "/proc/uptime");
-
-  stat_file = fopen(stat_buffer, "r");
-  float uptime(0.);
-
-  if (stat_file == 0) {
-    std::cerr << "Cannot open stat buffer to get the uptime" << std::endl;
-  } else {
-    while (fgets(sbuffer, 2048, stat_file)) {
-      if (sscanf(sbuffer, "%f", &uptime)) {
-        break;
-      }
-    }
-    fclose(stat_file);
-  }
-
-  long clock_ticks = sysconf(_SC_CLK_TCK);
-  float inv_clock_ticks = 1. / clock_ticks;
-
-  // Start time
-  startTime = time(0);
-  startTime += static_cast<time_t>(float(starttime) * inv_clock_ticks - uptime);
-
   // Monitoring loop until process exits
   while (kill(mpid, 0) == 0 && sigusr1 == false) {
     bool wroteFile = false;
@@ -272,8 +224,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
       currentTime = time(0);
       file << currentTime << "\t" << values[0] << "\t" << values[1] << "\t"
-           << values[2] << "\t" << values[3] << "\t"
-           << difftime(currentTime, startTime);
+           << values[2] << "\t" << values[3] << "\t";
       for (const auto monitor : monitors) {
         for (const auto& stat : monitor->get_text_stats())
           file << "\t" << stat.second;
@@ -305,9 +256,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         if (tmp < 4) {
           i.first->value.SetUint64(maxValues[tmp]);
           i.second->value.SetUint64(avgValues[tmp] / iteration);
-        } else if (tmp==4) {
-          // Wallclock time
-          i.first->value.SetUint64(difftime(currentTime, startTime));
         }
         tmp += 1;
       }
@@ -318,7 +266,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
           v1[(stat.first).c_str()].SetUint64(stat.second);
       for (const auto monitor : monitors)
         for (const auto& stat : monitor->get_json_average_stats(
-               difftime(currentTime, startTime)))
+            wall_monitor.get_wallclock()))
         v2[(stat.first).c_str()].SetUint64(stat.second);
 
       // Write JSON realtime summary to a temporary file (to avoid race
