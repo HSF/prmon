@@ -148,10 +148,19 @@ void SignalCallbackHandler(int /*signal*/) {
 
 void SignalChildHandler(int /*signal*/) {
   int status;
-  wait3 (&status, WNOHANG, (struct rusage *)NULL );
+  waitpid(-1, &status, 0);
   if (status) {
-    std::cerr << "Warning, monitored child process exited with non-zero "
-    "return value: " << status << std::endl;
+    if (WIFEXITED(status))
+      std::clog << "Child process had non-zero return value: "
+                << WEXITSTATUS(status) << std::endl;
+    else if (WIFSIGNALED(status))
+      std::clog << "Child process exited from signal " << WTERMSIG(status)
+                << std::endl;
+    else if (WIFSTOPPED(status))
+      std::clog << "Child process was stopped by signal" << WSTOPSIG(status)
+                << std::endl;
+    else if (WIFCONTINUED(status))
+      std::clog << "Child process was continued" << std::endl;
   }
 }
 
