@@ -266,7 +266,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
           v1[(stat.first).c_str()].SetUint64(stat.second);
       for (const auto monitor : monitors)
         for (const auto& stat : monitor->get_json_average_stats(
-            wall_monitor.get_wallclock()))
+            wall_monitor.get_wallclock_clock_t()))
         v2[(stat.first).c_str()].SetUint64(stat.second);
 
       // Write JSON realtime summary to a temporary file (to avoid race

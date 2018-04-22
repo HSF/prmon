@@ -65,12 +65,9 @@ void wallmon::update_stats(const std::vector<pid_t>& pids) {
   walltime_stats["wtime"] = current_clock_t * prmon::inv_clock_ticks;
 }
 
-time_t const wallmon::get_wallclock() {
-  return static_cast<time_t>(walltime_stats["wtime"]);
-}
-
 unsigned long long const wallmon::get_wallclock_clock_t() {
-  return current_clock_t;
+  // Just ensure we never return a zero
+  return (current_clock_t ? current_clock_t : 1);
 }
 
 // Return the summed counters
