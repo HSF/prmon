@@ -1,7 +1,12 @@
 find_package(RapidJSON REQUIRED)
 find_package(Threads REQUIRED)
 
-add_executable(prmon src/prmon.cpp src/netmon.cpp src/iomon.cpp src/cpumon.cpp src/wallmon.cpp)
+add_executable(prmon src/prmon.cpp
+					 src/netmon.cpp 
+					 src/iomon.cpp 
+					 src/cpumon.cpp 
+					 src/wallmon.cpp
+					 src/memmon.cpp)
 target_include_directories(prmon PRIVATE ${RapidJSON_INCLUDE_DIR})
 target_link_libraries(prmon Threads::Threads)
 

@@ -28,6 +28,7 @@
 
 #include "cpumon.h"
 #include "iomon.h"
+#include "memmon.h"
 #include "netmon.h"
 #include "prmon.h"
 #include "wallmon.h"
@@ -156,6 +157,10 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   cpumon cpu_monitor{};
   monitors.push_back(&cpu_monitor);
 
+  // Memory monitoring
+  memmon mem_monitor{};
+  monitors.push_back(&mem_monitor);
+
   // IO monitoring
   iomon io_monitor{};
   monitors.push_back(&io_monitor);
@@ -171,7 +176,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // Open iteration output file
   std::ofstream file;
   file.open(filename);
-  file << "Time\tVMEM\tPSS\tRSS\tSwap\twtime";
+  file << "Time";
   for (const auto monitor : monitors) {
     for (const auto& stat : monitor->get_text_stats())
       file << "\t" << stat.first;
@@ -180,17 +185,23 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
   // Construct string representing JSON structure
   std::stringstream json{};
-  json << "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, "
-          "\"maxSwap\": 0";
+  json << "{\"Max\":  {";
+  bool started = false;
   for (const auto monitor : monitors) {
-    for (const auto& stat : monitor->get_json_total_stats())
-      json << ", \"" << stat.first << "\" : 0";
+    for (const auto& stat : monitor->get_json_total_stats()) {
+      if (started) json << ", ";
+      else started = true;
+      json << "\"" << stat.first << "\" : 0";
+    }
   }
-  json << "}, \"Avg\":  {\"avgVMEM\": 0, \"avgPSS\": "
-          "0,\"avgRSS\": 0, \"avgSwap\": 0";
+  json << "}, \"Avg\":  {";
+  started = false;
   for (const auto monitor : monitors) {
-    for (const auto& stat : monitor->get_json_average_stats(1))
-      json << ", \"" << stat.first << "\" : 0";
+    for (const auto& stat : monitor->get_json_average_stats(1)) {
+      if (started) json << ", ";
+      else started = true;
+      json << "\"" << stat.first << "\" : 0";
+    }
   }
   json << "}}" << std::ends;
 
@@ -205,7 +216,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   std::stringstream newFile;
   newFile << jsonSummary << "_snapshot";
 
-  int tmp = 0;
   Value& v1 = d["Max"];
   Value& v2 = d["Avg"];
 
@@ -223,8 +233,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         monitor->update_stats(cpids);
 
       currentTime = time(0);
-      file << currentTime << "\t" << values[0] << "\t" << values[1] << "\t"
-           << values[2] << "\t" << values[3] << "\t";
+      file << currentTime;
       for (const auto monitor : monitors) {
         for (const auto& stat : monitor->get_text_stats())
           file << "\t" << stat.second;
@@ -247,20 +256,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       }
 
       // Create JSON realtime summary
-      // Old style JSON section
-      tmp = 0;
-      for (std::pair<Value::MemberIterator, Value::MemberIterator> i =
-               std::make_pair(v1.MemberBegin(), v2.MemberBegin());
-           i.first != v1.MemberEnd() && i.second != v2.MemberEnd();
-           ++i.first, ++i.second) {
-        if (tmp < 4) {
-          i.first->value.SetUint64(maxValues[tmp]);
-          i.second->value.SetUint64(avgValues[tmp] / iteration);
-        }
-        tmp += 1;
-      }
-
-      // New style JSON statistics
       for (const auto monitor : monitors)
         for (const auto& stat : monitor->get_json_total_stats())
           v1[(stat.first).c_str()].SetUint64(stat.second);
