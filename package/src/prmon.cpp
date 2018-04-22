@@ -340,24 +340,14 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         if (tmp < 4) {
           i.first->value.SetUint64(maxValues[tmp]);
           i.second->value.SetUint64(avgValues[tmp] / iteration);
+        } else if (tmp==4) {
+          // Wallclock time
+          i.first->value.SetUint64(difftime(currentTime, startTime));
         }
         tmp += 1;
       }
-      tmp = 0;
 
-      // Total CPU measurements
-      for (Value::MemberIterator it = v1.MemberBegin() + 8;
-           it != v1.MemberEnd(); ++it) {
-        if (tmp < 4) {
-          it->value.SetFloat(maxValuesCPU[tmp] * inv_clock_ticks);
-        } else {
-          it->value.SetFloat(difftime(currentTime, startTime));
-        }
-        tmp += 1;
-      }
-      tmp = 0;
-
-      // JSON statistics
+      // New style JSON statistics
       for (const auto monitor : monitors)
         for (const auto& stat : monitor->get_json_total_stats())
           v1[(stat.first).c_str()].SetUint64(stat.second);
