@@ -5,15 +5,20 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
 const static std::vector<std::string> default_cpu_params{
     "utime", "stime"};
 
-const static unsigned int fname_size{64};
-const static unsigned int stat_buf_size{2048};
-
 const static float inv_clock_ticks = 1. / sysconf(_SC_CLK_TCK);
+
+const size_t utime_pos = 13;
+const size_t stime_pos = 14;
+const size_t cutime_pos = 15;
+const size_t cstime_pos = 16;
+const size_t stat_read_limit = 16;
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -22,26 +27,26 @@ cpumon::cpumon() : cpu_params{default_cpu_params}, cpu_stats{} {
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
-  // TODO use ifstream, but need to read known strings more flexibly
-  // and tie to the vector of parameters being parsed
-  char stat_fname_buffer[fname_size];
-  char line_buffer[stat_buf_size];
   for (auto stat : cpu_stats)
     stat.second = 0;
+
+  std::vector<std::string> stat_entries{};
+  stat_entries.reserve(stat_read_limit+1);
+  std::string tmp_str{};
   for (const auto pid : pids) {
-    snprintf(stat_fname_buffer, fname_size, "/proc/%d/stat", pid);
-    FILE* file3 = fopen(stat_fname_buffer, "r");
-    fgets(line_buffer, 2048, file3);
-    auto tsbuffer = strchr(line_buffer, ')');
-    unsigned long long utime, stime, cutime, cstime;
-    if (sscanf(tsbuffer + 2,
-               "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %80llu %80llu "
-               "%80llu %80llu",
-               &utime, &stime, &cutime, &cstime)) {
-      cpu_stats["utime"] += utime+cutime;
-      cpu_stats["stime"] += stime+cstime;
+    std::stringstream stat_fname{};
+    stat_fname << "/proc/" << pid << "/stat" << std::ends;
+    std::ifstream proc_stat{stat_fname.str()};
+    while(proc_stat && stat_entries.size() < stat_read_limit+1) {
+      proc_stat >> tmp_str;
+      if (proc_stat)
+        stat_entries.push_back(tmp_str);
     }
-    fclose(file3);
+    if (stat_entries.size() > stat_read_limit) {
+      cpu_stats["utime"] += std::stol(stat_entries[utime_pos]) + std::stol(stat_entries[cutime_pos]);
+      cpu_stats["stime"] += std::stol(stat_entries[stime_pos]) + std::stol(stat_entries[cstime_pos]);
+    }
+    stat_entries.clear();
   }
   for (auto& stat : cpu_stats)
     stat.second *= inv_clock_ticks;
