@@ -17,26 +17,9 @@ class cpumon final : public Imonitor {
  private:
   // Which network cpu paramters to measure and output key names
   std::vector<std::string> cpu_params;
-  std::vector<std::string> json_total_keys;
-  std::vector<std::string> json_average_keys;
 
   // Container for total stats
   std::map<std::string, unsigned long long> cpu_stats;
-
-  // Container for per-PID stats (this is required to avoid
-  // either multiple counting the same PID or losing stats
-  // for children as they exit)
-  std::unordered_map<pid_t, std::map<std::string, unsigned long long>> pid_cpu_stats;
-
-  // Helper to map parameters to JSON keys
-  inline std::string const json_total_key(std::string param) {
-    return std::string("tot_" + param);
-  }
-
-  // Helper to map parameters to JSON keys
-  inline std::string const json_average_key(std::string param) {
-    return std::string("avg_" + param);
-  }
 
  public:
   cpumon();
