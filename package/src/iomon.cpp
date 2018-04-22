@@ -2,7 +2,9 @@
 
 #include "iomon.h"
 
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
 const static std::vector<std::string> default_io_params{
     "rchar", "wchar", "read_bytes", "write_bytes"};
@@ -17,26 +19,22 @@ iomon::iomon() : io_stats{} {
 }
 
 void iomon::update_stats(const std::vector<pid_t>& pids) {
-  // TODO use ifstream, but need to read known strings more flexibly
-  // and tie to the vector of parameters being parsed
-  char io_fname_buffer[fname_size];
-  char line_buffer[line_buf_size];
-  unsigned long long value;
+  std::string param{};
+  unsigned long long value{};
+  for (auto& stat: io_stats)
+    stat.second = 0;
   for (const auto pid : pids) {
-    snprintf(io_fname_buffer, fname_size, "/proc/%d/io", pid);
-    FILE* file2 = fopen(io_fname_buffer, "r");
-    if (file2 != 0) {
-      while (fgets(line_buffer, line_buf_size, file2)) {
-        if (sscanf(line_buffer, "rchar: %80llu", &value) == 1)
-          io_stats["rchar"] += value;
-        if (sscanf(line_buffer, "wchar: %80llu", &value) == 1)
-          io_stats["wchar"] += value;
-        if (sscanf(line_buffer, "read_bytes: %80llu", &value) == 1)
-          io_stats["read_bytes"] += value;
-        if (sscanf(line_buffer, "write_bytes: %80llu", &value) == 1)
-          io_stats["write_bytes"] += value;
+    std::stringstream io_fname{};
+    io_fname << "/proc/" << pid << "/io" << std::ends;
+    std::ifstream proc_io{io_fname.str()};
+    while(proc_io) {
+      proc_io >> param >> value;
+      if (proc_io && param.size() > 0) {
+        param.erase(param.size()-1); // Chop off training ":"
+        auto element = io_stats.find(param);
+        if (element != io_stats.end())
+          element->second += value;
       }
-      fclose(file2);
     }
   }
 }
