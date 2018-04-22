@@ -14,6 +14,8 @@ const static std::vector<std::string> default_cpu_params{
 
 const static float inv_clock_ticks = 1. / sysconf(_SC_CLK_TCK);
 
+// These constants define where in the stat entry from proc
+// we find the parameters of interest
 const size_t utime_pos = 13;
 const size_t stime_pos = 14;
 const size_t cutime_pos = 15;
@@ -27,29 +29,28 @@ cpumon::cpumon() : cpu_params{default_cpu_params}, cpu_stats{} {
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
-  for (auto stat : cpu_stats)
-    stat.second = 0;
+  for (auto stat : cpu_stats) stat.second = 0;
 
   std::vector<std::string> stat_entries{};
-  stat_entries.reserve(stat_read_limit+1);
+  stat_entries.reserve(stat_read_limit + 1);
   std::string tmp_str{};
   for (const auto pid : pids) {
     std::stringstream stat_fname{};
     stat_fname << "/proc/" << pid << "/stat" << std::ends;
     std::ifstream proc_stat{stat_fname.str()};
-    while(proc_stat && stat_entries.size() < stat_read_limit+1) {
+    while (proc_stat && stat_entries.size() < stat_read_limit + 1) {
       proc_stat >> tmp_str;
-      if (proc_stat)
-        stat_entries.push_back(tmp_str);
+      if (proc_stat) stat_entries.push_back(tmp_str);
     }
     if (stat_entries.size() > stat_read_limit) {
-      cpu_stats["utime"] += std::stol(stat_entries[utime_pos]) + std::stol(stat_entries[cutime_pos]);
-      cpu_stats["stime"] += std::stol(stat_entries[stime_pos]) + std::stol(stat_entries[cstime_pos]);
+      cpu_stats["utime"] += std::stol(stat_entries[utime_pos]) +
+                            std::stol(stat_entries[cutime_pos]);
+      cpu_stats["stime"] += std::stol(stat_entries[stime_pos]) +
+                            std::stol(stat_entries[cstime_pos]);
     }
     stat_entries.clear();
   }
-  for (auto& stat : cpu_stats)
-    stat.second *= inv_clock_ticks;
+  for (auto& stat : cpu_stats) stat.second *= inv_clock_ticks;
 }
 
 // Return the summed counters
@@ -62,7 +63,7 @@ std::map<std::string, unsigned long long> const cpumon::get_json_total_stats() {
   return cpu_stats;
 }
 
-// For CPU time there's nothing to return for CPU
+// For CPU time there's nothing to return for an average
 std::map<std::string, unsigned long long> const cpumon::get_json_average_stats(
     time_t elapsed) {
   std::map<std::string, unsigned long long> empty_average_stats{};
