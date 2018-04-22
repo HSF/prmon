@@ -68,11 +68,9 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
 }
 
 int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
-              unsigned long long valuesCPU[4],
               const bool verbose) {
   // Get child process IDs
   char smaps_buffer[64];
-  char stat_buffer[64];
   char buffer[256];
 
   unsigned long tsize(0);
@@ -80,14 +78,8 @@ int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
   unsigned long tpss(0);
   unsigned long tswap(0);
 
-  unsigned long long utime(0);
-  unsigned long long stime(0);
-  unsigned long long cutime(0);
-  unsigned long long cstime(0);
-
   std::vector<std::string> openFails;
 
-  char sbuffer[2048], *tsbuffer;
   for (std::vector<pid_t>::const_iterator it = cpids.begin(); it != cpids.end();
        ++it) {
     snprintf(smaps_buffer, 64, "/proc/%lu/smaps", (unsigned long)*it);
@@ -104,28 +96,6 @@ int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
       }
       fclose(file);
     }
-
-    snprintf(stat_buffer, 64, "/proc/%llu/stat", (unsigned long long)*it);
-
-    FILE* file3 = fopen(stat_buffer, "r");
-
-    if (file3 == 0) {
-      openFails.push_back(std::string(stat_buffer));
-    } else {
-      while (fgets(sbuffer, 2048, file3)) {
-        tsbuffer = strchr(sbuffer, ')');
-        if (sscanf(tsbuffer + 2,
-                   "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %80llu %80llu "
-                   "%80llu %80llu",
-                   &utime, &stime, &cutime, &cstime)) {
-          valuesCPU[0] += utime;
-          valuesCPU[1] += stime;
-          valuesCPU[2] += cutime;
-          valuesCPU[3] += cstime;
-        }
-      }
-      fclose(file3);
-    }
   }
   if (openFails.size() > 3 && verbose) {
     std::cerr << "ProcMonitor: too many failures in opening smaps, io, and "
@@ -133,7 +103,6 @@ int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
               << std::endl;
     return 1;
   }
-
   return 0;
 }
 
@@ -174,9 +143,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long values[4] = {0, 0, 0, 0};
   unsigned long maxValues[4] = {0, 0, 0, 0};
   unsigned long avgValues[4] = {0, 0, 0, 0};
-
-  unsigned long long valuesCPU[4] = {0, 0, 0, 0};
-  unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
 
   // This is the vector of all monitoring components
   std::vector<Imonitor*> monitors{};
@@ -299,7 +265,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
       std::vector<pid_t> cpids = offspring_pids(mpid);
 
-      ReadProcs(cpids, values, valuesCPU);
+      ReadProcs(cpids, values);
 
       for (const auto monitor : monitors)
         monitor->update_stats(cpids);
@@ -319,8 +285,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         avgValues[i] = avgValues[i] + values[i];
         if (values[i] > maxValues[i]) maxValues[i] = values[i];
         lastIteration = time(0);
-
-        if (valuesCPU[i] > maxValuesCPU[i]) maxValuesCPU[i] = valuesCPU[i];
       }
 
       // Reset buffer
@@ -329,10 +293,11 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
       for (int i = 0; i < 4; i++) {
         values[i] = 0;
-        valuesCPU[i] = 0;
       }
 
       // Create JSON realtime summary
+      // Old style JSON section
+      tmp = 0;
       for (std::pair<Value::MemberIterator, Value::MemberIterator> i =
                std::make_pair(v1.MemberBegin(), v2.MemberBegin());
            i.first != v1.MemberEnd() && i.second != v2.MemberEnd();
