@@ -1,6 +1,7 @@
 // Copyright (C) CERN, 2018
 
 #include "wallmon.h"
+#include "utils.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -9,11 +10,6 @@
 #include <iostream>
 #include <sstream>
 
-const static std::vector<std::string> default_wall_params{"wtime"};
-
-const static float inv_clock_ticks = 1. / sysconf(_SC_CLK_TCK);
-
-const size_t utime_pos = 21;
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -30,12 +26,12 @@ int wallmon::get_mother_starttime(pid_t mother_pid) {
   std::stringstream stat_fname{};
   stat_fname << "/proc/" << mother_pid << "/stat" << std::ends;
   std::ifstream proc_stat{stat_fname.str()};
-  while (proc_stat && stat_entries.size() < utime_pos + 1) {
+  while (proc_stat && stat_entries.size() < prmon::uptime_pos + 1) {
     proc_stat >> tmp_str;
     if (proc_stat) stat_entries.push_back(tmp_str);
   }
-  if (stat_entries.size() > utime_pos) {
-    start_time_clock_t = std::stol(stat_entries[utime_pos]);
+  if (stat_entries.size() > prmon::uptime_pos) {
+    start_time_clock_t = std::stol(stat_entries[prmon::uptime_pos]);
   } else {
     // Some error happened!
     std::clog << "Read only " << stat_entries.size()
@@ -65,8 +61,8 @@ void wallmon::update_stats(const std::vector<pid_t>& pids) {
     std::clog << "Error while reading /proc/uptime" << std::endl;
     return;
   }
-  current_clock_t = uptime_sec * sysconf(_SC_CLK_TCK) - start_time_clock_t;
-  walltime_stats["wtime"] = current_clock_t * inv_clock_ticks;
+  current_clock_t = uptime_sec * prmon::clock_ticks - start_time_clock_t;
+  walltime_stats["wtime"] = current_clock_t * prmon::inv_clock_ticks;
 }
 
 time_t const wallmon::get_wallclock() {
@@ -89,7 +85,7 @@ std::map<std::string, unsigned long long> const wallmon::get_json_total_stats() 
 
 // For walltime there's nothing to return for an average
 std::map<std::string, unsigned long long> const wallmon::get_json_average_stats(
-    time_t elapsed) {
+    unsigned long long elapsed_clock_ticks) {
   std::map<std::string, unsigned long long> empty_average_stats{};
   return empty_average_stats;
 }

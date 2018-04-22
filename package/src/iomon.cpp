@@ -1,6 +1,7 @@
 // Copyright (C) CERN, 2018
 
 #include "iomon.h"
+#include "utils.h"
 
 #include <fstream>
 #include <iostream>
@@ -51,11 +52,11 @@ std::map<std::string, unsigned long long> const iomon::get_json_total_stats() {
 
 // For JSON averages, divide by elapsed time
 std::map<std::string, unsigned long long> const iomon::get_json_average_stats(
-    time_t elapsed) {
+    unsigned long long elapsed_clock_ticks) {
   std::map<std::string, unsigned long long> json_average_stats{};
   for (const auto& io_param : io_stats) {
     json_average_stats[io_param.first] =
-        io_param.second / elapsed;
+        (io_param.second * prmon::clock_ticks) / elapsed_clock_ticks;
   }
   return json_average_stats;
 }

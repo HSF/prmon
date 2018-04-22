@@ -1,6 +1,7 @@
 // Copyright (C) CERN, 2018
 
 #include "netmon.h"
+#include "utils.h"
 
 #include <dirent.h>
 #include <time.h>
@@ -8,14 +9,12 @@
 #include <cstring>
 #include <memory>
 
-const static std::vector<std::string> default_if_params{
-    "rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
 
 // Constructor; uses RAII pattern to open all monitored
 // network device streams and to take initial values
 // to the monitor relative differences
 netmon::netmon(std::vector<std::string> netdevs)
-    : interface_params{default_if_params},
+    : interface_params{prmon::default_network_if_params},
       network_if_streams{} {
   if (netdevs.size() == 0) {
     monitored_netdevs = get_all_network_devs();
@@ -98,10 +97,10 @@ std::map<std::string, unsigned long long> const netmon::get_json_total_stats() {
 }
 
 // For JSON averages, divide by elapsed time
-std::map<std::string, unsigned long long> const netmon::get_json_average_stats(time_t elapsed) {
+std::map<std::string, unsigned long long> const netmon::get_json_average_stats(unsigned long long elapsed_clock_ticks) {
   std::map<std::string, unsigned long long> json_average_stats = get_text_stats();
   for (auto& stat : json_average_stats) {
-    stat.second /= elapsed;
+    stat.second = (stat.second * prmon::clock_ticks) / elapsed_clock_ticks;
   }
   return json_average_stats;
 }
