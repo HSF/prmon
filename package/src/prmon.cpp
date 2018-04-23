@@ -32,7 +32,7 @@
 using namespace rapidjson;
 
 int ReadProcs(const pid_t mother_pid, unsigned long values[4],
-              unsigned long long valuesIO[4], unsigned long long valuesCPU[4],
+              unsigned long long valuesIO[4], unsigned long long valuesCPU[2],
               const bool verbose) {
   // Get child process IDs
   std::vector<pid_t> cpids;
@@ -140,8 +140,8 @@ int ReadProcs(const pid_t mother_pid, unsigned long values[4],
                    &utime, &stime, &cutime, &cstime)) {
           valuesCPU[0] += utime;
           valuesCPU[1] += stime;
-          valuesCPU[2] += cutime;
-          valuesCPU[3] += cstime;
+          valuesCPU[0] += cutime;
+          valuesCPU[1] += cstime;
         }
       }
       fclose(file3);
@@ -190,8 +190,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   unsigned long long maxValuesIO[4] = {0, 0, 0, 0};
   unsigned long long avgValuesIO[4] = {0, 0, 0, 0};
 
-  unsigned long long valuesCPU[4] = {0, 0, 0, 0};
-  unsigned long long maxValuesCPU[4] = {0, 0, 0, 0};
+  unsigned long long valuesCPU[2] = {0, 0};
+  unsigned long long maxValuesCPU[2] = {0, 0};
 
   netmon network_monitor{netdevs};
   std::unordered_map<std::string, unsigned long long> values_netstats{},
@@ -206,7 +206,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   std::ofstream file;
   file.open(filename);
   file << "Time\tVMEM\tPSS\tRSS\tSwap\trchar\twchar\trbytes\twbytes\tutime\tsti"
-          "me\tcutime\tcstime\twtime";
+          "me\twtime";
   for (const auto& stat : network_monitor.get_interface_paramter_names())
     file << "\t" << stat;
   file << std::endl;
@@ -215,8 +215,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   std::stringstream json{};
   json << "{\"Max\":  {\"maxVMEM\": 0, \"maxPSS\": 0,\"maxRSS\": 0, "
           "\"maxSwap\": 0, \"totRCHAR\": 0, \"totWCHAR\": 0,\"totRBYTES\": 0, "
-          "\"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, \"totCUTIME\" "
-          ": 0, \"totCSTIME\" : 0, \"totWTIME\" : 0";
+          "\"totWBYTES\": 0, \"totUTIME\" : 0, \"totSTIME\" : 0, "
+          "\"totWTIME\" : 0";
   for (const auto& stat : network_monitor.get_interface_paramter_names())
     json << ", \""
          << "tot_" << stat << "\" : 0";
@@ -309,8 +309,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
            << valuesIO[1] << "\t" << valuesIO[2] << "\t" << valuesIO[3] << "\t"
            << valuesCPU[0] * inv_clock_ticks << "\t"
            << valuesCPU[1] * inv_clock_ticks << "\t"
-           << valuesCPU[2] * inv_clock_ticks << "\t"
-           << valuesCPU[3] * inv_clock_ticks << "\t"
            << difftime(currentTime, startTime);
       for (const auto& stat : network_monitor.get_interface_paramter_names())
         file << "\t" << values_netstats[stat];
@@ -327,6 +325,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         avgValuesIO[i] = (unsigned long long)maxValuesIO[i] /
                          difftime(currentTime, startTime);
 
+        if (i > 1) continue;
         if (valuesCPU[i] > maxValuesCPU[i]) maxValuesCPU[i] = valuesCPU[i];
       }
       for (const auto& stat : network_monitor.get_interface_paramter_names()) {
@@ -341,6 +340,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       for (int i = 0; i < 4; i++) {
         values[i] = 0;
         valuesIO[i] = 0;
+        if (i > 1) continue;
         valuesCPU[i] = 0;
       }
 
@@ -363,7 +363,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       // Total CPU measurements
       for (Value::MemberIterator it = v1.MemberBegin() + 8;
            it != v1.MemberEnd(); ++it) {
-        if (tmp < 4) {
+        if (tmp < 2) {
           it->value.SetFloat(maxValuesCPU[tmp] * inv_clock_ticks);
         } else {
           it->value.SetFloat(difftime(currentTime, startTime));
