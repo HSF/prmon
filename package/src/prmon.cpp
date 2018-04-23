@@ -69,45 +69,6 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
   return cpids;
 }
 
-int ReadProcs(const std::vector<pid_t>& cpids, unsigned long values[4],
-              const bool verbose) {
-  // Get child process IDs
-  char smaps_buffer[64];
-  char buffer[256];
-
-  unsigned long tsize(0);
-  unsigned long trss(0);
-  unsigned long tpss(0);
-  unsigned long tswap(0);
-
-  std::vector<std::string> openFails;
-
-  for (std::vector<pid_t>::const_iterator it = cpids.begin(); it != cpids.end();
-       ++it) {
-    snprintf(smaps_buffer, 64, "/proc/%lu/smaps", (unsigned long)*it);
-
-    FILE* file = fopen(smaps_buffer, "r");
-    if (file == 0) {
-      openFails.push_back(std::string(smaps_buffer));
-    } else {
-      while (fgets(buffer, 256, file)) {
-        if (sscanf(buffer, "Size: %80lu kB", &tsize) == 1) values[0] += tsize;
-        if (sscanf(buffer, "Pss: %80lu kB", &tpss) == 1) values[1] += tpss;
-        if (sscanf(buffer, "Rss: %80lu kB", &trss) == 1) values[2] += trss;
-        if (sscanf(buffer, "Swap: %80lu kB", &tswap) == 1) values[3] += tswap;
-      }
-      fclose(file);
-    }
-  }
-  if (openFails.size() > 3 && verbose) {
-    std::cerr << "ProcMonitor: too many failures in opening smaps, io, and "
-                 "stat files!"
-              << std::endl;
-    return 1;
-  }
-  return 0;
-}
-
 std::condition_variable cv;
 std::mutex cv_m;
 bool sigusr1 = false;
@@ -141,10 +102,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
                   const std::vector<std::string> netdevs) {
   signal(SIGUSR1, SignalCallbackHandler);
   signal(SIGCHLD, SignalChildHandler);
-
-  unsigned long values[4] = {0, 0, 0, 0};
-  unsigned long maxValues[4] = {0, 0, 0, 0};
-  unsigned long avgValues[4] = {0, 0, 0, 0};
 
   // This is the vector of all monitoring components
   std::vector<Imonitor*> monitors{};
@@ -227,8 +184,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
       std::vector<pid_t> cpids = offspring_pids(mpid);
 
-      ReadProcs(cpids, values);
-
       for (const auto monitor : monitors)
         monitor->update_stats(cpids);
 
@@ -240,20 +195,9 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       }
       file << std::endl;
 
-      // Compute statistics
-      for (int i = 0; i < 4; i++) {
-        avgValues[i] = avgValues[i] + values[i];
-        if (values[i] > maxValues[i]) maxValues[i] = values[i];
-        lastIteration = time(0);
-      }
-
       // Reset buffer
       buffer.Clear();
       writer.Reset(buffer);
-
-      for (int i = 0; i < 4; i++) {
-        values[i] = 0;
-      }
 
       // Create JSON realtime summary
       for (const auto monitor : monitors)
