@@ -13,6 +13,7 @@
 
 #include <condition_variable>
 #include <cstddef>
+#include <deque>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -37,36 +38,30 @@ using namespace rapidjson;
 
 std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
   // Get child process IDs
-  std::vector<pid_t> cpids;
-  char smaps_buffer[64];
-  snprintf(smaps_buffer, 64, "pstree -A -p %ld | tr \\- \\\\n",
-           (long)mother_pid);
-  FILE* pipe = popen(smaps_buffer, "r");
-  if (pipe == 0) return cpids;
+  std::vector<pid_t> pid_list{};
+  std::deque<pid_t> unprocessed_pids{};
 
-  char buffer[256];
-  std::string result = "";
-  while (!feof(pipe)) {
-    if (fgets(buffer, 256, pipe) != NULL) {
-      result += buffer;
-      int pos(0);
-      while (pos < 256 && buffer[pos] != '\n' && buffer[pos] != '(') {
-        pos++;
-      }
-      if (pos < 256 && buffer[pos] == '(' && pos > 1 &&
-          buffer[pos - 1] != '}') {
-        pos++;
-        pid_t pt(0);
-        while (pos < 256 && buffer[pos] != '\n' && buffer[pos] != ')') {
-          pt = 10 * pt + buffer[pos] - '0';
-          pos++;
-        }
-        cpids.push_back(pt);
-      }
+  // Start with the mother PID
+  unprocessed_pids.push_back(mother_pid);
+
+  // Now loop over all unprocessed PIDs, querying children
+  // and pushing them onto the unprocessed queue, while
+  // poping the front onto the final PID list
+  while(unprocessed_pids.size() > 0) {
+    std::stringstream child_pid_fname{};
+    pid_t next_pid;
+    child_pid_fname << "/proc/" << unprocessed_pids[0] << "/task/"
+                    << unprocessed_pids[0] << "/children" << std::ends;
+    std::ifstream proc_children{child_pid_fname.str()};
+    while (proc_children) {
+      proc_children >> next_pid;
+      if (proc_children)
+        unprocessed_pids.push_back(next_pid);
     }
+    pid_list.push_back(unprocessed_pids[0]);
+    unprocessed_pids.pop_front();
   }
-  pclose(pipe);
-  return cpids;
+  return pid_list;
 }
 
 std::condition_variable cv;
