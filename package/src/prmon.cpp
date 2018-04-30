@@ -2,9 +2,7 @@
   Copyright (C) 2018, CERN
 */
 
-#include <dirent.h>
 #include <getopt.h>
-#include <math.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/types.h>
