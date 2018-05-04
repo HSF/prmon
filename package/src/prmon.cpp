@@ -7,18 +7,18 @@
 #include <math.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include <condition_variable>
 #include <cstddef>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <mutex>
 #include <sstream>
 #include <thread>
-#include <map>
 #include <vector>
 
 #include <rapidjson/document.h>
@@ -184,47 +184,53 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
       std::vector<pid_t> cpids = offspring_pids(mpid);
 
-      for (const auto monitor : monitors)
-        monitor->update_stats(cpids);
+      try {
+        for (const auto monitor : monitors) monitor->update_stats(cpids);
 
-      currentTime = time(0);
-      file << currentTime;
-      for (const auto monitor : monitors) {
-        for (const auto& stat : monitor->get_text_stats())
-          file << "\t" << stat.second;
+        currentTime = time(0);
+        file << currentTime;
+        for (const auto monitor : monitors) {
+          for (const auto& stat : monitor->get_text_stats())
+            file << "\t" << stat.second;
+        }
+        file << std::endl;
+
+        // Reset buffer
+        buffer.Clear();
+        writer.Reset(buffer);
+
+        // Create JSON realtime summary
+        for (const auto monitor : monitors)
+          for (const auto& stat : monitor->get_json_total_stats())
+            d["Max"][(stat.first).c_str()].SetUint64(stat.second);
+        for (const auto monitor : monitors)
+          for (const auto& stat : monitor->get_json_average_stats(
+                   wall_monitor.get_wallclock_clock_t()))
+            d["Avg"][(stat.first).c_str()].SetUint64(stat.second);
+
+        // Write JSON realtime summary to a temporary file (to avoid race
+        // conditions with pilot trying to read from file at the same time)
+        d.Accept(writer);
+        std::ofstream json_out(tmpFile.str());
+        json_out << buffer.GetString() << std::endl;
+        json_out.close();
+        wroteFile = true;
+
+        // Move temporary file to new file
+        if (wroteFile) {
+          if (rename(tmpFile.str().c_str(), newFile.str().c_str()) != 0) {
+            perror("rename fails");
+            std::cerr << tmpFile.str() << " " << newFile.str() << "\n";
+          }
+        }
+      } catch (const std::ifstream::failure& e) {
+        // Serious problem reading one of the status files, usually
+        // caused by a child exiting during the poll - just try again
+        // next time
+        std::clog << "prmon ifstream exception: " << e.what() << " (ignored)"
+                  << std::endl;
       }
-      file << std::endl;
-
-      // Reset buffer
-      buffer.Clear();
-      writer.Reset(buffer);
-
-      // Create JSON realtime summary
-      for (const auto monitor : monitors)
-        for (const auto& stat : monitor->get_json_total_stats())
-          d["Max"][(stat.first).c_str()].SetUint64(stat.second);
-      for (const auto monitor : monitors)
-        for (const auto& stat : monitor->get_json_average_stats(
-                 wall_monitor.get_wallclock_clock_t()))
-          d["Avg"][(stat.first).c_str()].SetUint64(stat.second);
-
-      // Write JSON realtime summary to a temporary file (to avoid race
-      // conditions with pilot trying to read from file at the same time)
-      d.Accept(writer);
-      std::ofstream json_out(tmpFile.str());
-      json_out << buffer.GetString() << std::endl;
-      json_out.close();
-      wroteFile = true;
     }
-
-    // Move temporary file to new file
-    if (wroteFile) {
-      if (rename(tmpFile.str().c_str(), newFile.str().c_str()) != 0) {
-        perror("rename fails");
-        std::cerr << tmpFile.str() << " " << newFile.str() << "\n";
-      }
-    }
-
     std::unique_lock<std::mutex> lock(cv_m);
     cv.wait_for(lock, std::chrono::seconds(1));
   }
