@@ -168,7 +168,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
   Document d;
   d.Parse(json.str().c_str());
-  std::ofstream file2;  // for realtime json dict
   StringBuffer buffer;
   Writer<StringBuffer> writer(buffer);
 
@@ -176,9 +175,6 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   tmpFile << jsonSummary << "_tmp";
   std::stringstream newFile;
   newFile << jsonSummary << "_snapshot";
-
-  Value& v1 = d["Max"];
-  Value& v2 = d["Avg"];
 
   // Monitoring loop until process exits
   while (kill(mpid, 0) == 0 && sigusr1 == false) {
@@ -206,18 +202,18 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       // Create JSON realtime summary
       for (const auto monitor : monitors)
         for (const auto& stat : monitor->get_json_total_stats())
-          v1[(stat.first).c_str()].SetUint64(stat.second);
+          d["Max"][(stat.first).c_str()].SetUint64(stat.second);
       for (const auto monitor : monitors)
         for (const auto& stat : monitor->get_json_average_stats(
-            wall_monitor.get_wallclock_clock_t()))
-        v2[(stat.first).c_str()].SetUint64(stat.second);
+                 wall_monitor.get_wallclock_clock_t()))
+          d["Avg"][(stat.first).c_str()].SetUint64(stat.second);
 
       // Write JSON realtime summary to a temporary file (to avoid race
       // conditions with pilot trying to read from file at the same time)
       d.Accept(writer);
-      file2.open(tmpFile.str());
-      file2 << buffer.GetString() << std::endl;
-      file2.close();
+      std::ofstream json_out(tmpFile.str());
+      json_out << buffer.GetString() << std::endl;
+      json_out.close();
       wroteFile = true;
     }
 
