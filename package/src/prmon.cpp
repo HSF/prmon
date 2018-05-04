@@ -81,19 +81,23 @@ void SignalCallbackHandler(int /*signal*/) {
 
 void SignalChildHandler(int /*signal*/) {
   int status;
-  waitpid(-1, &status, 0);
-  if (status) {
-    if (WIFEXITED(status))
-      std::clog << "Child process had non-zero return value: "
-                << WEXITSTATUS(status) << std::endl;
-    else if (WIFSIGNALED(status))
-      std::clog << "Child process exited from signal " << WTERMSIG(status)
-                << std::endl;
-    else if (WIFSTOPPED(status))
-      std::clog << "Child process was stopped by signal" << WSTOPSIG(status)
-                << std::endl;
-    else if (WIFCONTINUED(status))
-      std::clog << "Child process was continued" << std::endl;
+  pid_t pid{1};
+  while (pid > 0) {
+    pid = waitpid((pid_t)-1, &status, WNOHANG);
+    if (status && pid > 0) {
+      if (WIFEXITED(status))
+        std::clog << "Child process " << pid
+                  << " had non-zero return value: " << WEXITSTATUS(status)
+                  << std::endl;
+      else if (WIFSIGNALED(status))
+        std::clog << "Child process " << pid << " exited from signal "
+                  << WTERMSIG(status) << std::endl;
+      else if (WIFSTOPPED(status))
+        std::clog << "Child process " << pid << " was stopped by signal"
+                  << WSTOPSIG(status) << std::endl;
+      else if (WIFCONTINUED(status))
+        std::clog << "Child process " << pid << " was continued" << std::endl;
+    }
   }
 }
 
@@ -231,7 +235,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   file.close();
 
   // Cleanup
-  if (remove(newFile.str().c_str()) != 0) perror("remove fails");
+  if (remove(newFile.str().c_str()) != 0 && iteration > 0)
+    perror("remove fails");
 
   // Write final JSON summary file
   file.open(jsonSummary);

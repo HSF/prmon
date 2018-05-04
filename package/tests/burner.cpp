@@ -41,12 +41,9 @@ double burn_for(float ms_interval = 1.0) {
 }
 
 void SignalChildHandler(int /*signal*/) {
-  int status;
-  waitpid(-1, &status, 0);
-  if (status) {
-    std::cerr << "Warning, monitored child process exited with non-zero "
-    "return value: " << status << std::endl;
-  }
+  pid_t pid{1};
+  while (pid>0)
+    pid = waitpid((pid_t)-1, NULL, WNOHANG);
 }
 
 int main(int argc, char* argv[]) {

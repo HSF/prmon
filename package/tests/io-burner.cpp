@@ -63,19 +63,9 @@ int io_burn(unsigned long bytes_to_write, std::chrono::nanoseconds nsleep,
 }
 
 void SignalChildHandler(int /*signal*/) {
-  int status;
-  waitpid(-1, &status, 0);
-  if (status) {
-    if (WIFEXITED(status))
-      std::cerr << "Warning, monitored child process had non-zero "
-      "return value: " << WEXITSTATUS(status) << std::endl;
-    else if (WIFSIGNALED(status))
-      std::cerr << "Warning, monitored child process exited from signal "
-      << WTERMSIG(status) << std::endl;
-    else
-      std::cerr << "Warning, weird things are happening... "
-      << status << std::endl;
-  }
+  pid_t pid{1};
+  while (pid>0)
+    pid = waitpid((pid_t)-1, NULL, WNOHANG);
 }
 
 int main(int argc, char* argv[]) {
