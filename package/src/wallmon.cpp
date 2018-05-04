@@ -45,7 +45,7 @@ int wallmon::get_mother_starttime(pid_t mother_pid) {
 }
 
 void wallmon::update_stats(const std::vector<pid_t>& pids) {
-  if (!got_mother_starttime) {
+  if (!got_mother_starttime && pids.size() > 0) {
     if (get_mother_starttime(pids[0])) {
       std::clog << "Error while reading mother starttime" << std::endl;
       return;
