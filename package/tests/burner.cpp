@@ -2,7 +2,10 @@
 // for testing prmon
 
 #include <getopt.h>
+#include <signal.h>
+#include <sys/wait.h>
 #include <unistd.h>
+
 #include <chrono>
 #include <cmath>
 #include <iomanip>
@@ -37,13 +40,20 @@ double burn_for(float ms_interval = 1.0) {
   return burn_result;
 }
 
+void SignalChildHandler(int /*signal*/) {
+  pid_t pid{1};
+  while (pid>0)
+    pid = waitpid((pid_t)-1, NULL, WNOHANG);
+}
+
 int main(int argc, char* argv[]) {
   // Default values
   const float default_runtime = 10.0f;
+  const float default_child_runtime_fraction = 1.0;
   const unsigned int default_threads = 1;
   const unsigned int default_procs = 1;
 
-  float runtime{default_runtime};
+  float runtime{default_runtime}, child_runtime_fraction{default_child_runtime_fraction};
   unsigned int threads{default_threads}, procs{default_procs};
   int do_help{0};
 
@@ -51,11 +61,12 @@ int main(int argc, char* argv[]) {
       {"threads", required_argument, NULL, 't'},
       {"procs", required_argument, NULL, 'p'},
       {"time", required_argument, NULL, 'r'},
+      {"child-fraction", required_argument, NULL, 'c'},
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
 
   char c;
-  while ((c = getopt_long(argc, argv, "t:p:r:h", long_options, NULL)) != -1) {
+  while ((c = getopt_long(argc, argv, "t:p:c:r:h", long_options, NULL)) != -1) {
     switch (c) {
       case 't':
         if (std::stoi(optarg) < 0) {
@@ -75,14 +86,23 @@ int main(int argc, char* argv[]) {
         }
         procs = std::stoi(optarg);
         break;
+      case 'c':
+        child_runtime_fraction = std::stof(optarg);
+        if (child_runtime_fraction <= 0 || child_runtime_fraction > 1.0) {
+          std::cerr
+              << "child runtime fraction must be in range (0,1.0] (--help for usage)"
+              << std::endl;
+          return 1;
+        }
+        break;
       case 'r':
-        if (std::stof(optarg) <= 0) {
+        runtime = std::stof(optarg);
+        if (runtime <= 0) {
           std::cerr
               << "runtime parameter must be greater than 0 (--help for usage)"
               << std::endl;
           return 1;
         }
-        runtime = std::stof(optarg);
         break;
       case 'h':
         do_help = 1;
@@ -106,17 +126,14 @@ int main(int argc, char* argv[]) {
               << default_threads << ")\n"
               << " [--procs, -p N]    Number of processes to run (default "
               << default_procs << ")\n"
+              << " [--child-fraction, -c F]     Run each child for a fraction F of the parent runtime (default "
+              << default_child_runtime_fraction << ")\n"
               << " [--time, -r T]     Run for T seconds (default "
               << default_runtime << ")\n\n"
               << "If threads or procs is set to 0, the hardware concurrency "
                  "value is used."
               << std::endl;
     return 0;
-  }
-
-  if (runtime < 0.0f) {
-    std::cerr << "Program rum time cannot be negative" << std::endl;
-    return 1;
   }
 
   // If threads or procs is set to zero, then use the hardware
@@ -127,21 +144,27 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Will run for " << runtime << "s using " << procs
             << " process(es) and " << threads << " thread(s)" << std::endl;
+  if (child_runtime_fraction < 1.0 && procs > 1)
+    std::cout << "Children will run for " << runtime * child_runtime_fraction
+              << "s" << std::endl;
 
   // First fork child processes
+  pid_t pid = getpid();
   if (procs > 1) {
     unsigned int children{0};
-    pid_t pid{0};
-    while (children < procs - 1 && pid == 0) {
+    while (children < procs - 1 && pid != 0) {
       pid = fork();
       ++children;
     }
   }
+  if (pid)
+    signal(SIGCHLD, SignalChildHandler);
 
   // Each process runs the requested number of threads
   std::vector<std::thread> pool;
   for (unsigned int i = 0; i < threads; ++i)
-    pool.push_back(std::thread(burn_for, runtime * std::kilo::num));
+    pool.push_back(std::thread(burn_for, runtime * std::kilo::num * (pid ? 1.0 : child_runtime_fraction)));
+
   for (auto& th : pool) th.join();
 
   return 0;

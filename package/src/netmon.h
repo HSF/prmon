@@ -13,26 +13,30 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <map>
 #include <unordered_map>
 #include <vector>
 
-class netmon {
+#include "Imonitor.h"
+
+class netmon final : public Imonitor {
  private:
-  // Which network interface paramters to measure
-  const std::vector<std::string> interface_params;
+  // Which network interface paramters to measure (in this simple case
+  // these are also the output key names)
+  std::vector<std::string> interface_params;
 
   // Which network interfaces to monitor
   std::vector<std::string> monitored_netdevs;
 
   // Nested dictionary of network_if_streams[PARMETER][DEVICE][ISTREAM*]
-  std::unordered_map<
+  std::map<
       std::string,
       std::unordered_map<std::string, std::unique_ptr<std::ifstream>>>
       network_if_streams;
 
-  // Container for starting value stats, that are subtracted from measured
-  // values
-  std::unordered_map<std::string, unsigned long long> network_stats_start;
+  // Container for stats, initial and current
+  std::map<std::string, unsigned long long> network_stats_start,
+      network_stats;
 
   // Find all network interfaces on the system
   std::vector<std::string> const get_all_network_devs();
@@ -49,23 +53,21 @@ class netmon {
 
   // Internal method to read "raw" network stats
   void read_raw_network_stats(
-      std::unordered_map<std::string, unsigned long long>& values);
+      std::map<std::string, unsigned long long>& values);
 
  public:
   netmon(std::vector<std::string> netdevs);
   netmon() : netmon(std::vector<std::string>{}){};
 
-  const std::vector<std::string> get_interface_paramter_names() {
-    return interface_params;
+  void update_stats(const std::vector<pid_t>& pids) {
+    read_raw_network_stats(network_stats);
   }
 
-  const std::vector<std::string> get_interface_names() {
-    return monitored_netdevs;
-  }
+  // These are the stat getter methods which retrieve current statistics
+  std::map<std::string, unsigned long long> const get_text_stats();
+  std::map<std::string, unsigned long long> const get_json_total_stats();
+  std::map<std::string, unsigned long long> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
 
-  // Return network stats
-  void read_network_stats(
-      std::unordered_map<std::string, unsigned long long>& values);
 };
 
 #endif  // PRMON_NETMON_H
