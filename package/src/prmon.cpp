@@ -174,6 +174,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
     bool wroteFile = false;
     if (time(0) - lastIteration > interval) {
       iteration++;
+      // Reset lastIteration
+      lastIteration = time(0);
 
       std::vector<pid_t> cpids = offspring_pids(mpid);
 
