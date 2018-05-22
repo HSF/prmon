@@ -201,7 +201,6 @@ int main(int argc, char* argv[]) {
     while (children < procs - 1 && pid != 0) {
       pid = fork();
       ++children;
-      std::cout << children << " - " << pid << std::endl;
     }
   }
 
