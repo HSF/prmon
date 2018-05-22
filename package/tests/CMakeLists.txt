@@ -7,6 +7,8 @@ target_link_libraries(burner PRIVATE Threads::Threads)
 add_executable(io-burner io-burner.cpp)
 target_link_libraries(io-burner PRIVATE Threads::Threads)
 
+add_executable(mem-burner mem-burner.cpp)
+
 # Custom targets for handling scripted wrappers for tests
 function(script_install)
 	cmake_parse_arguments(SCRIPT_INSTALL "" "SCRIPT;DESTINATION" "" ${ARGN})
@@ -32,6 +34,7 @@ endfunction(script_install)
 script_install(SCRIPT testCPU.py)
 script_install(SCRIPT testIO.py)
 script_install(SCRIPT testNET.py)
+script_install(SCRIPT testMEM.py)
 script_install(SCRIPT netBurner.py)
 script_install(SCRIPT httpBlock.py DESTINATION cgi-bin)
 
@@ -48,3 +51,7 @@ add_test(NAME basicIOmultiproc COMMAND testIO.py --usleep 100 --io 10  --procs 2
 
 # Net Tests
 add_test(NAME basicNET COMMAND python testNET.py)
+
+# Memory Tests
+add_test(NAME singleMem COMMAND python testMEM.py --procs 1)
+add_test(NAME childMem COMMAND python testMEM.py --procs 4)

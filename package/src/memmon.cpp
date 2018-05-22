@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 // Constructor; uses RAII pattern to be valid
@@ -30,7 +31,10 @@ void memmon::update_stats(const std::vector<pid_t>& pids) {
     smaps_fname << "/proc/" << pid << "/smaps" << std::ends;
     std::ifstream smap_stat{smaps_fname.str()};
     while (smap_stat) {
+      // Read off the potentially interesting "key: value", then discard
+      // the rest of the line
       smap_stat >> key_str >> value_str;
+      smap_stat.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
       if (smap_stat) {
         if (key_str == "Size:") {
           mem_stats["vmem"] += std::stol(value_str);
