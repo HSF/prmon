@@ -11,7 +11,6 @@ try:
     import matplotlib.pyplot as plt
     import matplotlib.ticker as ticker
     from matplotlib.dates import DateFormatter
-    #plt.style.use('ggplot')
     plt.style.use('seaborn-whitegrid')
 except ImportError:
     print('This script needs pandas and mathplotlib.'          )
