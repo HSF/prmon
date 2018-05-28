@@ -42,12 +42,16 @@ def setupConfigurableTest(blocks=None, requests=10, sleep=None, pause=None, slac
             prmon_rc = prmon_p.wait()
     
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
-            prmonJSON = json.load(open("prmon.json"))
-            expectedBytes = 1025000 * requests * slack;
-            self.assertGreater(prmonJSON["Max"]["rx_bytes"], expectedBytes, "Too low value for rx bytes "
-                               "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["rx_bytes"]))
-            self.assertGreater(prmonJSON["Max"]["tx_bytes"], expectedBytes, "Too low value for tx bytes "
-                               "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["tx_bytes"]))
+
+            with open("prmon.json") as infile:
+                prmonJSON = json.load(infile)
+
+                # Network tests
+                expectedBytes = 1025000 * requests * slack;
+                self.assertGreater(prmonJSON["Max"]["rx_bytes"], expectedBytes, "Too low value for rx bytes "
+                                   "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["rx_bytes"]))
+                self.assertGreater(prmonJSON["Max"]["tx_bytes"], expectedBytes, "Too low value for tx bytes "
+                                   "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["tx_bytes"]))
     
     return configurableProcessMonitor
 
