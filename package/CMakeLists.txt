@@ -2,6 +2,7 @@ find_package(RapidJSON REQUIRED)
 find_package(Threads REQUIRED)
 
 add_executable(prmon src/prmon.cpp
+					 src/pidutils.cpp
 					 src/netmon.cpp 
 					 src/iomon.cpp 
 					 src/cpumon.cpp 

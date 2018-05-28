@@ -1,6 +1,7 @@
-/*
-  Copyright (C) 2018, CERN
-*/
+//  Copyright (C) 2018, CERN
+
+// PRocess MONitor
+// See https://github.com/HSF/prmon
 
 #include <getopt.h>
 #include <signal.h>
@@ -11,7 +12,6 @@
 
 #include <condition_variable>
 #include <cstddef>
-#include <deque>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -29,38 +29,11 @@
 #include "iomon.h"
 #include "memmon.h"
 #include "netmon.h"
+#include "pidutils.h"
 #include "prmon.h"
 #include "wallmon.h"
 
 using namespace rapidjson;
-
-std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
-  // Get child process IDs
-  std::vector<pid_t> pid_list{};
-  std::deque<pid_t> unprocessed_pids{};
-
-  // Start with the mother PID
-  unprocessed_pids.push_back(mother_pid);
-
-  // Now loop over all unprocessed PIDs, querying children
-  // and pushing them onto the unprocessed queue, while
-  // poping the front onto the final PID list
-  while(unprocessed_pids.size() > 0) {
-    std::stringstream child_pid_fname{};
-    pid_t next_pid;
-    child_pid_fname << "/proc/" << unprocessed_pids[0] << "/task/"
-                    << unprocessed_pids[0] << "/children" << std::ends;
-    std::ifstream proc_children{child_pid_fname.str()};
-    while (proc_children) {
-      proc_children >> next_pid;
-      if (proc_children)
-        unprocessed_pids.push_back(next_pid);
-    }
-    pid_list.push_back(unprocessed_pids[0]);
-    unprocessed_pids.pop_front();
-  }
-  return pid_list;
-}
 
 std::condition_variable cv;
 std::mutex cv_m;
@@ -169,15 +142,22 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   std::stringstream newFile;
   newFile << jsonSummary << "_snapshot";
 
+  // See if the kernel is new enough to have /proc/PID/task/PID/children
+  bool modern_kernel = kernel_proc_pid_test(mpid);
+
   // Monitoring loop until process exits
+  bool wroteFile = false;
+  std::vector<pid_t> cpids{};
   while (kill(mpid, 0) == 0 && sigusr1 == false) {
-    bool wroteFile = false;
     if (time(0) - lastIteration > interval) {
       iteration++;
       // Reset lastIteration
       lastIteration = time(0);
 
-      std::vector<pid_t> cpids = offspring_pids(mpid);
+      if (modern_kernel)
+        cpids = offspring_pids(mpid);
+      else
+        cpids = pstree_pids(mpid);
 
       try {
         for (const auto monitor : monitors) monitor->update_stats(cpids);
