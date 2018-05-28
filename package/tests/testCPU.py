@@ -38,20 +38,23 @@ def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, sla
                 prmon_rc = prmon_p.wait()
     
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
-            prmonJSON = json.load(open("prmon.json"))
-            # CPU time tests
-            totCPU = prmonJSON["Max"]["utime"] + prmonJSON["Max"]["stime"]
-            expectCPU = (1.0 + (procs-1)*child_fraction) * time * threads
-            self.assertLess(totCPU, expectCPU, "Too high value for CPU time "
-                            "(expected maximum of {0}, got {1})".format(expectCPU, totCPU))
-            self.assertGreater(totCPU, expectCPU*slack, "Too low value for CPU time "
-                               "(expected minimum of {0}, got {1}".format(expectCPU*slack, totCPU))
-            # Wall time tests
-            totWALL = prmonJSON["Max"]["wtime"]
-            self.assertLessEqual(totWALL, time, "Too high value for wall time "
-                            "(expected maximum of {0}, got {1})".format(time, totWALL))
-            self.assertGreaterEqual(totWALL, time*slack, "Too low value for wall time "
-                               "(expected minimum of {0}, got {1}".format(time*slack, totWALL))
+
+            with open("prmon.json") as infile:
+                prmonJSON = json.load(infile)
+
+                # CPU time tests
+                totCPU = prmonJSON["Max"]["utime"] + prmonJSON["Max"]["stime"]
+                expectCPU = (1.0 + (procs-1)*child_fraction) * time * threads
+                self.assertLess(totCPU, expectCPU, "Too high value for CPU time "
+                                "(expected maximum of {0}, got {1})".format(expectCPU, totCPU))
+                self.assertGreater(totCPU, expectCPU*slack, "Too low value for CPU time "
+                                   "(expected minimum of {0}, got {1}".format(expectCPU*slack, totCPU))
+                # Wall time tests
+                totWALL = prmonJSON["Max"]["wtime"]
+                self.assertLessEqual(totWALL, time, "Too high value for wall time "
+                                "(expected maximum of {0}, got {1})".format(time, totWALL))
+                self.assertGreaterEqual(totWALL, time*slack, "Too low value for wall time "
+                                   "(expected minimum of {0}, got {1}".format(time*slack, totWALL))
     
     return configurableProcessMonitor
 

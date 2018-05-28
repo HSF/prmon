@@ -34,16 +34,19 @@ def setupConfigurableTest(procs=4, malloc_mb = 100, write_fraction=0.5, sleep=10
             prmon_rc = prmon_p.wait()
     
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
-            prmonJSON = json.load(open("prmon.json"))
-            # Memory tests
-            vmemExpect = malloc_mb * procs * 1024 + 10000 * procs # Small uplift for program itself
-            self.checkMemoryLimits("vmem", prmonJSON["Max"]["vmem"], vmemExpect, slack)
 
-            rssExpect = malloc_mb * procs * 1024 * write_fraction
-            self.checkMemoryLimits("rss", prmonJSON["Max"]["rss"], rssExpect, slack)
+            with open("prmon.json") as infile:
+                prmonJSON = json.load(infile)
 
-            pssExpect = malloc_mb * 1024 * write_fraction
-            self.checkMemoryLimits("pss", prmonJSON["Max"]["pss"], pssExpect, slack)
+                # Memory tests
+                vmemExpect = malloc_mb * procs * 1024 + 10000 * procs # Small uplift for program itself
+                self.checkMemoryLimits("vmem", prmonJSON["Max"]["vmem"], vmemExpect, slack)
+
+                rssExpect = malloc_mb * procs * 1024 * write_fraction
+                self.checkMemoryLimits("rss", prmonJSON["Max"]["rss"], rssExpect, slack)
+
+                pssExpect = malloc_mb * 1024 * write_fraction
+                self.checkMemoryLimits("pss", prmonJSON["Max"]["pss"], pssExpect, slack)
 
     
     return configurableProcessMonitor
