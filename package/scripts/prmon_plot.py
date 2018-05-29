@@ -70,7 +70,10 @@ if '__main__' in __name__:
     ydlist = []
     for carg in ylist:
         if args.diff:
-            ydlist.append(np.array(data[carg].diff()))
+            num = np.array(data[carg].diff())
+            denom = np.array(data[xlabel].diff())
+            ratio = np.where(denom != 0, num/denom, np.nan)
+            ydlist.append(ratio)
         else:
             ydlist.append(np.array(data[carg]))
     if args.stacked:
