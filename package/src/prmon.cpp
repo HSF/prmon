@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
   // Set defaults
   const char* default_filename = "prmon.txt";
   const char* default_json_summary = "prmon.json";
-  const unsigned int default_interval = 1;
+  const unsigned int default_interval = 30;
 
   pid_t pid = -1;
   bool got_pid = false;
