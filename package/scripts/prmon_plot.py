@@ -30,7 +30,11 @@ if '__main__' in __name__:
                                ' (comma seperated list is accepted)')
     parser.add_argument('--stacked', dest = 'stacked', action = 'store_true',
                         help = 'stack plots if specified')
+    parser.add_argument('--diff', dest = 'diff', action = 'store_true',
+                        help = 'take discrete difference of elements for yvars '
+                        ' if specified')
     parser.set_defaults(stacked = False)
+    parser.set_defaults(diff = False)
     args = parser.parse_args()
 
     # Check the input file exists
@@ -58,13 +62,20 @@ if '__main__' in __name__:
     for carg in ylist:
         if ylabel: ylabel += '_'
         ylabel += carg.lower()
+    if args.diff: ylabel = 'diff_' + ylabel
     output = 'PrMon_%s_vs_%s.png'%(xlabel,ylabel)
 
     fig, ax1 = plt.subplots()
     xdata = np.array(data[xlabel])
     ydlist = []
     for carg in ylist:
-        ydlist.append(np.array(data[carg]))
+        if args.diff:
+            num = np.array(data[carg].diff())
+            denom = np.array(data[xlabel].diff())
+            ratio = np.where(denom != 0, num/denom, np.nan)
+            ydlist.append(ratio)
+        else:
+            ydlist.append(np.array(data[carg]))
     if args.stacked:
         ydata = np.vstack(ydlist)
         plt.stackplot(xdata, ydata, lw = 2, labels = ylist, alpha = 0.6) 
