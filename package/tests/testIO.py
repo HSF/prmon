@@ -10,7 +10,7 @@ import subprocess
 import sys
 import unittest
 
-def setupConfigurableTest(io=10, threads=1, procs=1, usleep=10, pause=1, slack=0.95):
+def setupConfigurableTest(io=10, threads=1, procs=1, usleep=10, pause=1, slack=0.95, interval=1):
     '''Wrap the class definition in a function to allow arguments to be passed'''
     class configurableProcessMonitor(unittest.TestCase):
         def test_runTestWithParams(self):
@@ -21,7 +21,7 @@ def setupConfigurableTest(io=10, threads=1, procs=1, usleep=10, pause=1, slack=0
             burn_cmd.extend(['--pause', str(pause)])
             burn_p = subprocess.Popen(burn_cmd, shell = False)
     
-            prmon_cmd = ['../prmon', '--pid', str(burn_p.pid)]
+            prmon_cmd = ['../prmon', '--interval', str(interval), '--pid', str(burn_p.pid)]
             prmon_p = subprocess.Popen(prmon_cmd, shell = False)
     
             burn_rc = burn_p.wait()
@@ -50,10 +50,11 @@ if __name__ == '__main__':
     parser.add_argument('--usleep', type=int, default=10)
     parser.add_argument('--pause', type=float, default=1)
     parser.add_argument('--slack', type=float, default=0.95)
+    parser.add_argument('--interval', type=int, default=1)
     args = parser.parse_args()
     # Stop unittest from being confused by the arguments
     sys.argv=sys.argv[:1]
     
-    cpm = setupConfigurableTest(args.io, args.threads, args.procs, args.usleep, args.pause, args.slack)
+    cpm = setupConfigurableTest(args.io, args.threads, args.procs, args.usleep, args.pause, args.slack, args.interval)
     
     unittest.main()

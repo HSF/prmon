@@ -10,7 +10,7 @@ import subprocess
 import sys
 import unittest
 
-def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, slack=0.75, invoke=False):
+def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, slack=0.75, interval=1, invoke=False):
     '''Wrap the class definition in a function to allow arguments to be passed'''
     class configurableProcessMonitor(unittest.TestCase):
         def test_runTestWithParams(self):
@@ -22,8 +22,9 @@ def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, sla
             if child_fraction != 1.0:
                 burn_cmd.extend(['--child-fraction', str(child_fraction)])
 
+            prmon_cmd = ['../prmon', '--interval', str(interval)]
             if invoke:
-                prmon_cmd = ['../prmon', '--']
+                prmon_cmd.append('--')
                 prmon_cmd.extend(burn_cmd)
                 prmon_p = subprocess.Popen(prmon_cmd, shell = False)
 
@@ -31,7 +32,7 @@ def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, sla
             else:
                 burn_p = subprocess.Popen(burn_cmd, shell = False)
     
-                prmon_cmd = ['../prmon', '--pid', str(burn_p.pid)]
+                prmon_cmd.extend(['--pid', str(burn_p.pid)])
                 prmon_p = subprocess.Popen(prmon_cmd, shell = False)
     
                 burn_rc = burn_p.wait()
@@ -66,12 +67,13 @@ if __name__ == '__main__':
     parser.add_argument('--child-fraction', type=float, default=1.0)
     parser.add_argument('--time', type=float, default=10)
     parser.add_argument('--slack', type=float, default=0.75)
+    parser.add_argument('--interval', type=int, default=1)
     parser.add_argument('--invoke', dest='invoke', action='store_true', default=False)
 
     args = parser.parse_args()
     # Stop unittest from being confused by the arguments
     sys.argv=sys.argv[:1]
     
-    cpm = setupConfigurableTest(args.threads,args.procs,args.child_fraction,args.time,args.slack,args.invoke)
+    cpm = setupConfigurableTest(args.threads,args.procs,args.child_fraction,args.time,args.slack,args.interval,args.invoke)
     
     unittest.main()

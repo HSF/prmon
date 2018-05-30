@@ -11,7 +11,7 @@ import sys
 import unittest
 
 
-def setupConfigurableTest(procs=4, malloc_mb = 100, write_fraction=0.5, sleep=10, slack=0.9):
+def setupConfigurableTest(procs=4, malloc_mb = 100, write_fraction=0.5, sleep=10, slack=0.9, interval=1):
     '''Wrap the class definition in a function to allow arguments to be passed'''
     class configurableProcessMonitor(unittest.TestCase):
         def checkMemoryLimits(self, name, value, expected, slack):
@@ -27,7 +27,7 @@ def setupConfigurableTest(procs=4, malloc_mb = 100, write_fraction=0.5, sleep=10
             if procs != 1:
                 burn_cmd.extend(['--procs', str(procs)])
 
-            prmon_cmd = ['../prmon', '--']
+            prmon_cmd = ['../prmon', '--interval', str(interval), '--']
             prmon_cmd.extend(burn_cmd)
             prmon_p = subprocess.Popen(prmon_cmd, shell = False)
 
@@ -59,11 +59,12 @@ if __name__ == '__main__':
     parser.add_argument('--writef', type=float, default=0.5)
     parser.add_argument('--sleep', type=int, default=10)
     parser.add_argument('--slack', type=float, default=0.9)
+    parser.add_argument('--interval', type=int, default=1)  
 
     args = parser.parse_args()
     # Stop unittest from being confused by the arguments
     sys.argv=sys.argv[:1]
     
-    cpm = setupConfigurableTest(args.procs,args.malloc,args.writef,args.sleep,args.slack)
+    cpm = setupConfigurableTest(args.procs,args.malloc,args.writef,args.sleep,args.slack,args.interval)
     
     unittest.main()
