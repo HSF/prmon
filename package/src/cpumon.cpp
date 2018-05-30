@@ -38,7 +38,7 @@ void cpumon::update_stats(const std::vector<pid_t>& pids) {
     }
     stat_entries.clear();
   }
-  for (auto& stat : cpu_stats) stat.second *= prmon::inv_clock_ticks;
+  for (auto& stat : cpu_stats) stat.second /= sysconf(_SC_CLK_TCK);
 }
 
 // Return the summed counters

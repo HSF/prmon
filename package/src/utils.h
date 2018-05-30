@@ -7,10 +7,6 @@
 #include <unistd.h>
 
 namespace prmon {
-  // For conversion from second <-> clock ticks
-  const static unsigned long clock_ticks = sysconf(_SC_CLK_TCK);
-  const static float inv_clock_ticks = 1. / sysconf(_SC_CLK_TCK);
-
   // These constants define where in the stat entry from proc
   // we find the parameters of interest
   const size_t utime_pos = 13;

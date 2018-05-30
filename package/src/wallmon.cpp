@@ -61,8 +61,8 @@ void wallmon::update_stats(const std::vector<pid_t>& pids) {
     std::clog << "Error while reading /proc/uptime" << std::endl;
     return;
   }
-  current_clock_t = uptime_sec * prmon::clock_ticks - start_time_clock_t;
-  walltime_stats["wtime"] = current_clock_t * prmon::inv_clock_ticks;
+  current_clock_t = uptime_sec * sysconf(_SC_CLK_TCK) - start_time_clock_t;
+  walltime_stats["wtime"] = current_clock_t / sysconf(_SC_CLK_TCK);
 }
 
 unsigned long long const wallmon::get_wallclock_clock_t() {

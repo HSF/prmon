@@ -100,7 +100,7 @@ std::map<std::string, unsigned long long> const netmon::get_json_total_stats() {
 std::map<std::string, unsigned long long> const netmon::get_json_average_stats(unsigned long long elapsed_clock_ticks) {
   std::map<std::string, unsigned long long> json_average_stats = get_text_stats();
   for (auto& stat : json_average_stats) {
-    stat.second = (stat.second * prmon::clock_ticks) / elapsed_clock_ticks;
+    stat.second = (stat.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
   }
   return json_average_stats;
 }
