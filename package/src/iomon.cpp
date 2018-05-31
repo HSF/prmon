@@ -56,7 +56,7 @@ std::map<std::string, unsigned long long> const iomon::get_json_average_stats(
   std::map<std::string, unsigned long long> json_average_stats{};
   for (const auto& io_param : io_stats) {
     json_average_stats[io_param.first] =
-        (io_param.second * prmon::clock_ticks) / elapsed_clock_ticks;
+        (io_param.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
   }
   return json_average_stats;
 }
