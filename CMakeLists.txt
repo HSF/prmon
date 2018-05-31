@@ -20,16 +20,37 @@ include(GNUInstallDirs)
 if(NOT CMAKE_CONFIGURATION_TYPES)
   if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo
-      CACHE STRING "Choose the type of build, options are: None Release MinSizeRel Debug RelWithDebInfo"
+      CACHE STRING "Choose the type of build, options are: None Release MinSizeRel Debug RelWithDebInfo Static"
       FORCE
       )
   else()
     set(CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}"
-      CACHE STRING "Choose the type of build, options are: None Release MinSizeRel Debug RelWithDebInfo"
+      CACHE STRING "Choose the type of build, options are: None Release MinSizeRel Debug RelWithDebInfo Static"
       FORCE
       )
   endif()
 endif()
+
+# - Define the static build type as this is very useful for a utility like prmon
+SET( CMAKE_CXX_FLAGS_STATIC "-O2" CACHE STRING
+    "Flags used by the C++ compiler during static builds."
+    FORCE )
+SET( CMAKE_C_FLAGS_STATIC "-O2" CACHE STRING
+    "Flags used by the C compiler during static builds."
+    FORCE )
+SET( CMAKE_EXE_LINKER_FLAGS_STATIC
+    "-Wl,--warn-unresolved-symbols,--warn-once -static" CACHE STRING
+    "Flags used for linking binaries during static builds."
+    FORCE )
+SET( CMAKE_SHARED_LINKER_FLAGS_STATIC
+    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+    "Flags used by the shared libraries linker during static builds."
+    FORCE )
+MARK_AS_ADVANCED(
+    CMAKE_CXX_FLAGS_STATUC
+    CMAKE_C_FLAGS_STATIC
+    CMAKE_EXE_LINKER_FLAGS_STATIC
+    CMAKE_SHARED_LINKER_FLAGS_STATIC )
 
 # - Define the C++ Standard to use (Simplest Possible)
 # This will add any compiler flags needed to compile against the required standard

@@ -20,6 +20,8 @@ add_executable(prmon src/prmon.cpp
 target_include_directories(prmon PRIVATE ${RapidJSON_INCLUDE_DIR})
 target_link_libraries(prmon Threads::Threads)
 
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+
 # - Install the example library into the install time library directory
 # The EXPORT name is used so that we can "export" the target for
 # use by client projects
