@@ -19,7 +19,7 @@ prmon currently runs on Linux machines as it requires access to the
 ### Building the project
 
 Building prmon requires a modern C++ compiler, CMake version 3.1 or
-higher and the RapidJSON libraries. Note that the installation of
+higher and the [RapidJSON libraries](http://rapidjson.org/). Note that the installation of
 RapidJSON needs to be modern enough that CMake is supported (e.g.,
 on Ubuntu 16.04 `rapidjson-dev` is too old, just install it yourself).
 
@@ -55,19 +55,18 @@ The `prmon` binary is invoked with the following arguments:
 
 ```sh
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
-      [--interval 1] [--netdev DEV] \
+      [--interval 30] [--netdev DEV] \
       [-- prog arg arg ...]
 ```
 
 * `--pid` the 'mother' PID to monitor (all children in the same process tree are monitored as well)
 * `--filename` output file for timestamped monitored values
 * `--json-summmary` output file for summary data written in JSON format
-* `--interval` time (in seconds) between monitoring snapshots
+* `--interval` time, in seconds, between monitoring snapshots
 * `--netdev` restricts network statistics to one (or more) network devices
 * `--` after this argument the following arguments are treated as a program to invoke 
   and remaining arguments are passed to it; `prmon` will then monitor this process
   instead of being given a PID via `--pid` 
-
 
 
 ## Outputs
@@ -85,6 +84,31 @@ monitored process is isolated from other processes performing network I/O
 (it gives an upper bound on the network activity, but the monitoring is
 per network device as Linux does not give per-process network data by
 default).
+
+### Visualisation
+
+The `prmon_plot.py` script can be used to plot the outputs of prmon from the
+timestamped output file (usually `prmon.txt`). e.g.,
+
+```sh
+prmon_plot.py --yvar pss,rss,swap,vmem
+```
+
+Use `-h` for more information.
+
+## Developer
+
+We're very happy to get feedback on prmon. Please raise an
+[issue](https://github.com/HSF/prmon/issues) if you have a
+problem or a suggestion.
+
+Pull requests are very welcome.
+
+### Profiling
+
+If you want to profile `prmon` see the notes in 
+the `package/CMakeLists.txt` file.
+
 
 # Copyright
 
