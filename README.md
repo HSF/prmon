@@ -35,8 +35,11 @@ If your installation of RapidJSON is in a non-standard location then
 setting `RapidJSON_DIR` may be required as a hint to CMake.
 
 The option `-DCMAKE_BUILD_TYPE` can switch between all of the standard
-build types; one useful non-standard option is supported, 
-viz. `-DCMAKE_BUILD_TYPE=Static` which builds `prmon` as a static binary.
+build types. The default is `Release`; use `RelWithDebInfo` if you want
+debug symbols.
+
+To build a statically linked version of `prmon` use
+`-DBUILD_STATIC=1`.
 
 Note that in a build environment with CVMFS available the C++ compiler
 and CMake can be taken by setting up a recent LCG release.
