@@ -10,22 +10,39 @@ project(prmon VERSION 0.1.0)
 # - Use GNU-style hierarchy for installing build products
 include(GNUInstallDirs)
 
-# - Define a default build type when using a single-mode tool like make/ninja
-# If you're using a build tool that supports multiple modes (Visual Studio,
-# Xcode), this setting has no effect.
-if(NOT CMAKE_CONFIGURATION_TYPES)
-  if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release
-      CACHE STRING "Choose the type of build, options are: None Release MinSizeRel Debug RelWithDebInfo"
-      FORCE
-      )
+# Add some build option variables, for static builds and profiling
+if(NOT BUILD_STATIC)
+  set(BUILD_STATIC OFF)
+endif()
+set(BUILD_STATIC "${BUILD_STATIC}"
+  CACHE BOOL "Build a static version of the prmon binary" FORCE)
+
+if(NOT PROFILE_GPROF)
+  set(PROFILE_GPROF OFF)
+endif()
+set(PROFILE_GPROF "${PROFILE_GPROF}"
+  CACHE BOOL "Build with the GNU profile option set" FORCE)
+
+if(NOT PROFILE_GPERFTOOLS)
+  set(PROFILE_GPERFTOOLS OFF)
+endif()
+set(PROFILE_GPERFTOOLS "${PROFILE_GPERFTOOLS}"
+  CACHE BOOL "Build with the GPerfTools profiler library" FORCE)
+
+
+# Define a default build type when using a single-mode tool like make/ninja
+# We make this default to Release, unless profiling is enabled, in which
+# case do RelWithDebInfo (bcause you need the debug symbols)
+if(NOT CMAKE_BUILD_TYPE)
+  if(PROFILE_GPROF OR PROFILE_GPERFTOOLS)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo)
   else()
-    set(CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}"
-      CACHE STRING "Choose the type of build, options are: None Release MinSizeRel Debug RelWithDebInfo"
-      FORCE
-      )
+    set(CMAKE_BUILD_TYPE Release)
   endif()
 endif()
+set(CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}"
+  CACHE STRING "Choose the type of build, options are: None Release MinSizeRel Debug RelWithDebInfo" FORCE)
+
 
 # - Define the C++ Standard to use (Simplest Possible)
 # This will add any compiler flags needed to compile against the required standard

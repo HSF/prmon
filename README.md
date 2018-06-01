@@ -38,8 +38,9 @@ The option `-DCMAKE_BUILD_TYPE` can switch between all of the standard
 build types. The default is `Release`; use `RelWithDebInfo` if you want
 debug symbols.
 
-To build a statically linked version of `prmon` use
-`-DBUILD_STATIC=1`.
+To build a statically linked version of `prmon` set the `BUILD_STATIC`
+CMake variable to `ON` (e.g., adding `-DBUILD_STATIC=ON` to the 
+command line).
 
 Note that in a build environment with CVMFS available the C++ compiler
 and CMake can be taken by setting up a recent LCG release.
@@ -113,8 +114,9 @@ Pull requests are very welcome.
 
 ### Profiling
 
-If you want to profile `prmon` see the notes in 
-the `package/CMakeLists.txt` file.
+To build prmon with profiling set one of the CMake variables
+`PROFILE_GPROF` or `PROFILE_GPERFTOOLS` to `ON`. This enables
+GNU prof profiling or gperftools profiling, respectively.
 
 
 # Copyright
