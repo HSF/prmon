@@ -20,7 +20,8 @@ if(PROFILE_GPROF)
 endif(PROFILE_GPROF)
 
 if(PROFILE_GPERFTOOLS)
-  set_target_properties(prmon PROPERTIES LINK_LIBRARIES "profiler")
+  find_package(Gperftools REQUIRED)
+  set_target_properties(prmon PROPERTIES LINK_LIBRARIES ${GPERFTOOLS_PROFILE_LIBRARY})
 endif(PROFILE_GPERFTOOLS)
 
 # - Install the example library into the install time library directory

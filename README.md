@@ -117,6 +117,8 @@ Pull requests are very welcome.
 To build prmon with profiling set one of the CMake variables
 `PROFILE_GPROF` or `PROFILE_GPERFTOOLS` to `ON`. This enables
 GNU prof profiling or gperftools profiling, respectively.
+If your gperftools are in a non-standard place, pass a hint
+to CMake using `Gperftools_ROOT_DIR`.
 
 
 # Copyright
