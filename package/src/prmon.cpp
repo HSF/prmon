@@ -35,14 +35,10 @@
 
 using namespace rapidjson;
 
-std::condition_variable cv;
-std::mutex cv_m;
 bool sigusr1 = false;
 
 void SignalCallbackHandler(int /*signal*/) {
-  std::lock_guard<std::mutex> l(cv_m);
   sigusr1 = true;
-  cv.notify_one();
 }
 
 void SignalChildHandler(int /*signal*/) {
@@ -206,8 +202,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
                   << std::endl;
       }
     }
-    std::unique_lock<std::mutex> lock(cv_m);
-    cv.wait_for(lock, std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
   }
   file.close();
 
