@@ -1,14 +1,4 @@
 find_package(RapidJSON REQUIRED)
-find_package(Threads REQUIRED)
-
-## Profiling
-# If you wish to compile prmon with profiling then just 
-# uncomment the line below to use gprof:
-#
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-#
-# If you want to use gperftools then add "profiler" to
-# the prmon target_link_libraries command instead
 
 add_executable(prmon src/prmon.cpp
 					 src/pidutils.cpp
@@ -18,7 +8,21 @@ add_executable(prmon src/prmon.cpp
 					 src/wallmon.cpp
 					 src/memmon.cpp)
 target_include_directories(prmon PRIVATE ${RapidJSON_INCLUDE_DIR})
-target_link_libraries(prmon Threads::Threads)
+
+# Set flags based on more unusual build flags
+if(BUILD_STATIC)
+  set_target_properties(prmon PROPERTIES LINK_FLAGS "-static")
+endif(BUILD_STATIC)
+
+if(PROFILE_GPROF)
+  set_target_properties(prmon PROPERTIES COMPILE_FLAGS "-pg")
+  set_target_properties(prmon PROPERTIES LINK_FLAGS "-pg")
+endif(PROFILE_GPROF)
+
+if(PROFILE_GPERFTOOLS)
+  find_package(Gperftools REQUIRED)
+  set_target_properties(prmon PROPERTIES LINK_LIBRARIES ${GPERFTOOLS_PROFILE_LIBRARY})
+endif(PROFILE_GPERFTOOLS)
 
 # - Install the example library into the install time library directory
 # The EXPORT name is used so that we can "export" the target for
