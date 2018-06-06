@@ -20,7 +20,7 @@ except ImportError:
 
 # Define the labels/units for beautification
 axisunits = {'vmem':'kb', 'pss':'kb', 'rss':'kb',
-             'utime':'s', 'stime':'s', 'wtime':'s',
+             'utime':'sec', 'stime':'sec', 'wtime':'sec',
              'rchar':'char','wchar':'char',
              'read_bytes':'b','write_bytes':'b',
              'rx_packets':'packets', 'tx_packets':'packets',
@@ -56,26 +56,38 @@ legendnames = {'vmem':'Virtual Memory',
                'rx_bytes':'Network Received',
                'tx_bytes':'Network Transmitted'}
 
+get_multiplier = {'SEC': 1.,
+                  'MIN': 60.,
+                  'HR': 60.*60.,
+                  'B': 1.,
+                  'KB': 1024.,
+                  'MB': 1024.*1024.,
+                  'GB': 1024.*1024.*1024.,
+                  'CHAR': 1.,
+                  'PACKETS' : 1.}
+
 def get_axis_label(nom, denom = None):
-    label, unit = axisnames[nom], axisunits[nom]
+    label = axisnames[nom]
     if denom:
         label = '$\Delta$'+label+'/$\Delta$'+axisnames[denom] 
-        if axisunits[denom] == unit:
-            unit  = '1' 
-        else:
-            unit  += '/'+axisunits[denom]
-    return label, unit 
+    return label
 
 if '__main__' in __name__:
     # Parse the user input
     parser = argparse.ArgumentParser(description = 'Configurable plotting script')
     parser.add_argument('--input', type = str, default = 'prmon.txt', 
                         help = 'PrMon TXT output that will be used as input'     )
-    parser.add_argument('--xvar', type = str, default = 'Time', 
+    parser.add_argument('--xvar', type = str, default = 'wtime', 
                         help = 'name of the variable to be plotted in the x-axis')
-    parser.add_argument('--yvar', type = str, default = 'pss', 
+    parser.add_argument('--xunit', nargs = '?', default = 'SEC',
+                        choices=['SEC', 'MIN', 'HR', 'B', 'KB', 'MB', 'GB'],
+                        help = 'unit of the variable to be plotted in the x-axis')
+    parser.add_argument('--yvar', type = str, default = 'pss',
                         help = 'name(s) of the variable to be plotted in the y-axis' 
                                ' (comma seperated list is accepted)')
+    parser.add_argument('--yunit', nargs = '?', default = 'MB',
+                        choices=['SEC', 'MIN', 'HR', 'B', 'KB', 'MB', 'GB'],
+                        help = 'unit of the variable to be plotted in the y-axis')
     parser.add_argument('--stacked', dest = 'stacked', action = 'store_true',
                         help = 'stack plots if specified')
     parser.add_argument('--diff', dest = 'diff', action = 'store_true',
@@ -113,17 +125,22 @@ if '__main__' in __name__:
     if args.diff: ylabel = 'diff_' + ylabel
     output = 'PrMon_%s_vs_%s.png'%(xlabel,ylabel)
 
+    # Calculate the multipliers
+    xmultiplier = get_multiplier[axisunits[xlabel].upper()]/get_multiplier[args.xunit]
+    ymultiplier = get_multiplier[axisunits[ylist[0]].upper()]/get_multiplier[args.yunit]
+
+    # Here comes the figure and data extraction
     fig, ax1 = plt.subplots()
-    xdata = np.array(data[xlabel])
+    xdata = np.array(data[xlabel])*xmultiplier
     ydlist = []
     for carg in ylist:
         if args.diff:
-            num = np.array(data[carg].diff())
-            denom = np.array(data[xlabel].diff())
+            num = np.array(data[carg].diff())*ymultiplier
+            denom = np.array(data[xlabel].diff())*xmultiplier
             ratio = np.where(denom != 0, num/denom, np.nan)
             ydlist.append(ratio)
         else:
-            ydlist.append(np.array(data[carg]))
+            ydlist.append(np.array(data[carg])*ymultiplier)
     if args.stacked:
         ydata = np.vstack(ydlist)
         plt.stackplot(xdata, ydata, lw = 2, labels = [legendnames[val] for val in ylist], alpha = 0.6) 
@@ -134,11 +151,17 @@ if '__main__' in __name__:
     if 'Time' in xlabel:
         formatter = DateFormatter('%H:%M:%S')
         ax1.xaxis.set_major_formatter(formatter)
-    fxlabel, fxunit = get_axis_label(xlabel)
+    fxlabel = get_axis_label(xlabel)
+    fxunit  = args.xunit
     if args.diff:
-        fylabel, fyunit = get_axis_label(ylist[0],xlabel)
+        fylabel = get_axis_label(ylist[0],xlabel)
+        if args.yunit == args.xunit:
+            fyunit = '1'
+        else:
+            fyunit  = args.yunit+'/'+args.xunit
     else:
-        fylabel, fyunit = get_axis_label(ylist[0])
+        fylabel = get_axis_label(ylist[0])
+        fyunit  = args.yunit
     plt.title('Plot of %s vs %s obtained from PrMon output'%(fxlabel, fylabel), y = 1.05)
     plt.xlabel(fxlabel+' ['+fxunit+']')
     plt.ylabel(fylabel+' ['+fyunit+']')
