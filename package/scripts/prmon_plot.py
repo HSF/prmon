@@ -3,6 +3,7 @@
 import argparse
 import sys
 import os
+
 try:
     import pandas as pd
     import numpy as np
@@ -56,23 +57,29 @@ legendnames = {'vmem':'Virtual Memory',
                'rx_bytes':'Network Received',
                'tx_bytes':'Network Transmitted'}
 
-get_multiplier = {'SEC': 1.,
-                  'MIN': 60.,
-                  'HR': 60.*60.,
-                  'B': 1.,
-                  'KB': 1024.,
-                  'MB': 1024.*1024.,
-                  'GB': 1024.*1024.*1024.,
-                  'CHAR': 1.,
-                  'PACKETS' : 1.}
+multipliers = {'SEC': 1.,
+               'MIN': 60.,
+               'HR': 60.*60.,
+               'B': 1.,
+               'KB': 1024.,
+               'MB': 1024.*1024.,
+               'GB': 1024.*1024.*1024.,
+               'CHAR': 1.,
+               'PACKETS' : 1.}
 
+# A few basic functions for labels/ conversions
 def get_axis_label(nom, denom = None):
     label = axisnames[nom]
     if denom:
         label = '$\Delta$'+label+'/$\Delta$'+axisnames[denom] 
     return label
 
+def get_multiplier(label, unit):
+    return multipliers[axisunits[label].upper()]/multipliers[unit]
+
+# Main function
 if '__main__' in __name__:
+
     # Parse the user input
     parser = argparse.ArgumentParser(description = 'Configurable plotting script')
     parser.add_argument('--input', type = str, default = 'prmon.txt', 
@@ -91,8 +98,11 @@ if '__main__' in __name__:
     parser.add_argument('--stacked', dest = 'stacked', action = 'store_true',
                         help = 'stack plots if specified')
     parser.add_argument('--diff', dest = 'diff', action = 'store_true',
-                        help = 'take discrete difference of elements for yvars '
-                        ' if specified')
+                        help = 'plot the ratio of the discrete differences of '
+                        ' the elements for yvars and xvars if specified')
+    parser.add_argument('--otype', nargs = '?', default = 'png',
+                        choices=['png', 'pdf', 'svg'],
+                        help = 'format of the output image')
     parser.set_defaults(stacked = False)
     parser.set_defaults(diff = False)
     args = parser.parse_args()
@@ -116,18 +126,18 @@ if '__main__' in __name__:
             print('Variable %s is not available in data'%(carg))
             sys.exit(-1)
 
-    # Make the plot and save - vey basic, nothing fancy here
+    # Labels and output information
     xlabel = args.xvar
     ylabel = ''
     for carg in ylist:
         if ylabel: ylabel += '_'
         ylabel += carg.lower()
     if args.diff: ylabel = 'diff_' + ylabel
-    output = 'PrMon_%s_vs_%s.png'%(xlabel,ylabel)
+    output = 'PrMon_%s_vs_%s.%s'%(xlabel,ylabel,args.otype)
 
     # Calculate the multipliers
-    xmultiplier = get_multiplier[axisunits[xlabel].upper()]/get_multiplier[args.xunit]
-    ymultiplier = get_multiplier[axisunits[ylist[0]].upper()]/get_multiplier[args.yunit]
+    xmultiplier = get_multiplier(xlabel, args.xunit)
+    ymultiplier = get_multiplier(ylist[0], args.yunit)
 
     # Here comes the figure and data extraction
     fig, ax1 = plt.subplots()
