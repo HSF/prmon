@@ -162,7 +162,7 @@ if '__main__' in __name__:
     else:
         fylabel = get_axis_label(ylist[0])
         fyunit  = args.yunit
-    plt.title('Plot of %s vs %s obtained from PrMon output'%(fxlabel, fylabel), y = 1.05)
+    plt.title('Plot of %s vs %s'%(fxlabel, fylabel), y = 1.05)
     plt.xlabel(fxlabel+' ['+fxunit+']')
     plt.ylabel(fylabel+' ['+fyunit+']')
     plt.tight_layout()
