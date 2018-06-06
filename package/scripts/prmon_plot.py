@@ -18,6 +18,54 @@ except ImportError:
     print('Please install these modules first and then retry. ')
     sys.exit(-1)
 
+# Define the labels/units for beautification
+axisunits = {'vmem':'kb', 'pss':'kb', 'rss':'kb',
+             'utime':'s', 'stime':'s', 'wtime':'s',
+             'rchar':'char','wchar':'char',
+             'read_bytes':'b','write_bytes':'b',
+             'rx_packets':'packets', 'tx_packets':'packets',
+             'rx_bytes':'b','tx_bytes':'b'}
+
+axisnames = {'vmem':'Memory', 
+             'pss':'Memory', 
+             'rss':'Memory',
+             'utime':'CPU-time',
+             'stime':'CPU-time',
+             'wtime':'Wall-time',
+             'rchar':'I/O',
+             'wchar':'I/O',
+             'read_bytes':'I/O',
+             'write_bytes':'I/O',
+             'rx_packets':'Network',
+             'tx_packets':'Network',
+             'rx_bytes':'Network',
+             'tx_bytes':'Network'}
+
+legendnames = {'vmem':'Virtual Memory', 
+               'pss':'Proportional Set Size', 
+               'rss':'Resident Set Size',
+               'utime':'User CPU-time',
+               'stime':'System CPU-time',
+               'wtime':'Wall-time',
+               'rchar':'I/O Read',
+               'wchar':'I/O Written',
+               'read_bytes':'I/O Read',
+               'write_bytes':'I/O Written',
+               'rx_packets':'Network Received',
+               'tx_packets':'Network Transmitted',
+               'rx_bytes':'Network Received',
+               'tx_bytes':'Network Transmitted'}
+
+def get_axis_label(nom, denom = None):
+    label, unit = axisnames[nom], axisunits[nom]
+    if denom:
+        label = '$\Delta$'+label+'/$\Delta$'+axisnames[denom] 
+        if axisunits[denom] == unit:
+            unit  = '1' 
+        else:
+            unit  += '/'+axisunits[denom]
+    return label, unit 
+
 if '__main__' in __name__:
     # Parse the user input
     parser = argparse.ArgumentParser(description = 'Configurable plotting script')
@@ -78,25 +126,23 @@ if '__main__' in __name__:
             ydlist.append(np.array(data[carg]))
     if args.stacked:
         ydata = np.vstack(ydlist)
-        plt.stackplot(xdata, ydata, lw = 2, labels = ylist, alpha = 0.6) 
+        plt.stackplot(xdata, ydata, lw = 2, labels = [legendnames[val] for val in ylist], alpha = 0.6) 
     else:
         for cidx,cdata in enumerate(ydlist):
-            plt.plot(xdata, cdata, lw = 2, label = ylist[cidx]) 
-    plt.legend(loc=2)
+            plt.plot(xdata, cdata, lw = 2, label = legendnames[ylist[cidx]]) 
+    plt.legend(loc=0)
     if 'Time' in xlabel:
         formatter = DateFormatter('%H:%M:%S')
         ax1.xaxis.set_major_formatter(formatter)
-    plt.title('Plot of %s vs %s obtained from PrMon output'%(xlabel, ylabel))
-    if 'vmem' in xlabel or 'pss' in xlabel or 'rss' in xlabel:
-        xlabel += ' [kb]'
-    elif 'utime' in xlabel or 'stime' in xlabel or 'wtime' in xlabel:
-        xlabel += ' [s]'
-    if 'vmem' in ylabel or 'pss' in ylabel or 'rss' in ylabel:
-        ylabel += ' [kb]'
-    elif 'utime' in ylabel or 'stime' in ylabel or 'wtime' in ylabel:
-        ylabel += ' [s]'
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    fxlabel, fxunit = get_axis_label(xlabel)
+    if args.diff:
+        fylabel, fyunit = get_axis_label(ylist[0],xlabel)
+    else:
+        fylabel, fyunit = get_axis_label(ylist[0])
+    plt.title('Plot of %s vs %s obtained from PrMon output'%(fxlabel, fylabel), y = 1.05)
+    plt.xlabel(fxlabel+' ['+fxunit+']')
+    plt.ylabel(fylabel+' ['+fyunit+']')
+    plt.tight_layout()
     fig.savefig(output)
 
     print('Saved output into %s'%(output))
