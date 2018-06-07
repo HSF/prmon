@@ -102,20 +102,20 @@ timestamped output file (usually `prmon.txt`). Some examples include:
 ```sh
 prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap
 ```
-![](example-plots/PrMon_wtime_vs_vmem_pss_rss_swap.png)
+![](example-plots/PrMon_wtime_vs_vmem_pss_rss_swap.png){:height="50%" width="50%"}
 
 * Rate of change in memory usage as a function of wall-time:
 ```sh
 prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap --diff
 ```
-![](example-plots/PrMon_wtime_vs_diff_vmem_pss_rss_swap.png)
+![](example-plots/PrMon_wtime_vs_diff_vmem_pss_rss_swap.png){:height="50%" width="50%"}
 
 * Rate of change in CPU usage as a function of wall-time with stacked 
 user and system utilizations:
 ```sh
 prmon_plot.py --input prmon.txt --xvar wtime --yvar utime,stime --yunit SEC --diff --stacked
 ```
-![](example-plots/PrMon_wtime_vs_diff_utime_stime.png)
+![](example-plots/PrMon_wtime_vs_diff_utime_stime.png){:height="50%" width="50%"}
 
 * The script allows the user to specify variables, their units, plotting 
 style (stacked vs overlaid), as well as the format of the output image.
