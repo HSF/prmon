@@ -117,7 +117,7 @@ prmon_plot.py --input prmon.txt --xvar wtime --yvar utime,stime --yunit SEC --di
 ```
 ![](example-plots/PrMon_wtime_vs_diff_utime_stime.png)
 
-* The script allows the user to specify variables, their units, plotting 
+The script allows the user to specify variables, their units, plotting 
 style (stacked vs overlaid), as well as the format of the output image.
 Use `-h` for more information.
 
