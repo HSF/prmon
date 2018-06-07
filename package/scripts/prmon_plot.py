@@ -59,7 +59,7 @@ legendnames = {'vmem':'Virtual Memory',
 
 multipliers = {'SEC': 1.,
                'MIN': 60.,
-               'HR': 60.*60.,
+               'HOUR': 60.*60.,
                'B': 1.,
                'KB': 1024.,
                'MB': 1024.*1024.,
@@ -87,13 +87,13 @@ if '__main__' in __name__:
     parser.add_argument('--xvar', type = str, default = 'wtime', 
                         help = 'name of the variable to be plotted in the x-axis')
     parser.add_argument('--xunit', nargs = '?', default = 'SEC',
-                        choices=['SEC', 'MIN', 'HR', 'B', 'KB', 'MB', 'GB'],
+                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB'],
                         help = 'unit of the variable to be plotted in the x-axis')
     parser.add_argument('--yvar', type = str, default = 'pss',
                         help = 'name(s) of the variable to be plotted in the y-axis' 
                                ' (comma seperated list is accepted)')
     parser.add_argument('--yunit', nargs = '?', default = 'MB',
-                        choices=['SEC', 'MIN', 'HR', 'B', 'KB', 'MB', 'GB'],
+                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB'],
                         help = 'unit of the variable to be plotted in the y-axis')
     parser.add_argument('--stacked', dest = 'stacked', action = 'store_true',
                         help = 'stack plots if specified')
