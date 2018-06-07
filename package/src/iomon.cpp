@@ -7,16 +7,10 @@
 #include <iostream>
 #include <sstream>
 
-const static std::vector<std::string> default_io_params{
-    "rchar", "wchar", "read_bytes", "write_bytes"};
-
-const static unsigned int fname_size{64};
-const static unsigned int line_buf_size{256};
-
 // Constructor; uses RAII pattern to be valid
 // after construction
 iomon::iomon() : io_stats{} {
-  for (const auto& io_param : default_io_params) io_stats[io_param] = 0;
+  for (const auto& io_param : prmon::default_io_params) io_stats[io_param] = 0;
 }
 
 void iomon::update_stats(const std::vector<pid_t>& pids) {
