@@ -96,12 +96,29 @@ default).
 ### Visualisation
 
 The `prmon_plot.py` script can be used to plot the outputs of prmon from the
-timestamped output file (usually `prmon.txt`). e.g.,
+timestamped output file (usually `prmon.txt`). Some examples include: 
 
+Memory usage as a function of wall-time:
 ```sh
-prmon_plot.py --yvar pss,rss,swap,vmem
+prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap
 ```
+![](../master/example-plots/PrMon_wtime_vs_vmem_pss_rss_swap.png)
 
+Rate of change in memory usage as a function of wall-time:
+```sh
+prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap --diff
+```
+![](../master/example-plots/PrMon_wtime_vs_diff_vmem_pss_rss_swap.png)
+
+Rate of change in CPU usage as a function of wall-time with stacked 
+user and system utilizations:
+```sh
+prmon_plot.py --input prmon.txt --xvar wtime --yvar utime,stime --yunit SEC --diff --stacked
+```
+![](../master/example-plots/PrMon_wtime_vs_diff_utime_stime.png)
+
+The script allows the user to specify variables, their units, plotting 
+style (stacked vs overlaid), as well as the format of the output image.
 Use `-h` for more information.
 
 ## Developer
