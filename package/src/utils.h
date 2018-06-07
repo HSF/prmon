@@ -22,6 +22,8 @@ namespace prmon {
       "rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
   const static std::vector<std::string> default_wall_params{"wtime"};
   const static std::vector<std::string> default_memory_params{"vmem", "pss", "rss", "swap"};
+  const static std::vector<std::string> default_io_params{
+      "rchar", "wchar", "read_bytes", "write_bytes"};
 }
 
 #endif  // PRMON_UTILS_H
