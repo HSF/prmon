@@ -22,7 +22,7 @@ except ImportError:
 # Define the labels/units for beautification
 axisunits = {'vmem':'kb', 'pss':'kb', 'rss':'kb', 'swap':'kb',
              'utime':'sec', 'stime':'sec', 'wtime':'sec',
-             'rchar':'char','wchar':'char',
+             'rchar':'b','wchar':'b',
              'read_bytes':'b','write_bytes':'b',
              'rx_packets':'packets', 'tx_packets':'packets',
              'rx_bytes':'b','tx_bytes':'b'}
@@ -50,10 +50,10 @@ legendnames = {'vmem':'Virtual Memory',
                'utime':'User CPU-time',
                'stime':'System CPU-time',
                'wtime':'Wall-time',
-               'rchar':'I/O Read',
-               'wchar':'I/O Written',
-               'read_bytes':'I/O Read',
-               'write_bytes':'I/O Written',
+               'rchar':'I/O Read (rchar)',
+               'wchar':'I/O Written (wchar)',
+               'read_bytes':'I/O Read (read_bytes)',
+               'write_bytes':'I/O Written (write_bytes)',
                'rx_packets':'Network Received',
                'tx_packets':'Network Transmitted',
                'rx_bytes':'Network Received',
@@ -66,7 +66,6 @@ multipliers = {'SEC': 1.,
                'KB': 1024.,
                'MB': 1024.*1024.,
                'GB': 1024.*1024.*1024.,
-               'CHAR': 1.,
                'PACKETS' : 1.}
 
 # A few basic functions for labels/ conversions
