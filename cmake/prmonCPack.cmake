@@ -87,11 +87,19 @@ function(hsf_get_platform _output_var)
       # http://www.freedesktop.org/software/systemd/man/os-release.html
       # - ID
       file(STRINGS "/etc/os-release" HSF_OS_ID REGEX "^ID=.*$")
-      string(REGEX REPLACE "ID=|\"" "" HSF_OS_ID ${HSF_OS_ID})
+      if(HSF_OS_ID)
+        string(REGEX REPLACE "ID=|\"" "" HSF_OS_ID ${HSF_OS_ID})
+      else()
+        set(HSF_OS_ID "unknown")
+      endif()
       # - VERSION_ID
       file(STRINGS "/etc/os-release" HSF_OS_VERSION REGEX "^VERSION_ID=.*$")
-      string(REGEX REPLACE "VERSION_ID=|\"" "" HSF_OS_VERSION ${HSF_OS_VERSION})
-      string(REGEX REPLACE "([a-z0-9]+)(\.|-|_)([a-z0-9]+).*" "\\1\\3" HSF_OS_VERSION ${HSF_OS_VERSION})
+      if(HSF_OS_VERSION)
+        string(REGEX REPLACE "VERSION_ID=|\"" "" HSF_OS_VERSION ${HSF_OS_VERSION})
+        string(REGEX REPLACE "([a-z0-9]+)(\.|-|_)([a-z0-9]+).*" "\\1\\3" HSF_OS_VERSION ${HSF_OS_VERSION})
+      else()
+        set(HSF_OS_VERSION "0")
+      endif()
     else()
       # Workaround for older systems
       # 1. Might be lucky and have lsb_release
