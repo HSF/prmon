@@ -81,49 +81,56 @@ function(hsf_get_platform _output_var)
       set(HSF_OS_VERSION "unknown")
     endif()
   elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    # Use /etc/os-release if it's present
-    if(EXISTS "/etc/os-release")
-      # - Parse based on spec from freedesktop
-      # http://www.freedesktop.org/software/systemd/man/os-release.html
-      # - ID
-      file(STRINGS "/etc/os-release" HSF_OS_ID REGEX "^ID=.*$")
-      if(HSF_OS_ID)
-        string(REGEX REPLACE "ID=|\"" "" HSF_OS_ID ${HSF_OS_ID})
-      else()
-        set(HSF_OS_ID "unknown")
-      endif()
-      # - VERSION_ID
-      file(STRINGS "/etc/os-release" HSF_OS_VERSION REGEX "^VERSION_ID=.*$")
-      if(HSF_OS_VERSION)
-        string(REGEX REPLACE "VERSION_ID=|\"" "" HSF_OS_VERSION ${HSF_OS_VERSION})
-        string(REGEX REPLACE "([a-z0-9]+)(\.|-|_)([a-z0-9]+).*" "\\1\\3" HSF_OS_VERSION ${HSF_OS_VERSION})
-      else()
-        set(HSF_OS_VERSION "0")
-      endif()
+    if(BUILD_STATIC)
+      # For a static build the linux distribution
+      # doesn't really matter
+      set(HSF_OS_ID "static")
+      set(HSF_OS_VERSION "")
     else()
-      # Workaround for older systems
-      # 1. Might be lucky and have lsb_release
-      find_program(prmon_LSB_RELEASE_EXECUTABLE lsb_release
-        DOC "Path to lsb_release program"
-        )
-      mark_as_advanced(prmon_LSB_RELEASE_EXECUTABLE)
-      if(prmon_LSB_RELEASE_EXECUTABLE)
+    # Use /etc/os-release if it's present
+      if(EXISTS "/etc/os-release")
+        # - Parse based on spec from freedesktop
+        # http://www.freedesktop.org/software/systemd/man/os-release.html
         # - ID
-        execute_process(COMMAND ${prmon_LSB_RELEASE_EXECUTABLE} -is
-          OUTPUT_VARIABLE HSF_OS_ID
-          OUTPUT_STRIP_TRAILING_WHITESPACE
-          )
-        string(TOLOWER ${HSF_OS_ID} HSF_OS_ID)
-        # - Version
-        execute_process(COMMAND ${prmon_LSB_RELEASE_EXECUTABLE} -ir
-          OUTPUT_VARIABLE HSF_OS_VERSION
-          OUTPUT_STRIP_TRAILING_WHITESPACE
-          )
-        string(REGEX REPLACE "([a-z0-9]+)(\.|-|_)([a-z0-9]+).*" "\\1\\3" HSF_OS_VERSION ${HSF_OS_VERSION})
+        file(STRINGS "/etc/os-release" HSF_OS_ID REGEX "^ID=.*$")
+        if(HSF_OS_ID)
+          string(REGEX REPLACE "ID=|\"" "" HSF_OS_ID ${HSF_OS_ID})
+        else()
+          set(HSF_OS_ID "unknown")
+        endif()
+        # - VERSION_ID
+        file(STRINGS "/etc/os-release" HSF_OS_VERSION REGEX "^VERSION_ID=.*$")
+        if(HSF_OS_VERSION)
+          string(REGEX REPLACE "VERSION_ID=|\"" "" HSF_OS_VERSION ${HSF_OS_VERSION})
+          string(REGEX REPLACE "([a-z0-9]+)(\.|-|_)([a-z0-9]+).*" "\\1\\3" HSF_OS_VERSION ${HSF_OS_VERSION})
+        else()
+          set(HSF_OS_VERSION "0")
+        endif()
       else()
-        # 2. Only mark in general terms, or have to check for possible /etc/VENDOR-release files
-        set(HSF_OS_ID "linux")
-        string(REGEX REPLACE "([a-z0-9]+)(\.|-|_)([a-z0-9]+).*" "\\1\\3" HSF_OS_VERSION ${CMAKE_SYSTEM_VERSION})
+        # Workaround for older systems
+        # 1. Might be lucky and have lsb_release
+        find_program(prmon_LSB_RELEASE_EXECUTABLE lsb_release
+          DOC "Path to lsb_release program"
+          )
+        mark_as_advanced(prmon_LSB_RELEASE_EXECUTABLE)
+        if(prmon_LSB_RELEASE_EXECUTABLE)
+          # - ID
+          execute_process(COMMAND ${prmon_LSB_RELEASE_EXECUTABLE} -is
+            OUTPUT_VARIABLE HSF_OS_ID
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+          string(TOLOWER ${HSF_OS_ID} HSF_OS_ID)
+          # - Version
+          execute_process(COMMAND ${prmon_LSB_RELEASE_EXECUTABLE} -ir
+            OUTPUT_VARIABLE HSF_OS_VERSION
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+          string(REGEX REPLACE "([a-z0-9]+)(\.|-|_)([a-z0-9]+).*" "\\1\\3" HSF_OS_VERSION ${HSF_OS_VERSION})
+        else()
+          # 2. Only mark in general terms, or have to check for possible /etc/VENDOR-release files
+          set(HSF_OS_ID "linux")
+          string(REGEX REPLACE "([a-z0-9]+)(\.|-|_)([a-z0-9]+).*" "\\1\\3" HSF_OS_VERSION ${CMAKE_SYSTEM_VERSION})
+        endif()
       endif()
     endif()
   else()
