@@ -1,0 +1,20 @@
+sudo: required
+
+language: c++
+
+services:
+  - docker
+  
+before_install:
+  - docker pull graemeastewart/u16-dev
+ 
+install:
+  - /bin/true
+
+script:
+  - SRC=`pwd`
+  - mkdir ../build
+  - cd ../build
+  - cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-7 -DCMAKE_C_COMPILER=/usr/bin/gcc-7 $SRC
+  - make -j
+  - make test
