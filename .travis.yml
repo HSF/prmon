@@ -1,20 +1,20 @@
 sudo: required
 
-language: c++
+# Test across multiple containers 
+env:
+  - DIMAGE=graemeastewart/u16-dev
+  - DIMAGE=graemeastewart/c7-dev
 
 services:
   - docker
   
 before_install:
-  - docker pull graemeastewart/u16-dev
+  - docker pull $DIMAGE
  
 install:
   - /bin/true
 
+# Light customisation of build for different container images
 script:
-  - SRC=`pwd`
-  - mkdir ../build
-  - cd ../build
-  - cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-7 -DCMAKE_C_COMPILER=/usr/bin/gcc-7 $SRC
-  - make -j
-  - make test
+  - if [ "$DIMAGE" = graemeastewart/u16-dev ]; then docker run -e CXX=g++-7 -e CC=gcc-7 -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
+  - if [ "$DIMAGE" = graemeastewart/c7-dev ]; then docker run -e CMAKE=cmake3 -v $(pwd):/mnt $DIMAGE scl enable devtoolset-7 /mnt/.travis-scripts/build-test.sh; fi
