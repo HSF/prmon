@@ -2,7 +2,7 @@
 
 [![Build Status][build-img]][build-link]  [![License][license-img]][license-url]
 
-[build-img]: https://travis-ci.com/hsf/prmon.svg?branch=master
+[build-img]: https://travis-ci.com/HSF/prmon.svg?branch=master
 [build-link]: https://travis-ci.com/HSF/prmon
 [license-img]: https://img.shields.io/github/license/hsf/prmon.svg 
 [license-url]: https://github.com/hsf/prmon/blob/master/LICENSE
