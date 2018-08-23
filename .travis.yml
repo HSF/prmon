@@ -1,5 +1,15 @@
 sudo: required
 
+# Add only master and stable branches
+branches:
+  only:
+    - master
+    - stable 
+
+# Notify on failure
+notifications:
+  email: on_failure
+
 # Test across multiple containers 
 env:
   - DIMAGE=graemeastewart/u16-dev
