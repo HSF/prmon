@@ -1,5 +1,12 @@
 # Process Monitor (prmon)
 
+[![Build Status][build-img]][build-link]  [![License][license-img]][license-url]
+
+[build-img]: https://travis-ci.com/hsf/prmon.svg?branch=master
+[build-link]: https://travis-ci.com/HSF/prmon
+[license-img]: https://img.shields.io/github/license/hsf/prmon.svg 
+[license-url]: https://github.com/hsf/prmon/blob/master/LICENSE
+
 The PRocess MONitor is a small stand alone program that can monitor
 the resource consumption of a process and its children. This is 
 useful in the context of the WLCG/HSF working group to evaluate
