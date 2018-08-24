@@ -14,6 +14,7 @@ notifications:
 env:
   - DIMAGE=graemeastewart/u16-dev
   - DIMAGE=graemeastewart/c7-dev
+  - DIMAGE=graemeastewart/u18-dev
 
 services:
   - docker
@@ -28,3 +29,4 @@ install:
 script:
   - if [ "$DIMAGE" = graemeastewart/u16-dev ]; then docker run -e CXX=g++-7 -e CC=gcc-7 -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
   - if [ "$DIMAGE" = graemeastewart/c7-dev ]; then docker run -e CMAKE=cmake3 -v $(pwd):/mnt $DIMAGE scl enable devtoolset-7 /mnt/.travis-scripts/build-test.sh; fi
+  - if [ "$DIMAGE" = graemeastewart/u18-dev ]; then docker run -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
