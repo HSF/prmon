@@ -103,44 +103,43 @@ limit_rate_latency_egress() { # $1 : interface, $2 : rate, $3 : latency, $4 : MA
 # Help
 display_help() {
 echo -e "Usage : $0 [\e[4mLIMITS\e[24m] [\e[4mOPTIONS\e[24m] -- \e[4mPROG\e[24m
-  Run a \e[4mPROG\e[24m under network and memory limitations.
-  Libcgroups-tools library is needed.
-
-  \e[1m\e[4mLIMITS\e[0m:\n
-  \e[1m-m\e[0m       Sets the maximum amount of user memory (including file cache).
-           If no units are specified, the value is interpreted as bytes.
-           However, it is possible to use suffixes to represent larger
-           units — k or K for kilobytes, m or M for megabytes, and g or
-           G for gigabytes.\n
-  \e[1m-u\e[0m       Limits upload speed. (see below for units) \n
-  \e[1m-d\e[0m       Limits download speed. (see below for units)\n
-  \e[1m-l\e[0m       Adds latency. Egress latency only. (see below for units)\n
-  \e[1m\e[4mOPTIONS\e[0m:\n
-  \e[1m-b\e[0m       Specifies a username, the process will run with
-          these privileges, default : $(whoami)\n
-  \e[1m-c\e[0m       Specifies a cgroup classid (value in net_cls.classid),
-          default : $CGCLASSID\n
-  \e[1m-i\e[0m       Specifies an interface name, default : $DEV\n
-  \e[1m-a\e[0m       Specifies a MarkID which will be applied to the\n
-          packets, default : $MARKID\n
-  \e[1m-x\e[0m       Removes all limits\n
-  \e[1m-h\e[0m       Shows this help\n
-  UNITS:
-          bit or a bare number Bits per second\n
-          kbit   Kilobits per second\n
-          mbit   Megabits per second\n
-          gbit   Gigabits per second\n
-          tbit   Terabits per second\n
-          bps    Bytes per second\n
-          kbps   Kilobytes per second\n
-          mbps   Megabytes per second\n
-          gbps   Gigabytes per second\n
-          tbps   Terabytes per second\n
-          s, sec or secs Whole seconds\n
-          ms, msec or msecs Milliseconds\n
-          us, usec, usecs or a bare number Microseconds.\n
-  For the download rate, because of iptables's hashlimit limitations
-  only bytes units are valid and the maximum value is 400mbps."
+Run a \e[4mPROG\e[24m under network and memory limitations.
+Libcgroups-tools library is needed.
+\e[1m\e[4mLIMITS\e[0m:\n
+\e[1m-m\e[0m       Sets the maximum amount of user memory (including file cache).
+         If no units are specified, the value is interpreted as bytes.
+         However, it is possible to use suffixes to represent larger
+         units — k or K for kilobytes, m or M for megabytes, and g or
+         G for gigabytes.
+\e[1m-u\e[0m       Limits upload speed. (see below for units)
+\e[1m-d\e[0m       Limits download speed. (see below for units)
+\e[1m-l\e[0m       Adds latency. Egress latency only. (see below for units)
+\e[1m\e[4mOPTIONS\e[0m:\n
+\e[1m-b\e[0m       Specifies a username, the process will run with
+        these privileges, default : $(whoami)
+\e[1m-c\e[0m       Specifies a cgroup classid (value in net_cls.classid),
+        default : $CGCLASSID
+\e[1m-i\e[0m       Specifies an interface name, default : $DEV
+\e[1m-a\e[0m       Specifies a MarkID which will be applied to the
+        packets, default : $MARKID
+\e[1m-x\e[0m       Removes all limits
+\e[1m-h\e[0m       Shows this help
+UNITS:\n
+        bit or a bare number Bits per second
+        kbit   Kilobits per second
+        mbit   Megabits per second
+        gbit   Gigabits per second
+        tbit   Terabits per second
+        bps    Bytes per second
+        kbps   Kilobytes per second
+        mbps   Megabytes per second
+        gbps   Gigabytes per second
+        tbps   Terabytes per second
+        s, sec or secs Whole seconds
+        ms, msec or msecs Milliseconds
+        us, usec, usecs or a bare number Microseconds.
+For the download rate, because of iptables's hashlimit limitations
+only bytes units are valid and the maximum value is 400mbps."
 }
 
 # Helper functions to handle unit conversion
@@ -248,7 +247,7 @@ fi
 
 # now executing the program
 shift "$((OPTIND - 1))"
-runuser -u $UNAME -- $@
+sudo -u $UNAME $@
 
 delete_limit_rate_latency_egress
 delete_limit_rate_ingress $CGCLASSID $MARKID $D_LIMIT
