@@ -247,7 +247,7 @@ fi
 
 # now executing the program
 shift "$((OPTIND - 1))"
-sudo -u $UNAME $@
+sudo -H -u $UNAME $@
 
 delete_limit_rate_latency_egress
 delete_limit_rate_ingress $CGCLASSID $MARKID $D_LIMIT
