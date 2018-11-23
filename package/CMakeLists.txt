@@ -5,6 +5,7 @@ add_executable(prmon src/prmon.cpp
 					 src/netmon.cpp 
 					 src/iomon.cpp 
 					 src/cpumon.cpp 
+					 src/countmon.cpp 
 					 src/wallmon.cpp
 					 src/memmon.cpp)
 target_include_directories(prmon PRIVATE ${RapidJSON_INCLUDE_DIR})
