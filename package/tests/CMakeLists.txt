@@ -37,6 +37,7 @@ script_install(SCRIPT testNET.py)
 script_install(SCRIPT testMEM.py)
 script_install(SCRIPT netBurner.py)
 script_install(SCRIPT httpBlock.py DESTINATION cgi-bin)
+script_install(SCRIPT testCOUNT.py)
 
 # CPU Tests
 add_test(NAME testCPUsingle COMMAND testCPU.py --threads 1 --procs 1) 
@@ -55,3 +56,6 @@ add_test(NAME basicNET COMMAND python testNET.py)
 # Memory Tests
 add_test(NAME singleMem COMMAND python testMEM.py --procs 1)
 add_test(NAME childMem COMMAND python testMEM.py --procs 4)
+
+# Process and thread counting Tests
+add_test(NAME basicCOUNT COMMAND python testCOUNT.py --procs 2 --threads 2)

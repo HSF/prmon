@@ -32,6 +32,7 @@
 #include "pidutils.h"
 #include "prmon.h"
 #include "wallmon.h"
+#include "countmon.h"
 
 using namespace rapidjson;
 
@@ -71,6 +72,10 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
   // This is the vector of all monitoring components
   std::vector<Imonitor*> monitors{};
+
+  // Number of processes and threads monitoring
+  countmon count_monitor{};
+  monitors.push_back(&count_monitor);
 
   // Wall clock monitoring
   wallmon wall_monitor{};
