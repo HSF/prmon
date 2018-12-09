@@ -247,7 +247,7 @@ fi
 
 # now executing the program
 shift "$((OPTIND - 1))"
-sudo -H -u $UNAME $@
+sudo -u $UNAME -E env "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" $@
 
 delete_limit_rate_latency_egress
 delete_limit_rate_ingress $CGCLASSID $MARKID $D_LIMIT
