@@ -2,13 +2,12 @@ find_package(nlohmann_json REQUIRED)
 
 add_executable(prmon src/prmon.cpp
 					 src/pidutils.cpp
-					 src/netmon.cpp 
-					 src/iomon.cpp 
-					 src/cpumon.cpp 
-					 src/countmon.cpp 
+					 src/netmon.cpp
+					 src/iomon.cpp
+					 src/cpumon.cpp
+					 src/countmon.cpp
 					 src/wallmon.cpp
 					 src/memmon.cpp)
-target_link_libraries(prmon PRIVATE nlohmann_json::nlohmann_json)
 
 # Set flags based on more unusual build flags
 if(BUILD_STATIC)
