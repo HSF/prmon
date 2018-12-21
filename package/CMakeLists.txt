@@ -9,6 +9,13 @@ add_executable(prmon src/prmon.cpp
 					 src/wallmon.cpp
 					 src/memmon.cpp)
 
+# Some older versions of the nlohmann_json package don't define
+# this target (< 3.0.0 ?). The build on these platforms seems to
+# go ok even without this "link library" definition.
+if(TARGET nlohmann_json::nlohmann_json)
+  target_link_libraries(prmon PRIVATE nlohmann_json::nlohmann_json)
+endif(TARGET nlohmann_json::nlohmann_json)
+
 # Set flags based on more unusual build flags
 if(BUILD_STATIC)
   set_target_properties(prmon PROPERTIES LINK_FLAGS "-static")
