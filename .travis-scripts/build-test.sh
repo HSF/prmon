@@ -15,6 +15,7 @@ fi
 if [ -z "$CMAKE" ]; then
 	CMAKE=$(type -p cmake)
 fi
+echo $CMAKE -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC $CMAKE_EXTRA /mnt
 $CMAKE -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC $CMAKE_EXTRA /mnt
 make -j
 make test
