@@ -179,8 +179,8 @@ if '__main__' in __name__:
         fylabel = get_axis_label(ylist[0])
         fyunit  = args.yunit
     plt.title('Plot of %s vs %s'%(fxlabel, fylabel), y = 1.05)
-    plt.xlabel(fxlabel+' ['+fxunit+']')
-    plt.ylabel(fylabel+' ['+fyunit+']')
+    plt.xlabel((fxlabel+' ['+fxunit+']') if fxunit != '1' else fxlabel)
+    plt.ylabel((fylabel+' ['+fyunit+']') if fyunit != '1' else fylabel)
     plt.tight_layout()
     fig.savefig(output)
 
