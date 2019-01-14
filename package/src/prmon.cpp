@@ -19,11 +19,9 @@
 #include <sstream>
 #include <thread>
 #include <vector>
+#include <iomanip>
 
-#include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <nlohmann/json.hpp>
 
 #include "cpumon.h"
 #include "iomon.h"
@@ -33,8 +31,6 @@
 #include "prmon.h"
 #include "wallmon.h"
 #include "countmon.h"
-
-using namespace rapidjson;
 
 bool sigusr1 = false;
 
@@ -133,15 +129,13 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   }
   json << "}}" << std::ends;
 
-  Document d;
-  d.Parse(json.str().c_str());
-  StringBuffer buffer;
-  Writer<StringBuffer> writer(buffer);
-
   std::stringstream tmpFile;
   tmpFile << jsonSummary << "_tmp";
   std::stringstream newFile;
   newFile << jsonSummary << "_snapshot";
+
+  // Parse JSON explicitly
+  auto d = nlohmann::json::parse(json);
 
   // See if the kernel is new enough to have /proc/PID/task/PID/children
   bool modern_kernel = kernel_proc_pid_test(mpid);
@@ -172,23 +166,20 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         file << std::endl;
 
         // Reset buffer
-        buffer.Clear();
-        writer.Reset(buffer);
+        d.clear();
 
         // Create JSON realtime summary
         for (const auto monitor : monitors)
           for (const auto& stat : monitor->get_json_total_stats())
-            d["Max"][(stat.first).c_str()].SetUint64(stat.second);
+            d["Max"][(stat.first).c_str()] = stat.second;
         for (const auto monitor : monitors)
           for (const auto& stat : monitor->get_json_average_stats(
                    wall_monitor.get_wallclock_clock_t()))
-            d["Avg"][(stat.first).c_str()].SetUint64(stat.second);
+            d["Avg"][(stat.first).c_str()] = stat.second;
 
-        // Write JSON realtime summary to a temporary file (to avoid race
-        // conditions with pilot trying to read from file at the same time)
-        d.Accept(writer);
+        // Write JSON realtime summary to a temporary file
         std::ofstream json_out(tmpFile.str());
-        json_out << buffer.GetString() << std::endl;
+        json_out << std::setw(4) << d << std::endl;
         json_out.close();
         wroteFile = true;
 
@@ -217,7 +208,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
   // Write final JSON summary file
   file.open(jsonSummary);
-  file << buffer.GetString() << std::endl;
+  file << std::setw(4) << d << std::endl;
   file.close();
 
   return 0;

@@ -4,11 +4,11 @@
 
 [build-img]: https://travis-ci.com/HSF/prmon.svg?branch=master
 [build-link]: https://travis-ci.com/HSF/prmon
-[license-img]: https://img.shields.io/github/license/hsf/prmon.svg 
+[license-img]: https://img.shields.io/github/license/hsf/prmon.svg
 [license-url]: https://github.com/hsf/prmon/blob/master/LICENSE
 
 The PRocess MONitor is a small stand alone program that can monitor
-the resource consumption of a process and its children. This is 
+the resource consumption of a process and its children. This is
 useful in the context of the WLCG/HSF working group to evaluate
 the costs and performance of HEP workflows in WLCG. In a previous
 incarnation (MemoryMonitor) it has been used by ATLAS for sometime to
@@ -26,11 +26,9 @@ prmon currently runs on Linux machines as it requires access to the
 ### Building the project
 
 Building prmon requires a modern C++ compiler, CMake version 3.1 or
-higher and the [RapidJSON libraries](http://rapidjson.org/). Note that the installation of
-RapidJSON needs to be modern enough that CMake is supported (e.g.,
-on Ubuntu 16.04 `rapidjson-dev` is too old, just install it yourself).
+higher and the [Niels Lohmann JSON libraries](https://github.com/nlohmann/json).
 
-Building should be as simple as
+Building is usually as simple as
 
     mkdir build
     cd build
@@ -38,15 +36,17 @@ Building should be as simple as
     make -j<number of cores on your machine>
     make install
 
-If your installation of RapidJSON is in a non-standard location then
-setting `RapidJSON_DIR` may be required as a hint to CMake.
+If your installation of JSON is in a non-standard location then
+setting `nlohmann_json_DIR` may be required as a hint to CMake.
+(e.g. this is necessary on Ubuntu18 when using the standard `nlohmann-json-dev`
+package: `-Dnlohmann_json_DIR=/usr/lib/cmake`.)
 
 The option `-DCMAKE_BUILD_TYPE` can switch between all of the standard
 build types. The default is `Release`; use `RelWithDebInfo` if you want
 debug symbols.
 
 To build a statically linked version of `prmon` set the `BUILD_STATIC`
-CMake variable to `ON` (e.g., adding `-DBUILD_STATIC=ON` to the 
+CMake variable to `ON` (e.g., adding `-DBUILD_STATIC=ON` to the
 command line).
 
 Note that in a build environment with CVMFS available the C++ compiler
@@ -63,7 +63,7 @@ A cpack based package can be created by invoking
 To run the tests of the project, first build it and then invoke
 
     make test
-    
+
 ## Running
 
 The `prmon` binary is invoked with the following arguments:
@@ -79,9 +79,9 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 * `--json-summmary` output file for summary data written in JSON format
 * `--interval` time, in seconds, between monitoring snapshots
 * `--netdev` restricts network statistics to one (or more) network devices
-* `--` after this argument the following arguments are treated as a program to invoke 
+* `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
-  instead of being given a PID via `--pid` 
+  instead of being given a PID via `--pid`
 
 
 ## Outputs
@@ -103,7 +103,7 @@ default).
 ### Visualisation
 
 The `prmon_plot.py` script can be used to plot the outputs of prmon from the
-timestamped output file (usually `prmon.txt`). Some examples include: 
+timestamped output file (usually `prmon.txt`). Some examples include:
 
 * Memory usage as a function of wall-time:
 ```sh
@@ -117,7 +117,7 @@ prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap --diff
 ```
 ![](example-plots/PrMon_wtime_vs_diff_vmem_pss_rss_swap.png)
 
-* Rate of change in CPU usage as a function of wall-time with stacked 
+* Rate of change in CPU usage as a function of wall-time with stacked
 user and system utilizations:
 ```sh
 prmon_plot.py --input prmon.txt --xvar wtime --yvar utime,stime --yunit SEC --diff --stacked
@@ -127,7 +127,7 @@ prmon_plot.py --input prmon.txt --xvar wtime --yvar utime,stime --yunit SEC --di
 The plots above, as well as the input `prmon.txt` file that is used
 to produce them, can be found under the `example-plots` folder.
 
-The script allows the user to specify variables, their units, plotting 
+The script allows the user to specify variables, their units, plotting
 style (stacked vs overlaid), as well as the format of the output image.
 Use `-h` for more information.
 
@@ -151,5 +151,3 @@ to CMake using `Gperftools_ROOT_DIR`.
 # Copyright
 
 Copyright (c) 2018, CERN.
-
- 
