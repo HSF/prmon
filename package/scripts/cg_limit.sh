@@ -11,17 +11,17 @@ cgroup_config=tmp_cg_config*
 UNAME=$(whoami)
 
 delete_limit_rate_latency_egress() {
-  /sbin/tc qdisc del dev $DEV root 2> /dev/null > /dev/null
+  $TC qdisc del dev $DEV root 2> /dev/null > /dev/null
 }
 
 delete_limit_rate_ingress() { # $1 : CGCLASSID, $2 : MARKID, $3 : D_LIMIT
-  iptables -D OUTPUT -m cgroup --cgroup $1 2> /dev/null
+  iptables -D OUTPUT -m cgroup --cgroup $1 -j MARK --set-mark $2 2> /dev/null
   iptables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
   iptables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
   iptables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
   iptables -D INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
 
-  ip6tables -D OUTPUT -m cgroup --cgroup $1 2> /dev/null
+  ip6tables -D OUTPUT -m cgroup --cgroup $1 -j MARK --set-mark $2 2> /dev/null
   ip6tables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
   ip6tables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
   ip6tables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
@@ -234,6 +234,7 @@ if [[ "$M_FLAG" -eq "1" ]]; then
   fi
   cgclassify -g memory:/$CGNAME $$
 fi
+
 if [[ "$U_FLAG" -eq "1" ]] || [[ "$DELAY_FLAG" -eq "1" ]] || [[ "$D_FLAG" -eq "1" ]]; then
   init_cgroup_net $CGNAME $CGCLASSID
   limit_rate_latency_egress $DEV $U_LIMIT $DELAY_LIMIT $MARKID
@@ -249,7 +250,7 @@ fi
 
 # now executing the program
 shift "$((OPTIND - 1))"
-sudo -u $UNAME -E env "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" $@
+sudo -u $UNAME -E "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" env $@
 
 delete_limit_rate_latency_egress
 delete_limit_rate_ingress $CGCLASSID $MARKID $D_LIMIT
