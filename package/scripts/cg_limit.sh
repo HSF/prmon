@@ -10,25 +10,6 @@ config_file_name=tmp_iptables_rule
 cgroup_config=tmp_cg_config*
 UNAME=$(whoami)
 
-delete_limit_rate_latency_egress() {
-  $TC qdisc del dev $DEV root 2> /dev/null > /dev/null
-}
-
-delete_limit_rate_ingress() { # $1 : CGCLASSID, $2 : MARKID, $3 : D_LIMIT
-  iptables -D OUTPUT -m cgroup --cgroup $1 -j MARK --set-mark $2 2> /dev/null
-  iptables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
-  iptables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
-  iptables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
-  iptables -D INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
-
-  ip6tables -D OUTPUT -m cgroup --cgroup $1 -j MARK --set-mark $2 2> /dev/null
-  ip6tables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
-  ip6tables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
-  ip6tables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
-  ip6tables -D INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
-  rm /tmp/$config_file_name 2> /dev/null
-}
-
 init_cgroup_net() { # $1 : CGNAME, $2 : CGCLASSID
   cgcreate -g net_cls:/$1
   cgset -r net_cls.classid=$2 /$1
@@ -100,6 +81,32 @@ limit_rate_latency_egress() { # $1 : interface, $2 : rate, $3 : latency, $4 : MA
   $TC qdisc add dev $1 parent 1:10 handle 2: netem delay $3
   $TC filter add dev $1 parent 1: handle $4 fw classid 1:10
   # $TC filter add dev $1 parent 1: protocol ip prio 1 handle 1: cgroup
+}
+
+delete_limit_rate_latency_egress() {
+  $TC qdisc del dev $DEV root 2> /dev/null > /dev/null
+}
+
+delete_limit_rate_ingress() { # $1 : CGCLASSID, $2 : MARKID, $3 : D_LIMIT
+  iptables -D OUTPUT -m cgroup --cgroup $1 -j MARK --set-mark $2 2> /dev/null
+  iptables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
+  iptables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
+  iptables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
+  iptables -D INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
+
+  ip6tables -D OUTPUT -m cgroup --cgroup $1 -j MARK --set-mark $2 2> /dev/null
+  ip6tables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
+  ip6tables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
+  ip6tables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
+  ip6tables -D INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
+  rm /tmp/$config_file_name 2> /dev/null
+}
+
+delete_all() {
+  delete_limit_rate_latency_egress
+  delete_limit_rate_ingress $CGCLASSID $MARKID $D_LIMIT
+  delete_cgroup_net $CGNAME
+  delete_cgroup_mem $CGNAME
 }
 
 # Help
@@ -250,10 +257,8 @@ fi
 
 # now executing the program
 shift "$((OPTIND - 1))"
-sudo -u $UNAME -E "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" env $@
+sudo -u $UNAME -E env "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" $@
 
-delete_limit_rate_latency_egress
-delete_limit_rate_ingress $CGCLASSID $MARKID $D_LIMIT
-delete_cgroup_net $CGNAME
-delete_cgroup_mem $CGNAME
+delete_all
+
 exit 0
