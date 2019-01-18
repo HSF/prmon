@@ -24,8 +24,9 @@ axisunits = {'vmem':'kb', 'pss':'kb', 'rss':'kb', 'swap':'kb',
              'utime':'sec', 'stime':'sec', 'wtime':'sec',
              'rchar':'b','wchar':'b',
              'read_bytes':'b','write_bytes':'b',
-             'rx_packets':'packets', 'tx_packets':'packets',
-             'rx_bytes':'b','tx_bytes':'b'}
+             'rx_packets':'1', 'tx_packets':'1',
+             'rx_bytes':'b','tx_bytes':'b',
+             'nprocs':'1', 'nthreads':'1' }
 
 axisnames = {'vmem':'Memory', 
              'pss':'Memory', 
@@ -41,7 +42,9 @@ axisnames = {'vmem':'Memory',
              'rx_packets':'Network',
              'tx_packets':'Network',
              'rx_bytes':'Network',
-             'tx_bytes':'Network'}
+             'tx_bytes':'Network',
+             'nprocs':'Count',
+             'nthreads':'Count'}
 
 legendnames = {'vmem':'Virtual Memory', 
                'pss':'Proportional Set Size', 
@@ -54,10 +57,12 @@ legendnames = {'vmem':'Virtual Memory',
                'wchar':'I/O Written (wchar)',
                'read_bytes':'I/O Read (read_bytes)',
                'write_bytes':'I/O Written (write_bytes)',
-               'rx_packets':'Network Received',
-               'tx_packets':'Network Transmitted',
-               'rx_bytes':'Network Received',
-               'tx_bytes':'Network Transmitted'}
+               'rx_packets':'Network Received (packets)',
+               'tx_packets':'Network Transmitted (packets)',
+               'rx_bytes':'Network Received (bytes)',
+               'tx_bytes':'Network Transmitted (bytes)',
+               'nprocs':'Number of Processes',
+               'nthreads':'Number of Threads'}
 
 multipliers = {'SEC': 1.,
                'MIN': 60.,
@@ -66,7 +71,7 @@ multipliers = {'SEC': 1.,
                'KB': 1024.,
                'MB': 1024.*1024.,
                'GB': 1024.*1024.*1024.,
-               'PACKETS' : 1.}
+               '1': 1.}
 
 # A few basic functions for labels/ conversions
 def get_axis_label(nom, denom = None):
@@ -88,13 +93,13 @@ if '__main__' in __name__:
     parser.add_argument('--xvar', type = str, default = 'wtime', 
                         help = 'name of the variable to be plotted in the x-axis')
     parser.add_argument('--xunit', nargs = '?', default = 'SEC',
-                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB'],
+                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1'],
                         help = 'unit of the variable to be plotted in the x-axis')
     parser.add_argument('--yvar', type = str, default = 'pss',
                         help = 'name(s) of the variable to be plotted in the y-axis' 
                                ' (comma seperated list is accepted)')
     parser.add_argument('--yunit', nargs = '?', default = 'MB',
-                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB'],
+                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1'],
                         help = 'unit of the variable to be plotted in the y-axis')
     parser.add_argument('--stacked', dest = 'stacked', action = 'store_true',
                         help = 'stack plots if specified')
@@ -174,8 +179,8 @@ if '__main__' in __name__:
         fylabel = get_axis_label(ylist[0])
         fyunit  = args.yunit
     plt.title('Plot of %s vs %s'%(fxlabel, fylabel), y = 1.05)
-    plt.xlabel(fxlabel+' ['+fxunit+']')
-    plt.ylabel(fylabel+' ['+fyunit+']')
+    plt.xlabel((fxlabel+' ['+fxunit+']') if fxunit != '1' else fxlabel)
+    plt.ylabel((fylabel+' ['+fyunit+']') if fyunit != '1' else fylabel)
     plt.tight_layout()
     fig.savefig(output)
 
