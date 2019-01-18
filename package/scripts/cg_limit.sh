@@ -15,12 +15,13 @@ delete_limit_rate_latency_egress() {
 }
 
 delete_limit_rate_ingress() { # $1 : CGCLASSID, $2 : MARKID, $3 : D_LIMIT
-  iptables -D OUTPUT 1 -m cgroup --cgroup $1 2> /dev/null
+  iptables -D OUTPUT -m cgroup --cgroup $1 2> /dev/null
   iptables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
   iptables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
   iptables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
   iptables -D INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
-  ip6tables -D OUTPUT 1 -m cgroup --cgroup $1 2> /dev/null
+
+  ip6tables -D OUTPUT -m cgroup --cgroup $1 2> /dev/null
   ip6tables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
   ip6tables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
   ip6tables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
@@ -68,6 +69,7 @@ limit_rate_ingress() { # $1 : D_LIMIT, $2 : CGCLASSID, $3 : MARKID
   if [ $? -ne 0 ]; then
     return 1
   fi
+
   ip6tables -I OUTPUT 1 -m cgroup --cgroup $2 -j MARK --set-mark $3
   if [ $? -ne 0 ]; then
     return 1
