@@ -30,6 +30,9 @@ delete_cgroup_mem() { # $1 : CGNAME
 
 limit_rate_ingress() { # $1 : D_LIMIT, $2 : CGCLASSID, $3 : MARKID
 
+  iptables -N QOS
+  ip6tables -N QOS
+
   iptables -I OUTPUT 1 -m cgroup --cgroup $2 -j MARK --set-mark $3
   if [ $? -ne 0 ]; then
     return 1
@@ -42,11 +45,11 @@ limit_rate_ingress() { # $1 : D_LIMIT, $2 : CGCLASSID, $3 : MARKID
   if [ $? -ne 0 ]; then
     return 1
   fi
-  iptables -A INPUT -m connmark ! --mark $3 -j ACCEPT
+  iptables -I INPUT 1 -m connmark --mark $3 -j QOS
   if [ $? -ne 0 ]; then
     return 1
   fi
-  iptables -A INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $1/s -j DROP
+  iptables -A QOS -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $1/s -j DROP
   if [ $? -ne 0 ]; then
     return 1
   fi
@@ -63,11 +66,11 @@ limit_rate_ingress() { # $1 : D_LIMIT, $2 : CGCLASSID, $3 : MARKID
   if [ $? -ne 0 ]; then
     return 1
   fi
-  ip6tables -A INPUT -m connmark ! --mark $3 -j ACCEPT
+  ip6tables -I INPUT 1 -m connmark --mark $3 -j QOS
   if [ $? -ne 0 ]; then
     return 1
   fi
-  ip6tables -A INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $1/s -j DROP
+  ip6tables -A QOS -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $1/s -j DROP
   if [ $? -ne 0 ]; then
     return 1
   fi
@@ -91,14 +94,18 @@ delete_limit_rate_ingress() { # $1 : CGCLASSID, $2 : MARKID, $3 : D_LIMIT
   iptables -D OUTPUT -m cgroup --cgroup $1 -j MARK --set-mark $2 2> /dev/null
   iptables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
   iptables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
-  iptables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
-  iptables -D INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
+  iptables -D INPUT -m connmark --mark $2 -j QOS 2> /dev/null
+  iptables -D QOS -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
 
   ip6tables -D OUTPUT -m cgroup --cgroup $1 -j MARK --set-mark $2 2> /dev/null
   ip6tables -D POSTROUTING -t mangle -j CONNMARK --save-mark 2> /dev/null
   ip6tables -D PREROUTING -t mangle -j CONNMARK --restore-mark 2> /dev/null
-  ip6tables -D INPUT -m connmark ! --mark $2 -j ACCEPT 2> /dev/null
-  ip6tables -D INPUT -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
+  ip6tables -D INPUT -m connmark --mark $2 -j QOS 2> /dev/null
+  ip6tables -D QOS -p tcp -m hashlimit --hashlimit-name hl1 --hashlimit-above $3/s -j DROP 2> /dev/null
+
+  iptables -X QOS
+  ip6tables -X QOS
+
   rm /tmp/$config_file_name 2> /dev/null
 }
 
