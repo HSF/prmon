@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.3)
 # - Call project() to setup system
 # From CMake 3, we can set the project version easily in one go
-project(prmon VERSION 1.0.1)
+project(prmon VERSION 1.1.1)
 
 #--- Define basic build settings -----------------------------------------------
 # - Use GNU-style hierarchy for installing build products
