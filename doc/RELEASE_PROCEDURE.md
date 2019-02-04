@@ -20,7 +20,11 @@
 
 ## Zenodo
 
-1. Zenodo should pull the new release and assign it a DOI.
+1. Zenodo should pull the new release automatically and assign it a DOI.
   - The DOI does take a short time to activate.
-2. Grab the DOI link and update the `README.md` file on the
-`master` branch so that the correct DOI is shown on GitHub.
+
+## DOI
+
+- We reference the *Concept* DOI in the `README.md` file of the project.
+- If a release DOI is first reserved then it might be possible to add
+  it to the stable branch README a the tag point (we need to check).
