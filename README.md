@@ -7,6 +7,8 @@
 [license-img]: https://img.shields.io/github/license/hsf/prmon.svg
 [license-url]: https://github.com/hsf/prmon/blob/master/LICENSE
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2554202.svg)](https://doi.org/10.5281/zenodo.2554202)
+
 The PRocess MONitor is a small stand alone program that can monitor
 the resource consumption of a process and its children. This is
 useful in the context of the WLCG/HSF working group to evaluate
