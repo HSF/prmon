@@ -27,7 +27,8 @@ prmon currently runs on Linux machines as it requires access to the
 
 ### Building the project
 
-Building prmon requires a modern C++ compiler, CMake version 3.1 or
+Building prmon requires a C++ compiler that fully supports C++11,
+CMake version 3.3 or
 higher and the [Niels Lohmann JSON libraries](https://github.com/nlohmann/json).
 
 Building is usually as simple as
