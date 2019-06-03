@@ -89,23 +89,23 @@ if '__main__' in __name__:
     parser.add_argument('--input', type = str, default = 'prmon.txt', 
                         help = 'PrMon TXT output that will be used as input')
     parser.add_argument('--output', type = str, default = None,
-                        help = 'Name of the output plot without file extension.')
+                        help = 'name of the output image without the file extension')
     parser.add_argument('--xvar', type = str, default = 'wtime', 
                         help = 'name of the variable to be plotted in the x-axis')
     parser.add_argument('--xunit', nargs = '?', default = 'SEC',
                         choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1'],
                         help = 'unit of the variable to be plotted in the x-axis')
     parser.add_argument('--yvar', type = str, default = 'pss',
-                        help = 'name(s) of the variable to be plotted in the y-axis' 
+                        help = 'name(s) of the variable(s) to be plotted in the y-axis'
                                ' (comma seperated list is accepted)')
     parser.add_argument('--yunit', nargs = '?', default = 'MB',
                         choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1'],
-                        help = 'unit of the variable to be plotted in the y-axis')
+                        help = 'unit of the variable(s) to be plotted in the y-axis')
     parser.add_argument('--stacked', dest = 'stacked', action = 'store_true',
                         help = 'stack plots if specified')
     parser.add_argument('--diff', dest = 'diff', action = 'store_true',
                         help = 'plot the ratio of the discrete differences of '
-                        ' the elements for yvars and xvars if specified')
+                        ' the elements for yvars and xvars if specified (i.e. dy/dx)')
     parser.add_argument('--otype', nargs = '?', default = 'png',
                         choices=['png', 'pdf', 'svg'],
                         help = 'format of the output image')
