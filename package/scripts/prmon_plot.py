@@ -10,13 +10,11 @@ try:
     import matplotlib as mpl
     mpl.use('Agg')
     import matplotlib.pyplot as plt
-    import matplotlib.ticker as ticker
-    from matplotlib.dates import DateFormatter
     plt.style.use('seaborn-whitegrid')
 except ImportError:
-    print('This script needs pandas and mathplotlib.'          )
-    print('Looks like at least one of these module is missing.')
-    print('Please install these modules first and then retry. ')
+    print('This script needs numpy, pandas and matplotlib.')
+    print('Looks like at least one of these modules is missing.')
+    print('Please install them first and then retry.')
     sys.exit(-1)
 
 # Define the labels/units for beautification
@@ -89,7 +87,9 @@ if '__main__' in __name__:
     # Parse the user input
     parser = argparse.ArgumentParser(description = 'Configurable plotting script')
     parser.add_argument('--input', type = str, default = 'prmon.txt', 
-                        help = 'PrMon TXT output that will be used as input'     )
+                        help = 'PrMon TXT output that will be used as input')
+    parser.add_argument('--output', type = str, default = None,
+                        help = 'Name of the output plot without file extension.')
     parser.add_argument('--xvar', type = str, default = 'wtime', 
                         help = 'name of the variable to be plotted in the x-axis')
     parser.add_argument('--xunit', nargs = '?', default = 'SEC',
@@ -119,7 +119,7 @@ if '__main__' in __name__:
         sys.exit(-1)
 
     # Load the data
-    data = pd.read_table(args.input, sep = '\t')
+    data = pd.read_csv(args.input, sep = '\t')
     data['Time'] = pd.to_datetime(data['Time'], unit = 's')
 
     # Check the variables are in data
@@ -139,7 +139,10 @@ if '__main__' in __name__:
         if ylabel: ylabel += '_'
         ylabel += carg.lower()
     if args.diff: ylabel = 'diff_' + ylabel
-    output = 'PrMon_%s_vs_%s.%s'%(xlabel,ylabel,args.otype)
+    if not args.output:
+        output = 'PrMon_%s_vs_%s.%s'%(xlabel,ylabel,args.otype)
+    else:
+        output = '%s.%s'%(args.output,args.otype)
 
     # Calculate the multipliers
     xmultiplier = get_multiplier(xlabel, args.xunit)
@@ -159,13 +162,13 @@ if '__main__' in __name__:
             ydlist.append(np.array(data[carg])*ymultiplier)
     if args.stacked:
         ydata = np.vstack(ydlist)
-        plt.stackplot(xdata, ydata, lw = 2, labels = [legendnames[val] for val in ylist], alpha = 0.6) 
+        plt.stackplot(xdata, ydata, lw = 2, labels = [legendnames[val] for val in ylist], alpha = 0.6)
     else:
         for cidx,cdata in enumerate(ydlist):
-            plt.plot(xdata, cdata, lw = 2, label = legendnames[ylist[cidx]]) 
+            plt.plot(xdata, cdata, lw = 2, label = legendnames[ylist[cidx]])
     plt.legend(loc=0)
     if 'Time' in xlabel:
-        formatter = DateFormatter('%H:%M:%S')
+        formatter = mpl.dates.DateFormatter('%H:%M:%S')
         ax1.xaxis.set_major_formatter(formatter)
     fxlabel = get_axis_label(xlabel)
     fxunit  = args.xunit
