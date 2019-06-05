@@ -15,6 +15,10 @@
 // after construction
 cpumon::cpumon() : cpu_params{prmon::default_cpu_params}, cpu_stats{},
   m_num_cpus{cpuinfo::get_number_of_cpus()} {
+  // Make this configurable!!! SERHAN
+  for (int idx = 0; idx < m_num_cpus; ++idx) {
+    cpu_params.push_back("CPU" + std::to_string(idx));
+  }
   for (const auto& cpu_param : cpu_params) cpu_stats[cpu_param] = 0;
 }
 
@@ -41,12 +45,15 @@ void cpumon::update_stats(const std::vector<pid_t>& pids) {
     stat_entries.clear();
   }
   for (auto& stat : cpu_stats) stat.second /= sysconf(_SC_CLK_TCK);
-  // CPU scaling information is independent of the processes
-  // Update how we fill the JSON to accomodate the new parameter!
+  // CPU scaling and clock speed information is independent of the processes - SERHAN
+  // Update how we fill the JSON to accomodate the new parameters!
+  // Fix the types etc. as well - this is just a proof of concept
   cpu_stats["cpu_scaling"] = cpuinfo::cpu_scaling_info(m_num_cpus);
-  // call cpuinfo::get_processor_clock_speeds() to get clock speeds
-  // currently params are const, we need to allow this to change
-  // since the number of columns will depend on the number of processors
+  int idx = 0;
+  for (auto val : cpuinfo::get_processor_clock_speeds()) {
+    cpu_stats["CPU" + std::to_string(idx)] = val;
+    idx++;
+  }
 }
 
 // Return the summed counters
