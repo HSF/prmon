@@ -19,7 +19,7 @@ namespace prmon {
   const size_t uptime_pos = 21;
 
   // Default parameter lists for monitor classes
-  const static std::vector<std::string> default_cpu_params{"utime", "stime"};
+  const static std::vector<std::string> default_cpu_params{"utime", "stime", "cpu_scaling"};
   const static std::vector<std::string> default_network_if_params{
       "rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
   const static std::vector<std::string> default_wall_params{"wtime"};

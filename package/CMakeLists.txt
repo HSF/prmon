@@ -4,6 +4,7 @@ add_executable(prmon src/prmon.cpp
 					 src/pidutils.cpp
 					 src/netmon.cpp
 					 src/iomon.cpp
+					 src/cpuinfo.cpp
 					 src/cpumon.cpp
 					 src/countmon.cpp
 					 src/wallmon.cpp

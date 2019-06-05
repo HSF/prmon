@@ -21,6 +21,9 @@ class cpumon final : public Imonitor {
   // Container for total stats
   std::map<std::string, unsigned long long> cpu_stats;
 
+  // Number of total processors on the machine
+  const int m_num_cpus;
+
  public:
   cpumon();
 
