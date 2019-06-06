@@ -6,6 +6,6 @@
 #include <vector>
 #include <string>
 
-int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary,
+int ProcessMonitor(pid_t mpid, char* filename, char* jsonSummary,
                   unsigned int interval, bool store_cpu_freq,
                   const std::vector<std::string> netdevs);

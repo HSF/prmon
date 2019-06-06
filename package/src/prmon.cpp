@@ -60,7 +60,7 @@ void SignalChildHandler(int /*signal*/) {
   }
 }
 
-int MemoryMonitor(const pid_t mpid, const std::string filename,
+int ProcessMonitor(const pid_t mpid, const std::string filename,
                   const std::string jsonSummary, const unsigned int interval,
                   bool store_cpu_freq, const std::vector<std::string> netdevs) {
   signal(SIGUSR1, SignalCallbackHandler);
@@ -325,7 +325,7 @@ int main(int argc, char* argv[]) {
       std::cerr << "Bad PID to monitor.\n";
       return 1;
     }
-    MemoryMonitor(pid, filename, jsonSummary, interval, store_cpu_freq, netdevs);
+    ProcessMonitor(pid, filename, jsonSummary, interval, store_cpu_freq, netdevs);
   } else {
     if (child_args == argc) {
       std::cerr << "Found marker for child program to execute, but with no program argument.\n";
@@ -335,7 +335,7 @@ int main(int argc, char* argv[]) {
     if( child == 0 ) {
       execvp(argv[child_args],&argv[child_args]);
     } else if ( child > 0 ) {
-      MemoryMonitor(child, filename, jsonSummary, interval, store_cpu_freq, netdevs);
+      ProcessMonitor(child, filename, jsonSummary, interval, store_cpu_freq, netdevs);
     }
   }
 
