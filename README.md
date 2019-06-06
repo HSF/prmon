@@ -73,7 +73,7 @@ The `prmon` binary is invoked with the following arguments:
 
 ```sh
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
-      [--interval 30] [--netdev DEV] \
+      [--interval 30] [--store-cpu-freq] [--netdev DEV] \
       [-- prog arg arg ...]
 ```
 
@@ -81,6 +81,7 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 * `--filename` output file for timestamped monitored values
 * `--json-summmary` output file for summary data written in JSON format
 * `--interval` time, in seconds, between monitoring snapshots
+* `--store-cpu-freq` flag that turns-on cpu frequency information collection 
 * `--netdev` restricts network statistics to one (or more) network devices
 * `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
