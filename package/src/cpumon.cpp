@@ -13,13 +13,20 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-cpumon::cpumon() : cpu_params{prmon::default_cpu_params}, cpu_stats{},
-  m_num_cpus{cpuinfo::get_number_of_cpus()} {
-  // Make this configurable!!! SERHAN
-  for (int idx = 0; idx < m_num_cpus; ++idx) {
-    cpu_params.push_back("CPU" + std::to_string(idx));
+cpumon::cpumon(bool store_cpu_freq) : cpu_params{prmon::default_cpu_params}, cpu_stats{},
+  m_num_cpus{cpuinfo::get_number_of_cpus()}, m_store_cpu_freq{store_cpu_freq},
+  m_iterations{0} {
+  if(m_store_cpu_freq) {
+    for (int idx = 0; idx < m_num_cpus; ++idx) {
+      cpu_params.push_back("CPU" + std::to_string(idx));
+    }
   }
-  for (const auto& cpu_param : cpu_params) cpu_stats[cpu_param] = 0;
+  for (const auto& cpu_param : cpu_params) {
+    cpu_stats[cpu_param] = 0;
+    cpu_peak_stats[cpu_param] = 0;
+    cpu_average_stats[cpu_param] = 0;
+    cpu_total_stats[cpu_param] = 0;
+  }
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
@@ -45,14 +52,24 @@ void cpumon::update_stats(const std::vector<pid_t>& pids) {
     stat_entries.clear();
   }
   for (auto& stat : cpu_stats) stat.second /= sysconf(_SC_CLK_TCK);
-  // CPU scaling and clock speed information is independent of the processes - SERHAN
-  // Update how we fill the JSON to accomodate the new parameters!
-  // Fix the types etc. as well - this is just a proof of concept
+
+  // CPU scaling and clock freq information is independent of the processes
   cpu_stats["cpu_scaling"] = cpuinfo::cpu_scaling_info(m_num_cpus);
-  int idx = 0;
-  for (auto val : cpuinfo::get_processor_clock_speeds()) {
-    cpu_stats["CPU" + std::to_string(idx)] = val;
-    idx++;
+  if(m_store_cpu_freq) {
+    int idx = 0;
+    for (auto val : cpuinfo::get_processor_clock_freqs()) {
+      cpu_stats["CPU" + std::to_string(idx)] = val;
+      idx++;
+    }
+  }
+
+  // Update the statistics with the new snapshot values
+  ++m_iterations;
+  for(const auto& cpu_param : cpu_params) {
+    if (cpu_stats[cpu_param] > cpu_peak_stats[cpu_param])
+      cpu_peak_stats[cpu_param] = cpu_stats[cpu_param];
+    cpu_total_stats[cpu_param] += cpu_stats[cpu_param];
+    cpu_average_stats[cpu_param] = cpu_total_stats[cpu_param] / m_iterations;
   }
 }
 
@@ -61,14 +78,17 @@ std::map<std::string, unsigned long long> const cpumon::get_text_stats() {
   return cpu_stats;
 }
 
-// Same for JSON
+// For JSON totals return peaks
 std::map<std::string, unsigned long long> const cpumon::get_json_total_stats() {
-  return cpu_stats;
+  return cpu_peak_stats;
 }
 
-// For CPU time there's nothing to return for an average
+// Only write out the averages for the CPU freqs
 std::map<std::string, unsigned long long> const cpumon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, unsigned long long> empty_average_stats{};
-  return empty_average_stats;
+  std::map<std::string, unsigned long long> local_average_stats{cpu_average_stats};
+  local_average_stats.erase("utime");
+  local_average_stats.erase("stime");
+  local_average_stats.erase("cpu_scaling");
+  return local_average_stats;
 }

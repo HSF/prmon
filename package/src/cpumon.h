@@ -20,12 +20,21 @@ class cpumon final : public Imonitor {
 
   // Container for total stats
   std::map<std::string, unsigned long long> cpu_stats;
+  std::map<std::string, unsigned long long> cpu_peak_stats;
+  std::map<std::string, unsigned long long> cpu_average_stats;
+  std::map<std::string, unsigned long long> cpu_total_stats;
 
   // Number of total processors on the machine
   const int m_num_cpus;
 
+  // Store (or not) the cpu clock freq information
+  bool m_store_cpu_freq;
+
+  // Counter for number of iterations
+  unsigned long m_iterations;
+
  public:
-  cpumon();
+  cpumon(bool store_cpu_freq);
 
   void update_stats(const std::vector<pid_t>& pids);
 

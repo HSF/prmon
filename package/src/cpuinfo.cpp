@@ -44,8 +44,8 @@ int cpuinfo::get_number_of_cpus() {
   return nCPUs;
 }
 
-// Method to get the processor clock speeds
-std::vector<float> cpuinfo::get_processor_clock_speeds() {
+// Method to get the processor clock freqs
+std::vector<float> cpuinfo::get_processor_clock_freqs() {
   std::vector<float> result;
 
   std::ifstream cpuInfoFile{"/proc/cpuinfo"};
@@ -63,7 +63,7 @@ std::vector<float> cpuinfo::get_processor_clock_speeds() {
     if (splitIdx != std::string::npos) val = line.substr(splitIdx + 1);
     if (line.size() >= key.size() && line.compare(0, key.size(), key) == 0) {
        result.push_back(std::stof(val));
-    } // end of filling clock speeds - order doesn't change 
+    } // end of filling clock freqs - order doesn't change
   } // end of reading cpuInfoFile  
 
   cpuInfoFile.close();
@@ -72,8 +72,9 @@ std::vector<float> cpuinfo::get_processor_clock_speeds() {
 }
 
 // Method to get the scaling information
-int cpuinfo::cpu_scaling_info(int nCPUs) {
-  bool result = false;
+// 0 for false, 1 for true, 2 for error
+unsigned int cpuinfo::cpu_scaling_info(int nCPUs) {
+  unsigned int result = 0;
 
   for(int cpu = 0; cpu < nCPUs; ++cpu) {
     std::string fileName = "/sys/devices/system/cpu/cpu" + std::to_string(cpu) + "/cpufreq/scaling_governor";
@@ -81,15 +82,15 @@ int cpuinfo::cpu_scaling_info(int nCPUs) {
     std::ifstream governorFile{fileName};
     if(!governorFile.is_open()) {
       std::cerr << "Failed to open " << fileName << std::endl;
-      return -1;
+      return 2;
     }
 
-    // The governer file has a single line 
+    // The governer file has a single line
     std::string line; 
-    if(std::getline(governorFile,line) && line != "performance") { result = true; break; }
+    if(std::getline(governorFile,line) && line != "performance") { result = 1; break; }
 
     governorFile.close();
   } // end of looping over cpus
 
-  return static_cast<int>(result);
+  return result;
 }
