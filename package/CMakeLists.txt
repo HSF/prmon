@@ -3,12 +3,15 @@ find_package(nlohmann_json REQUIRED)
 add_executable(prmon src/prmon.cpp
            src/prmonutils.cpp
            src/utils.cpp
-           src/netmon.cpp
-           src/iomon.cpp
-           src/cpumon.cpp
-           src/countmon.cpp
-           src/wallmon.cpp
-           src/memmon.cpp)
+					 src/prmonutils.cpp
+					 src/netmon.cpp
+					 src/iomon.cpp
+					 src/cpumon.cpp
+					 src/countmon.cpp
+					 src/wallmon.cpp
+					 src/memmon.cpp
+           src/nvidiamon.cpp
+           )
 
 # Some older versions of the nlohmann_json package don't define
 # this target (< 3.0.0 ?). The build on these platforms seems to

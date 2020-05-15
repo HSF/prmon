@@ -42,7 +42,9 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
     std::unique_ptr<Imonitor> new_monitor_p(
         registry::Registry<Imonitor>::create(class_name));
     if (new_monitor_p) {
-      monitors[class_name] = std::move(new_monitor_p);
+      if (new_monitor_p->is_valid()) {
+        monitors[class_name] = std::move(new_monitor_p);
+      }
     } else {
       std::cerr << "Registration of monitor " << class_name << " FAILED"
                 << std::endl;

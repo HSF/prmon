@@ -46,6 +46,8 @@ class wallmon final : public Imonitor {
 
   // Class specific method to retrieve wallclock time in clock ticks
   unsigned long long const get_wallclock_clock_t();
+
+  bool const is_valid() {return true;}
 };
 REGISTER_MONITOR(Imonitor, wallmon, "Monitor wallclock time")
 
