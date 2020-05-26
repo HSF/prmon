@@ -1,4 +1,4 @@
-// Copyright (C) CERN, 2018
+// Copyright (C) CERN, 2020
 
 #include "cpumon.h"
 #include "utils.h"
@@ -52,8 +52,8 @@ std::map<std::string, unsigned long long> const cpumon::get_json_total_stats() {
 }
 
 // For CPU time there's nothing to return for an average
-std::map<std::string, unsigned long long> const cpumon::get_json_average_stats(
+std::map<std::string, double> const cpumon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, unsigned long long> empty_average_stats{};
+  std::map<std::string, double> empty_average_stats{};
   return empty_average_stats;
 }

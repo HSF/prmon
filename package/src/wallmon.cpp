@@ -81,8 +81,8 @@ std::map<std::string, unsigned long long> const wallmon::get_json_total_stats() 
 }
 
 // For walltime there's nothing to return for an average
-std::map<std::string, unsigned long long> const wallmon::get_json_average_stats(
+std::map<std::string, double> const wallmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, unsigned long long> empty_average_stats{};
+  std::map<std::string, double> empty_average_stats{};
   return empty_average_stats;
 }

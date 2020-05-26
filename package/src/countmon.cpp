@@ -1,4 +1,4 @@
-// Copyright (C) CERN, 2018
+// Copyright (C) CERN, 2020
 
 #include "countmon.h"
 #include "utils.h"
@@ -49,7 +49,7 @@ void countmon::update_stats(const std::vector<pid_t>& pids) {
     if(count_stats[count_param] > count_peak_stats[count_param])
       count_peak_stats[count_param] = count_stats[count_param];
     count_total_stats[count_param] += count_stats[count_param];
-    count_average_stats[count_param] = count_total_stats[count_param] / iterations; 
+    count_average_stats[count_param] = double(count_total_stats[count_param]) / iterations; 
   }
 }
 
@@ -64,7 +64,7 @@ std::map<std::string, unsigned long long> const countmon::get_json_total_stats()
 }
 
 // An the averages 
-std::map<std::string, unsigned long long> const countmon::get_json_average_stats(
+std::map<std::string, double> const countmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
   return count_average_stats;
 }
