@@ -1,4 +1,4 @@
-// Copyright (C) CERN, 2018
+// Copyright (C) CERN, 2020
 
 #include "memmon.h"
 #include "utils.h"
@@ -55,7 +55,7 @@ void memmon::update_stats(const std::vector<pid_t>& pids) {
     if (mem_stats[mem_param] > mem_peak_stats[mem_param])
       mem_peak_stats[mem_param] = mem_stats[mem_param];
     mem_total_stats[mem_param] += mem_stats[mem_param];
-    mem_average_stats[mem_param] = mem_total_stats[mem_param] / iterations;
+    mem_average_stats[mem_param] = double(mem_total_stats[mem_param]) / iterations;
   }
 }
 
@@ -71,7 +71,7 @@ std::map<std::string, unsigned long long> const memmon::get_json_total_stats() {
 
 // Average values are calculated already for us based on the iteration
 // count
-std::map<std::string, unsigned long long> const memmon::get_json_average_stats(
+std::map<std::string, double> const memmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
   return mem_average_stats;
 }

@@ -1,4 +1,4 @@
-// Copyright (C) CERN, 2018
+// Copyright (C) CERN, 2020
 
 #include "netmon.h"
 #include "utils.h"
@@ -97,10 +97,11 @@ std::map<std::string, unsigned long long> const netmon::get_json_total_stats() {
 }
 
 // For JSON averages, divide by elapsed time
-std::map<std::string, unsigned long long> const netmon::get_json_average_stats(unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, unsigned long long> json_average_stats = get_text_stats();
-  for (auto& stat : json_average_stats) {
-    stat.second = (stat.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
+std::map<std::string, double> const netmon::get_json_average_stats(unsigned long long elapsed_clock_ticks) {
+  std::map<std::string, unsigned long long> text_stats = get_text_stats();
+  std::map<std::string, double> json_average_stats{};
+  for (auto& stat : text_stats) {
+    json_average_stats[stat.first] = double(stat.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
   }
   return json_average_stats;
 }

@@ -1,4 +1,4 @@
-// Copyright (C) CERN, 2018
+// Copyright (C) CERN, 2020
 //
 // Process and thread number monitoring class
 //
@@ -21,7 +21,7 @@ class countmon final : public Imonitor {
   // Container for total stats
   std::map<std::string, unsigned long long> count_stats;
   std::map<std::string, unsigned long long> count_peak_stats;
-  std::map<std::string, unsigned long long> count_average_stats;
+  std::map<std::string, double> count_average_stats;
   std::map<std::string, unsigned long long> count_total_stats;
 
   // Counter for number of iterations
@@ -35,7 +35,7 @@ class countmon final : public Imonitor {
   // These are the stat getter methods which retrieve current statistics
   std::map<std::string, unsigned long long> const get_text_stats();
   std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, unsigned long long> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
+  std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
 
 };
 
