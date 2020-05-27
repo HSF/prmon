@@ -61,7 +61,7 @@ void SignalChildHandler(int /*signal*/) {
 }
 
 int MemoryMonitor(const pid_t mpid, const std::string filename,
-                  const std::string jsonSummary, const unsigned int interval,
+                  const std::string json_summary_file, const unsigned int interval,
                   const std::vector<std::string> netdevs) {
   signal(SIGUSR1, SignalCallbackHandler);
   signal(SIGCHLD, SignalChildHandler);
@@ -107,35 +107,16 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   }
   file << std::endl;
 
-  // Construct string representing JSON structure
-  std::stringstream json{};
-  json << "{\"Max\":  {";
-  bool started = false;
-  for (const auto monitor : monitors) {
-    for (const auto& stat : monitor->get_json_total_stats()) {
-      if (started) json << ", ";
-      else started = true;
-      json << "\"" << stat.first << "\" : 0";
-    }
-  }
-  json << "}, \"Avg\":  {";
-  started = false;
-  for (const auto monitor : monitors) {
-    for (const auto& stat : monitor->get_json_average_stats(1)) {
-      if (started) json << ", ";
-      else started = true;
-      json << "\"" << stat.first << "\" : 0";
-    }
-  }
-  json << "}}" << std::ends;
+  // Set up the basic double dictionary for the JSON summary
+  nlohmann::json json_summary = {
+    {"Avg", {}},
+    {"Max", {}}
+  };
 
-  std::stringstream tmpFile;
-  tmpFile << jsonSummary << "_tmp";
-  std::stringstream newFile;
-  newFile << jsonSummary << "_snapshot";
-
-  // Parse JSON explicitly
-  auto d = nlohmann::json::parse(json);
+  std::stringstream tmp_json_file;
+  tmp_json_file << json_summary_file << "_tmp";
+  std::stringstream json_snapshot_file;
+  json_snapshot_file << json_summary_file << "_snapshot";
 
   // See if the kernel is new enough to have /proc/PID/task/PID/children
   bool modern_kernel = kernel_proc_pid_test(mpid);
@@ -165,29 +146,26 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         }
         file << std::endl;
 
-        // Reset buffer
-        d.clear();
-
         // Create JSON realtime summary
         for (const auto monitor : monitors)
           for (const auto& stat : monitor->get_json_total_stats())
-            d["Max"][(stat.first).c_str()] = stat.second;
+            json_summary["Max"][(stat.first).c_str()] = stat.second;
         for (const auto monitor : monitors)
           for (const auto& stat : monitor->get_json_average_stats(
                    wall_monitor.get_wallclock_clock_t()))
-            d["Avg"][(stat.first).c_str()] = stat.second;
+            json_summary["Avg"][(stat.first).c_str()] = stat.second;
 
         // Write JSON realtime summary to a temporary file
-        std::ofstream json_out(tmpFile.str());
-        json_out << std::setw(4) << d << std::endl;
+        std::ofstream json_out(tmp_json_file.str());
+        json_out << std::setw(2) << json_summary << std::endl;
         json_out.close();
         wroteFile = true;
 
-        // Move temporary file to new file
+        // Move temporary file to the snapshot file
         if (wroteFile) {
-          if (rename(tmpFile.str().c_str(), newFile.str().c_str()) != 0) {
+          if (rename(tmp_json_file.str().c_str(), json_snapshot_file.str().c_str()) != 0) {
             perror("rename fails");
-            std::cerr << tmpFile.str() << " " << newFile.str() << "\n";
+            std::cerr << tmp_json_file.str() << " " << json_snapshot_file.str() << "\n";
           }
         }
       } catch (const std::ifstream::failure& e) {
@@ -202,13 +180,13 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   }
   file.close();
 
-  // Cleanup
-  if (remove(newFile.str().c_str()) != 0 && iteration > 0)
+  // Cleanup snapshot file
+  if (remove(json_snapshot_file.str().c_str()) != 0 && iteration > 0)
     perror("remove fails");
 
   // Write final JSON summary file
-  file.open(jsonSummary);
-  file << std::setw(4) << d << std::endl;
+  file.open(json_summary_file);
+  file << std::setw(2) << json_summary << std::endl;
   file.close();
 
   return 0;
