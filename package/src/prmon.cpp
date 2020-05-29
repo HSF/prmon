@@ -74,16 +74,16 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   std::vector<Imonitor*> monitors{};
 
   // Number of processes and threads monitoring
-  std::unique_ptr<Imonitor> countmon_p(registry::Registry<Imonitor>::Create("countmon"));
+  std::unique_ptr<Imonitor> countmon_p(registry::Registry<Imonitor>::create("countmon"));
   std::cout << countmon_p.get() << std::endl;
   if (countmon_p) monitors.push_back(countmon_p.get());
 
-  auto m = registry::Registry<Imonitor>::ListRegistered();
+  auto m = registry::Registry<Imonitor>::list_registered();
   for( const auto& n : m ) {
-    std::cout << n << " - " << registry::Registry<Imonitor>::GetDescription(n) << std::endl;
+    std::cout << n << " - " << registry::Registry<Imonitor>::get_description(n) << std::endl;
   }
 
-  std::unique_ptr<Imonitor> test(registry::Registry<Imonitor>::Create("foo"));
+  std::unique_ptr<Imonitor> test(registry::Registry<Imonitor>::create("foo"));
   std::cout << test.get() << std::endl;
 
   // Wall clock monitoring
