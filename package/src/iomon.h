@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "registry.h"
 
 class iomon final : public Imonitor {
  private:
@@ -31,5 +32,6 @@ class iomon final : public Imonitor {
   std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
 
 };
+REGISTER_MONITOR(Imonitor, iomon, "Monitor input and output activity")
 
 #endif  // PRMON_IOMON_H
