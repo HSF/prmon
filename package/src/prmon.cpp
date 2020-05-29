@@ -15,13 +15,17 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <unordered_map>
 #include <mutex>
 #include <sstream>
 #include <thread>
 #include <vector>
 #include <iomanip>
+#include <memory>
 
 #include <nlohmann/json.hpp>
+
+#include "registry.h"
 
 #include "cpumon.h"
 #include "iomon.h"
@@ -70,8 +74,14 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   std::vector<Imonitor*> monitors{};
 
   // Number of processes and threads monitoring
-  countmon count_monitor{};
-  monitors.push_back(&count_monitor);
+  std::unique_ptr<Imonitor> countmon_p(registry::Registry<Imonitor>::Create("countmon"));
+  //countmon count_monitor{};
+  monitors.push_back(countmon_p.get());
+
+  auto m = registry::Registry<Imonitor>::get_map();
+  for( const auto& n : m ) {
+    std::cout << "Key:[" << n.first << "] Value:[" << n.second << "]\n";
+  }
 
   // Wall clock monitoring
   wallmon wall_monitor{};

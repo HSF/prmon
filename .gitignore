@@ -7,3 +7,6 @@
 .project
 *.pyc
 .cproject
+build/
+.vscode*
+*code-workspace
