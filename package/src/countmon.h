@@ -39,6 +39,6 @@ class countmon final : public Imonitor {
   std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
 
 };
-REGISTER_SUBCLASS0(Imonitor, countmon, "countmon")
+REGISTER_MONITOR(Imonitor, countmon, "countmon", "yeah, like count some stuff ok")
 
 #endif  // PRMON_COUNTMON_H

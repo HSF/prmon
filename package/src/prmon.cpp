@@ -78,9 +78,9 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   //countmon count_monitor{};
   monitors.push_back(countmon_p.get());
 
-  auto m = registry::Registry<Imonitor>::get_map();
+  auto m = registry::Registry<Imonitor>::ListRegistered();
   for( const auto& n : m ) {
-    std::cout << "Key:[" << n.first << "] Value:[" << n.second << "]\n";
+    std::cout << n << " - " << registry::Registry<Imonitor>::GetDescription(n) << std::endl;
   }
 
   // Wall clock monitoring
