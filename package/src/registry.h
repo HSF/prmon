@@ -14,14 +14,12 @@ namespace registry {
 // Utility macros
 #define REGISTRY_CTOR(Base, Derived, params, param_names) \
   [](params) -> Base* { return new Derived(param_names); }
-    
-#define REGISTER_MONITOR(Base, Derived, Identifier, Description) \
+
+#define REGISTER_MONITOR(Base, Derived, Description) \
   static bool _registered_##Derived = \
-      registry::Registry<Base>::Register(Identifier, \
-          REGISTRY_CTOR(Base, Derived,,), Description);
+      registry::Registry<Base>::Register(#Derived, REGISTRY_CTOR(Base, Derived,,), Description);
 
-
-static std::string empty = "";
+static std::string empty_desc = "";
 
 template<typename T, typename ... Pack>
 class Registry {
@@ -66,7 +64,7 @@ class Registry {
     if (desc().count(name) == 1) {
       return desc()[name];
     }
-    return registry::empty;
+    return registry::empty_desc;
   }
 
  private:
@@ -79,10 +77,6 @@ class Registry {
     static desc_t desc_map;
     return desc_map;
   }
-  // static const& std::string empty() {
-  //   static std::string empty_string{};
-  //   return empty_string;
-  // }
 
   Registry();
   Registry(const Registry& other);
