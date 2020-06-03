@@ -74,7 +74,12 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
     // Check if the monitor should be enabled
     bool state{default_state};
     if (monitor_switches.count(class_name) == 1)
-      state = monitor_switches[class_name]; 
+      state = monitor_switches[class_name];
+    // Cannot disable wallmon
+    if (class_name == "wallmon" && state == false) {
+      std::clog << "wallmon monitor cannot be disabled" << std::endl;
+      state = true;
+    }
     if (state) {
       std::unique_ptr<Imonitor> new_monitor_p(registry::Registry<Imonitor>::create(class_name));
       if (new_monitor_p) {
@@ -322,9 +327,6 @@ int main(int argc, char* argv[]) {
 
   // Extra processing of monitor args
   monitor_switch_t monitor_switches = parse_monitor_switches(monitor_args);
-  for (const auto& mon_s: monitor_switches) {
-    std::cout << mon_s.first << " -> " << mon_s.second << std::endl;
-  }
 
   if (got_pid) {
     if (pid < 2) {
