@@ -10,12 +10,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <condition_variable>
 #include <cstddef>
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <mutex>
+#include <unordered_map>
 #include <sstream>
 #include <thread>
 #include <vector>
@@ -65,28 +63,20 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   signal(SIGCHLD, SignalChildHandler);
 
   // This is the vector of all monitoring components
-  std::vector<std::unique_ptr<Imonitor>> monitors{};
+  std::unordered_map<std::string, std::unique_ptr<Imonitor>> monitors{};
 
   auto registered_monitors = registry::Registry<Imonitor>::list_registered();
-  wallmon* wallclock_monitor_p = nullptr; // Special: we need to use the wallclock monitor
-                                          // inside the main prmon loop, so we will grab a
-                                          // pointer to it
   for (const auto& class_name : registered_monitors) {
     std::unique_ptr<Imonitor> new_monitor_p(registry::Registry<Imonitor>::create(class_name));
     if (new_monitor_p) {
-      if (class_name == "wallmon") {
-        // The monitors' scope is the same as this pointer, and it is only used
-        // inside the main monitoring loop, so no need to worry about using
-        // this after the object is destroyed
-        wallclock_monitor_p = static_cast<wallmon*>(new_monitor_p.get());
-      }
-      monitors.push_back(std::move(new_monitor_p));
+      monitors[class_name] = std::move(new_monitor_p);
     } else {
       std::cerr << "Registration of monitor " << class_name << " FAILED" << std::endl;
     }
   }
-  if (wallclock_monitor_p == nullptr) {
-    std::cerr << "Failed to initialise wallclock monitoring class" << std::endl;
+  // The wallclock monitor is always needed as it is used for average stat generation
+  if (monitors.count("wallmon") != 1) {
+    std::cerr << "Failed to initialise mandatory wallclock monitoring class" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -99,7 +89,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   file.open(filename);
   file << "Time";
   for (const auto& monitor : monitors) {
-    for (const auto& stat : monitor->get_text_stats())
+    for (const auto& stat : monitor.second->get_text_stats())
       file << "\t" << stat.first;
   }
   file << std::endl;
@@ -121,6 +111,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // Monitoring loop until process exits
   bool wroteFile = false;
   std::vector<pid_t> cpids{};
+  // Scope of 'monitors' ensures safety of bare pointer here
+  auto wallclock_monitor_p = static_cast<wallmon*>(monitors["wallmon"].get());
   while (kill(mpid, 0) == 0 && sigusr1 == false) {
     if (time(0) - lastIteration > interval) {
       iteration++;
@@ -133,24 +125,28 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         cpids = pstree_pids(mpid);
 
       try {
-        for (const auto& monitor : monitors) monitor->update_stats(cpids);
+        for (const auto& monitor : monitors) monitor.second->update_stats(cpids);
 
         currentTime = time(0);
         file << currentTime;
         for (const auto& monitor : monitors) {
-          for (const auto& stat : monitor->get_text_stats())
+          for (const auto& stat : monitor.second->get_text_stats())
             file << "\t" << stat.second;
         }
         file << std::endl;
 
         // Create JSON realtime summary
-        for (const auto& monitor : monitors)
-          for (const auto& stat : monitor->get_json_total_stats())
+        for (const auto& monitor : monitors) {
+          for (const auto& stat : monitor.second->get_json_total_stats()) {
             json_summary["Max"][(stat.first).c_str()] = stat.second;
-        for (const auto& monitor : monitors)
-          for (const auto& stat : monitor->get_json_average_stats(
-                   (*wallclock_monitor_p).get_wallclock_clock_t()))
+          }
+        }
+        for (const auto& monitor : monitors) {
+          auto wallclock_time = wallclock_monitor_p->get_wallclock_clock_t();
+          for (const auto& stat : monitor.second->get_json_average_stats(wallclock_time)) {
             json_summary["Avg"][(stat.first).c_str()] = stat.second;
+          }
+        }
 
         // Write JSON realtime summary to a temporary file
         std::ofstream json_out(tmp_json_file.str());
