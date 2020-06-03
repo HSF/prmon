@@ -93,23 +93,23 @@ const monitor_switch_t parse_monitor_switches(const std::vector<std::string> mon
   // Parse a vector of monitor switch strings and decide on the
   // state of each monitor. Each switch string needs to be split
   // on ",", then passed to the "decision" function.
+
   monitor_switch_t monitor_switches{};
-  std::string substring{};
-  std::pair<std::string, bool> switch_tmp_state{};
-  for (const auto& mopt : monitor_args) {
+  for (const auto& mon_opt : monitor_args) {
     std::string::size_type prev_pos = 0, pos = 0;
-    while((pos = mopt.find(',', pos)) != std::string::npos) {
-      std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // C++17 use string_view
+    while((pos = mon_opt.find(',', pos)) != std::string::npos) {
+      // Get substring and pass to interpret function
+      monitor_switches.insert(monitor_switch_state(mon_opt.substr(prev_pos, pos-prev_pos)));
       prev_pos = ++pos;
-      monitor_switches.insert(monitor_switch_state(substring));
     }
-    std::string substring(mopt.substr(prev_pos, pos-prev_pos)); // Last word
-    monitor_switches.insert(monitor_switch_state(substring));
+    // Last word
+    monitor_switches.insert(monitor_switch_state(mon_opt.substr(prev_pos, pos-prev_pos)));
   }
   return monitor_switches;
 }
 
 const std::pair<std::string, bool> monitor_switch_state(const std::string monitor) {
+  // Simple parser to see if the monitor switch has a ~ (meaning off)
   if (monitor[0] == '~') {
     std::pair<std::string, bool> ret{monitor.substr(1, monitor.size()), false};
     return ret;

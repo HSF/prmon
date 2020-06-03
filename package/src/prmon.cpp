@@ -306,7 +306,7 @@ int main(int argc, char* argv[]) {
     else
       std::cerr << "found none";
     std::cerr << std::endl;
-    return 0;
+    return EXIT_FAILURE;
   }
 
   // Extra processing of monitor args
