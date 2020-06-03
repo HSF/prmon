@@ -18,13 +18,23 @@ except ImportError:
     sys.exit(-1)
 
 # Define the labels/units for beautification
-axisunits = {'vmem':'kb', 'pss':'kb', 'rss':'kb', 'swap':'kb',
-             'utime':'sec', 'stime':'sec', 'wtime':'sec',
-             'rchar':'b','wchar':'b',
-             'read_bytes':'b','write_bytes':'b',
-             'rx_packets':'1', 'tx_packets':'1',
-             'rx_bytes':'b','tx_bytes':'b',
-             'nprocs':'1', 'nthreads':'1' }
+axisunits = {'vmem':'kb',
+             'pss':'kb',
+             'rss':'kb',
+             'swap':'kb',
+             'utime':'sec',
+             'stime':'sec',
+             'wtime':'sec',
+             'rchar':'b',
+             'wchar':'b',
+             'read_bytes':'b',
+             'write_bytes':'b',
+             'rx_packets':'1',
+             'tx_packets':'1',
+             'rx_bytes':'b',
+             'tx_bytes':'b',
+             'nprocs':'1',
+             'nthreads':'1'}
 
 axisnames = {'vmem':'Memory', 
              'pss':'Memory', 
@@ -84,21 +94,25 @@ def get_multiplier(label, unit):
 # Main function
 if '__main__' in __name__:
 
+    # Default xvar, xunit, yvar, and yunit
+    default_xvar, default_xunit = 'wtime', axisunits['wtime'].upper()
+    default_yvar, default_yunit = 'pss', axisunits['pss'].upper()
+
     # Parse the user input
     parser = argparse.ArgumentParser(description = 'Configurable plotting script')
     parser.add_argument('--input', type = str, default = 'prmon.txt', 
                         help = 'PrMon TXT output that will be used as input')
     parser.add_argument('--output', type = str, default = None,
                         help = 'name of the output image without the file extension')
-    parser.add_argument('--xvar', type = str, default = 'wtime', 
+    parser.add_argument('--xvar', type = str, default = default_xvar,
                         help = 'name of the variable to be plotted in the x-axis')
-    parser.add_argument('--xunit', nargs = '?', default = 'SEC',
+    parser.add_argument('--xunit', nargs = '?', default = default_xunit,
                         choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1'],
                         help = 'unit of the variable to be plotted in the x-axis')
-    parser.add_argument('--yvar', type = str, default = 'pss',
+    parser.add_argument('--yvar', type = str, default = default_yvar,
                         help = 'name(s) of the variable(s) to be plotted in the y-axis'
                                ' (comma seperated list is accepted)')
-    parser.add_argument('--yunit', nargs = '?', default = 'MB',
+    parser.add_argument('--yunit', nargs = '?', default = default_yunit,
                         choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1'],
                         help = 'unit of the variable(s) to be plotted in the y-axis')
     parser.add_argument('--stacked', dest = 'stacked', action = 'store_true',
@@ -113,9 +127,24 @@ if '__main__' in __name__:
     parser.set_defaults(diff = False)
     args = parser.parse_args()
 
+    # Here catch if the user provided a variable but not the units
+    # If so check if the units make sense, if not convert to an appropriate unit
+    firstXVariable = args.xvar.split(',')[0]
+    if firstXVariable != default_xvar and axisunits[firstXVariable].upper() != default_xunit:
+        old_xunit = args.xunit
+        args.xunit = axisunits[firstXVariable].upper()
+        print('Changing xunit from {} to {} for consistency'.format(old_xunit,
+                                                                    args.xunit))
+    firstYVariable = args.yvar.split(',')[0]
+    if firstYVariable != default_yvar and axisunits[firstYVariable].upper() != default_yunit:
+        old_yunit = args.yunit
+        args.yunit = axisunits[firstYVariable].upper()
+        print('Changing yunit from {} to {} for consistency'.format(old_yunit,
+                                                                    args.yunit))
+
     # Check the input file exists
     if not os.path.exists(args.input):
-        print('Input file %s does not exists'%(args.input))
+        print('Input file {} does not exists'.format(args.input))
         sys.exit(-1)
 
     # Load the data
@@ -124,25 +153,27 @@ if '__main__' in __name__:
 
     # Check the variables are in data
     if args.xvar not in list(data):
-        print('Variable %s is not available in data'%(args.xvar))
+        print('Variable {} is not available in data'.format(args.xvar))
         sys.exit(-1)
     ylist = args.yvar.split(',')
     for carg in ylist:
         if carg not in list(data):
-            print('Variable %s is not available in data'%(carg))
+            print('Variable {} is not available in data'.format(carg))
             sys.exit(-1)
 
     # Labels and output information
     xlabel = args.xvar
     ylabel = ''
     for carg in ylist:
-        if ylabel: ylabel += '_'
+        if ylabel: 
+            ylabel += '_'
         ylabel += carg.lower()
-    if args.diff: ylabel = 'diff_' + ylabel
+    if args.diff: 
+        ylabel = 'diff_' + ylabel
     if not args.output:
-        output = 'PrMon_%s_vs_%s.%s'%(xlabel,ylabel,args.otype)
+        output = 'PrMon_{}_vs_{}.{}'.format(xlabel,ylabel,args.otype)
     else:
-        output = '%s.%s'%(args.output,args.otype)
+        output = '{}.{}'.format(args.output,args.otype)
 
     # Calculate the multipliers
     xmultiplier = get_multiplier(xlabel, args.xunit)
@@ -181,11 +212,11 @@ if '__main__' in __name__:
     else:
         fylabel = get_axis_label(ylist[0])
         fyunit  = args.yunit
-    plt.title('Plot of %s vs %s'%(fxlabel, fylabel), y = 1.05)
+    plt.title('Plot of {} vs {}'.format(fxlabel, fylabel), y = 1.05)
     plt.xlabel((fxlabel+' ['+fxunit+']') if fxunit != '1' else fxlabel)
     plt.ylabel((fylabel+' ['+fyunit+']') if fyunit != '1' else fylabel)
     plt.tight_layout()
     fig.savefig(output)
 
-    print('Saved output into %s'%(output))
+    print('Saved output into {}'.format(output))
     sys.exit(0)
