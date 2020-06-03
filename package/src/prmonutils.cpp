@@ -86,3 +86,29 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
   }
   return pid_list;
 }
+
+
+
+monitor_switch_t parse_monitor_switches(const std::vector<std::string> monitor_args) {
+  monitor_switch_t monitor_switches{};
+  std::string substring{};
+  for (const auto& mopt : monitor_args) {
+    std::cout << mopt << std::endl;
+    std::string::size_type prev_pos = 0, pos = 0;
+    while((pos = mopt.find(',', pos)) != std::string::npos) {
+      std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // C++17 use string_view
+      prev_pos = ++pos;
+      monitor_switches.push_back(monitor_switch_state(substring));
+      std::cout << " - " << substring << std::endl; // Process here
+    }
+    std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // Last word
+    std::cout << " - " << substring << std::endl; // Process here
+  }
+}
+
+bool monitor_switch_state(const std::string monitor) {
+  if (monitor[0] == "~") {
+    return false;
+  }
+  return true;
+}

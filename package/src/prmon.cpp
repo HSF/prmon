@@ -24,7 +24,7 @@
 
 #include "registry.h"
 
-#include "pidutils.h"
+#include "prmonutils.h"
 #include "prmon.h"
 #include "wallmon.h"
 
@@ -200,6 +200,8 @@ int main(int argc, char* argv[]) {
   std::string filename{default_filename};
   std::string jsonSummary{default_json_summary};
   std::vector<std::string> netdevs{};
+  std::vector<std::string> monitor_args{};
+  std::vector<std::pair<std::string, bool>> monitor_switches;
   unsigned int interval{default_interval};
   bool store_hw_info{default_store_hw_info};
   int do_help{0};
@@ -215,7 +217,7 @@ int main(int argc, char* argv[]) {
       {0, 0, 0, 0}};
 
   char c;
-  while ((c = getopt_long(argc, argv, "p:f:j:i:sn:h", long_options, NULL)) !=
+  while ((c = getopt_long(argc, argv, "p:f:j:i:n:m:sh", long_options, NULL)) !=
          -1) {
     switch (c) {
       case 'p':
@@ -236,6 +238,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'n':
         netdevs.push_back(optarg);
+        break;
+      case 'm':
+        monitor_args.push_back(optarg);
         break;
       case 'h':
         do_help = 1;
@@ -266,6 +271,11 @@ int main(int argc, char* argv[]) {
         << (default_store_hw_info ? "true" : "false") << ")\n"
         << "[--netdev, -n dev]        Network device to monitor (can be given\n"
         << "                          multiple times; default ALL devices)\n"
+        << "[--monitor, -m mon]       Enable or disable monitors:\n"
+        << "                           ~NAME disables that monitor\n"
+        << "                           +NAME or NAME enables that monitor\n"
+        << "                          comma separation supported or specifing\n"
+        << "                          multiple times\n"
         << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
         << "                          execute the given program + args and\n"
         << "                          monitor this (must come after other \n"
@@ -298,6 +308,20 @@ int main(int argc, char* argv[]) {
       std::cerr << "found none";
     std::cerr << std::endl;
     return 0;
+  }
+
+  // Extra processing of monitor args
+  std::vector<std::pair<std::string, bool>> monitor_switches;
+  for (const auto& mopt : monitor_args) {
+    std::cout << mopt << std::endl;
+    std::string::size_type prev_pos = 0, pos = 0;
+    while((pos = mopt.find(',', pos)) != std::string::npos) {
+      std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // C++17 use string_view
+      prev_pos = ++pos;
+      std::cout << " - " << substring << std::endl; // Process here
+    }
+    std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // Last word
+    std::cout << " - " << substring << std::endl; // Process here
   }
 
   if (got_pid) {
