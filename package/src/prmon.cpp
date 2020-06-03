@@ -58,20 +58,30 @@ void SignalChildHandler(int /*signal*/) {
 
 int MemoryMonitor(const pid_t mpid, const std::string filename,
                   const std::string json_summary_file, const unsigned int interval,
-                  const bool store_hw_info, const std::vector<std::string> netdevs) {
+                  const bool store_hw_info, const std::vector<std::string> netdevs),
+                  monitor_switch_t monitor_switches) {
   signal(SIGUSR1, SignalCallbackHandler);
   signal(SIGCHLD, SignalChildHandler);
 
   // This is the vector of all monitoring components
   std::unordered_map<std::string, std::unique_ptr<Imonitor>> monitors{};
 
+  bool default_state{true};
+  if (monitor_switches.count("all") == 1 && monitor_switches["all"] == false)
+    default_state = false;
   auto registered_monitors = registry::Registry<Imonitor>::list_registered();
   for (const auto& class_name : registered_monitors) {
-    std::unique_ptr<Imonitor> new_monitor_p(registry::Registry<Imonitor>::create(class_name));
-    if (new_monitor_p) {
-      monitors[class_name] = std::move(new_monitor_p);
-    } else {
-      std::cerr << "Registration of monitor " << class_name << " FAILED" << std::endl;
+    // Check if the monitor should be enabled
+    bool state{default_state};
+    if (monitor_switches.count(class_name) == 1)
+      state = monitor_switches[class_name]; 
+    if (state) {
+      std::unique_ptr<Imonitor> new_monitor_p(registry::Registry<Imonitor>::create(class_name));
+      if (new_monitor_p) {
+        monitors[class_name] = std::move(new_monitor_p);
+      } else {
+        std::cerr << "Registration of monitor " << class_name << " FAILED" << std::endl;
+      }
     }
   }
   // The wallclock monitor is always needed as it is used for average stat generation
@@ -275,6 +285,7 @@ int main(int argc, char* argv[]) {
         << "                           +NAME or NAME enables that monitor\n"
         << "                          comma separation supported or specifing\n"
         << "                          multiple times\n"
+        << "                          Special name '[~]all' sets default state\n"
         << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
         << "                          execute the given program + args and\n"
         << "                          monitor this (must come after other \n"
@@ -320,7 +331,8 @@ int main(int argc, char* argv[]) {
       std::cerr << "Bad PID to monitor.\n";
       return 1;
     }
-    MemoryMonitor(pid, filename, jsonSummary, interval, store_hw_info, netdevs);
+    MemoryMonitor(pid, filename, jsonSummary, interval,
+                  store_hw_info, netdevs, monitor_switches);
   } else {
     if (child_args == argc) {
       std::cerr << "Found marker for child program to execute, but with no program argument.\n";
@@ -330,7 +342,8 @@ int main(int argc, char* argv[]) {
     if( child == 0 ) {
       execvp(argv[child_args],&argv[child_args]);
     } else if ( child > 0 ) {
-      MemoryMonitor(child, filename, jsonSummary, interval, store_hw_info, netdevs);
+      MemoryMonitor(child, filename, jsonSummary, interval,
+                    store_hw_info, netdevs, monitor_switches);
     }
   }
 

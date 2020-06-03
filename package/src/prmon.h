@@ -6,4 +6,4 @@
 
 int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary,
                   unsigned int interval, const bool store_hw_info,
-                  const std::vector<std::string> netdevs);
+                  const std::vector<std::string> netdevs, monitor_switch_t monitor_switches);
