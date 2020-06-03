@@ -201,7 +201,6 @@ int main(int argc, char* argv[]) {
   std::string jsonSummary{default_json_summary};
   std::vector<std::string> netdevs{};
   std::vector<std::string> monitor_args{};
-  std::vector<std::pair<std::string, bool>> monitor_switches;
   unsigned int interval{default_interval};
   bool store_hw_info{default_store_hw_info};
   int do_help{0};
@@ -311,17 +310,9 @@ int main(int argc, char* argv[]) {
   }
 
   // Extra processing of monitor args
-  std::vector<std::pair<std::string, bool>> monitor_switches;
-  for (const auto& mopt : monitor_args) {
-    std::cout << mopt << std::endl;
-    std::string::size_type prev_pos = 0, pos = 0;
-    while((pos = mopt.find(',', pos)) != std::string::npos) {
-      std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // C++17 use string_view
-      prev_pos = ++pos;
-      std::cout << " - " << substring << std::endl; // Process here
-    }
-    std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // Last word
-    std::cout << " - " << substring << std::endl; // Process here
+  monitor_switch_t monitor_switches = parse_monitor_switches(monitor_args);
+  for (const auto& mon_s: monitor_switches) {
+    std::cout << mon_s.first << " -> " << mon_s.second << std::endl;
   }
 
   if (got_pid) {

@@ -11,7 +11,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "pidutils.h"
+#include "prmonutils.h"
 
 bool kernel_proc_pid_test(const pid_t pid) {
   // Return true if the kernel has child PIDs
@@ -89,26 +89,31 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
 
 
 
-monitor_switch_t parse_monitor_switches(const std::vector<std::string> monitor_args) {
+const monitor_switch_t parse_monitor_switches(const std::vector<std::string> monitor_args) {
+  // Parse a vector of monitor switch strings and decide on the
+  // state of each monitor. Each switch string needs to be split
+  // on ",", then passed to the "decision" function.
   monitor_switch_t monitor_switches{};
   std::string substring{};
+  std::pair<std::string, bool> switch_tmp_state{};
   for (const auto& mopt : monitor_args) {
-    std::cout << mopt << std::endl;
     std::string::size_type prev_pos = 0, pos = 0;
     while((pos = mopt.find(',', pos)) != std::string::npos) {
       std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // C++17 use string_view
       prev_pos = ++pos;
-      monitor_switches.push_back(monitor_switch_state(substring));
-      std::cout << " - " << substring << std::endl; // Process here
+      monitor_switches.insert(monitor_switch_state(substring));
     }
-    std::string substring( mopt.substr(prev_pos, pos-prev_pos) ); // Last word
-    std::cout << " - " << substring << std::endl; // Process here
+    std::string substring(mopt.substr(prev_pos, pos-prev_pos)); // Last word
+    monitor_switches.insert(monitor_switch_state(substring));
   }
+  return monitor_switches;
 }
 
-bool monitor_switch_state(const std::string monitor) {
-  if (monitor[0] == "~") {
-    return false;
+const std::pair<std::string, bool> monitor_switch_state(const std::string monitor) {
+  if (monitor[0] == '~') {
+    std::pair<std::string, bool> ret{monitor.substr(1, monitor.size()), false};
+    return ret;
   }
-  return true;
+  std::pair<std::string, bool> ret{monitor, true};
+  return ret;
 }

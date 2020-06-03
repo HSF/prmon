@@ -1,6 +1,4 @@
-/*
-  Copyright (C) 2018, CERN
-*/
+// Copyright (C) 2020, CERN
 
 #include <sys/types.h>
 #include <vector>
