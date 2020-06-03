@@ -7,5 +7,5 @@
 #include <string>
 
 int MemoryMonitor(pid_t mpid, char* filename, char* jsonSummary,
-                  unsigned int interval,
+                  unsigned int interval, const bool store_hw_info,
                   const std::vector<std::string> netdevs);

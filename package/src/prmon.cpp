@@ -58,7 +58,7 @@ void SignalChildHandler(int /*signal*/) {
 
 int MemoryMonitor(const pid_t mpid, const std::string filename,
                   const std::string json_summary_file, const unsigned int interval,
-                  const std::vector<std::string> netdevs) {
+                  const bool store_hw_info, const std::vector<std::string> netdevs) {
   signal(SIGUSR1, SignalCallbackHandler);
   signal(SIGCHLD, SignalChildHandler);
 
@@ -94,16 +94,20 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   }
   file << std::endl;
 
-  // Set up the basic double dictionary for the JSON summary
-  nlohmann::json json_summary = {
-    {"Avg", {}},
-    {"Max", {}}
-  };
+  // Create an empty JSON structure 
+  nlohmann::json json_summary;
 
   std::stringstream tmp_json_file;
   tmp_json_file << json_summary_file << "_tmp";
   std::stringstream json_snapshot_file;
   json_snapshot_file << json_summary_file << "_snapshot";
+
+  // Collect some hardware information first (if requested)
+  if (store_hw_info) {
+    for (const auto monitor : monitors)
+      for( const auto& stat : monitor->get_hardware_info())
+        json_summary["HW"][(stat.first).c_str()] = stat.second;
+  }
 
   // See if the kernel is new enough to have /proc/PID/task/PID/children
   bool modern_kernel = kernel_proc_pid_test(mpid);
@@ -190,6 +194,7 @@ int main(int argc, char* argv[]) {
   const char* default_filename = "prmon.txt";
   const char* default_json_summary = "prmon.json";
   const unsigned int default_interval = 30;
+  const bool default_store_hw_info = false;
 
   pid_t pid = -1;
   bool got_pid = false;
@@ -197,6 +202,7 @@ int main(int argc, char* argv[]) {
   std::string jsonSummary{default_json_summary};
   std::vector<std::string> netdevs{};
   unsigned int interval{default_interval};
+  bool store_hw_info{default_store_hw_info};
   int do_help{0};
 
   static struct option long_options[] = {
@@ -204,12 +210,13 @@ int main(int argc, char* argv[]) {
       {"filename", required_argument, NULL, 'f'},
       {"json-summary", required_argument, NULL, 'j'},
       {"interval", required_argument, NULL, 'i'},
+      {"store-hw-info", no_argument, NULL, 's'},
       {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
 
   char c;
-  while ((c = getopt_long(argc, argv, "p:f:j:i:n:h", long_options, NULL)) !=
+  while ((c = getopt_long(argc, argv, "p:f:j:i:sn:h", long_options, NULL)) !=
          -1) {
     switch (c) {
       case 'p':
@@ -224,6 +231,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'i':
         interval = std::stoi(optarg);
+        break;
+      case 's':
+        store_hw_info = true;
         break;
       case 'n':
         netdevs.push_back(optarg);
@@ -253,6 +263,8 @@ int main(int argc, char* argv[]) {
         << default_json_summary << ")\n"
         << "[--interval, -i TIME]     Seconds between samples (default "
         << default_interval << ")\n"
+        << "[--store-hw-info, -s]     Store hardware information (default "
+        << default_store_hw_info << ")\n"
         << "[--netdev, -n dev]        Network device to monitor (can be given\n"
         << "                          multiple times; default ALL devices)\n"
         << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
@@ -294,7 +306,7 @@ int main(int argc, char* argv[]) {
       std::cerr << "Bad PID to monitor.\n";
       return 1;
     }
-    MemoryMonitor(pid, filename, jsonSummary, interval, netdevs);
+    MemoryMonitor(pid, filename, jsonSummary, interval, store_hw_info, netdevs);
   } else {
     if (child_args == argc) {
       std::cerr << "Found marker for child program to execute, but with no program argument.\n";
@@ -304,7 +316,7 @@ int main(int argc, char* argv[]) {
     if( child == 0 ) {
       execvp(argv[child_args],&argv[child_args]);
     } else if ( child > 0 ) {
-      MemoryMonitor(child, filename, jsonSummary, interval, netdevs);
+      MemoryMonitor(child, filename, jsonSummary, interval, store_hw_info, netdevs);
     }
   }
 

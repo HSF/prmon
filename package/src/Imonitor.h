@@ -25,6 +25,7 @@ class Imonitor {
   virtual std::map<std::string, unsigned long long> const get_json_total_stats() = 0;
   virtual std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks) = 0;
 
+  virtual std::map<std::string, std::map<std::string, std::string>> const get_hardware_info() = 0;
 };
 
 #endif  // PRMON_IMONITOR_H

@@ -57,3 +57,45 @@ std::map<std::string, double> const cpumon::get_json_average_stats(
   std::map<std::string, double> empty_average_stats{};
   return empty_average_stats;
 }
+
+// Collect related hardware information
+std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hardware_info() {
+  std::map<std::string, std::map<std::string, std::string>> result{};
+
+  // Read some information from /proc/cpuinfo 
+  std::ifstream cpuInfoFile{"/proc/cpuinfo"};
+  if(!cpuInfoFile.is_open()) {
+    std::cerr << "Failed to open /proc/cpuinfo" << std::endl;
+    return result;
+  }
+
+  // Metrics to read from the input
+  std::vector<std::string> metrics{"processor", "model name"};
+  unsigned int nCPU = 0;
+
+  // Loop over the file
+  std::string line;
+  while (std::getline(cpuInfoFile,line)) {
+    if (line.empty()) continue;
+    size_t splitIdx = line.find(":");
+    std::string val;
+    if (splitIdx != std::string::npos) val = line.substr(splitIdx + 1);
+    for (const auto& metric : metrics) {
+      if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
+        if (val.empty()) continue;
+        if (metric == "processor") nCPU++;
+        else if (result["cpu"][metric].empty()) {
+          result["cpu"][metric] = val;
+        }    
+      }
+    } // end of populating metrics
+  } // end of reading cpuInfoFile  
+
+  // Fill nCPU
+  result["cpu"]["nCPU"] = std::to_string(nCPU);
+
+  // Close the file
+  cpuInfoFile.close();
+
+  return result; 
+}

@@ -68,3 +68,10 @@ std::map<std::string, double> const countmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
   return count_average_stats;
 }
+
+// Collect related hardware information
+std::map<std::string, std::map<std::string, std::string>> const countmon::get_hardware_info() {
+  std::map<std::string, std::map<std::string, std::string>> result{};
+  return result; 
+}
+
