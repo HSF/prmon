@@ -264,7 +264,7 @@ int main(int argc, char* argv[]) {
         << "[--interval, -i TIME]     Seconds between samples (default "
         << default_interval << ")\n"
         << "[--store-hw-info, -s]     Store hardware information (default "
-        << default_store_hw_info << ")\n"
+        << (default_store_hw_info ? "true" : "false") << ")\n"
         << "[--netdev, -n dev]        Network device to monitor (can be given\n"
         << "                          multiple times; default ALL devices)\n"
         << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"

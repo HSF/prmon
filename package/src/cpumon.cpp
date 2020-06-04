@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <regex>
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -62,7 +63,7 @@ std::map<std::string, double> const cpumon::get_json_average_stats(
 std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hardware_info() {
   std::map<std::string, std::map<std::string, std::string>> result{};
 
-  // Read some information from /proc/cpuinfo 
+  // Read some information from /proc/cpuinfo
   std::ifstream cpuInfoFile{"/proc/cpuinfo"};
   if(!cpuInfoFile.is_open()) {
     std::cerr << "Failed to open /proc/cpuinfo" << std::endl;
@@ -79,17 +80,19 @@ std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hard
     if (line.empty()) continue;
     size_t splitIdx = line.find(":");
     std::string val;
-    if (splitIdx != std::string::npos) val = line.substr(splitIdx + 1);
-    for (const auto& metric : metrics) {
-      if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
-        if (val.empty()) continue;
-        if (metric == "processor") nCPU++;
-        else if (result["cpu"][metric].empty()) {
-          result["cpu"][metric] = val;
-        }    
-      }
-    } // end of populating metrics
-  } // end of reading cpuInfoFile  
+    if (splitIdx != std::string::npos) {
+      val = line.substr(splitIdx + 1);
+      if (val.empty()) continue;
+      for (const auto& metric : metrics) {
+        if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
+          if (metric == "processor") nCPU++;
+          else if (result["cpu"][metric].empty()) {
+            result["cpu"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
+          }
+        } // end of metric check
+      } // end of populating metrics
+    } // end of seperator check
+  } // end of reading cpuInfoFile
 
   // Fill nCPU
   result["cpu"]["nCPU"] = std::to_string(nCPU);
@@ -97,5 +100,5 @@ std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hard
   // Close the file
   cpuInfoFile.close();
 
-  return result; 
+  return result;
 }

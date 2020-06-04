@@ -10,6 +10,7 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
+#include <regex>
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -79,5 +80,36 @@ std::map<std::string, double> const memmon::get_json_average_stats(
 // Collect related hardware information
 std::map<std::string, std::map<std::string, std::string>> const memmon::get_hardware_info() {
   std::map<std::string, std::map<std::string, std::string>> result{};
-  return result; 
+
+  // Read some information from /proc/meminfo
+  std::ifstream memInfoFile{"/proc/meminfo"};
+  if(!memInfoFile.is_open()) {
+    std::cerr << "Failed to open /proc/meminfo" << std::endl;
+    return result;
+  }
+
+  // Metrics to read from the input
+  std::vector<std::string> metrics{"MemTotal"};
+
+  // Loop over the file
+  std::string line;
+  while (std::getline(memInfoFile,line)) {
+    if (line.empty()) continue;
+    size_t splitIdx = line.find(":");
+    std::string val;
+    if (splitIdx != std::string::npos) {
+      val = line.substr(splitIdx + 1);
+      if (val.empty()) continue;
+      for (const auto& metric : metrics) {
+        if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
+          result["mem"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
+        } // end of metric check
+      } // end of populating metrics
+    } // end of seperator check
+  } // end of reading memInfoFile
+
+  // Close the file
+  memInfoFile.close();
+
+  return result;
 }
