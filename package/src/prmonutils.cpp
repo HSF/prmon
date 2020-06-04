@@ -12,6 +12,8 @@
 #include <sstream>
 
 #include "prmonutils.h"
+#include "registry.h"
+#include "Imonitor.h"
 
 bool kernel_proc_pid_test(const pid_t pid) {
   // Return true if the kernel has child PIDs
@@ -89,7 +91,7 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
 
 
 
-const monitor_switch_t parse_monitor_switches(const std::vector<std::string> monitor_args) {
+const monitor_switch_t parse_monitor_switches(const std::vector<std::string> monitor_args, bool check) {
   // Parse a vector of monitor switch strings and decide on the
   // state of each monitor. Each switch string needs to be split
   // on ",", then passed to the "decision" function.
@@ -105,6 +107,27 @@ const monitor_switch_t parse_monitor_switches(const std::vector<std::string> mon
     // Last word
     monitor_switches.insert(monitor_switch_state(mon_opt.substr(prev_pos, pos-prev_pos)));
   }
+
+  // Do a check on the switches specified, print a warning if we see something fishy
+  if (check && monitor_switches.size() > 0) {
+    auto registered_monitors = registry::Registry<Imonitor>::list_registered();
+    for (const auto& mon_switch: monitor_switches) {
+      bool name_known = false;
+      if (mon_switch.first == "all") continue;
+      for (const auto& class_name: registered_monitors) {
+        // std::cout << "cf. " << class_name << std::endl;
+        if (class_name == mon_switch.first) {
+          name_known = true;
+          break;
+        }
+      }
+      if (!name_known) {
+        std::clog << "Warning: monitor name '" << mon_switch.first 
+          << "' was given, but is unknown (ignored)" << std::endl;
+      }
+    }
+  }
+
   return monitor_switches;
 }
 

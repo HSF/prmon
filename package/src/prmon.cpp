@@ -326,7 +326,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Extra processing of monitor args
-  monitor_switch_t monitor_switches = parse_monitor_switches(monitor_args);
+  monitor_switch_t monitor_switches = parse_monitor_switches(monitor_args, true);
 
   if (got_pid) {
     if (pid < 2) {
