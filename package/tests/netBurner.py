@@ -1,20 +1,18 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 #
-# Copyright (C) CERN, 2018
+# Copyright (C) CERN, 2018-2020
 #
 # Request network data for prmon unittest
-#
-from __future__ import print_function, unicode_literals
 
 import argparse
 import time
-import urllib2
+import urllib.request
 
 def getNetData(host="localhost", port="8000", blocks=None):
     url = "http://" + host + ":" + str(port) + "/cgi-bin/httpBlock.py"
     if blocks:
         url += "?blocks=" + str(blocks)
-    response = urllib2.urlopen(url)
+    response = urllib.request.urlopen(url)
     html = response.read()
     print("Read {0} bytes".format(len(html)))
     return len(html)

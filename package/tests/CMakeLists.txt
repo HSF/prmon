@@ -51,11 +51,11 @@ add_test(NAME basicIOmultithread COMMAND testIO.py --usleep 100 --io 10 --thread
 add_test(NAME basicIOmultiproc COMMAND testIO.py --usleep 100 --io 10  --procs 2)
 
 # Net Tests
-add_test(NAME basicNET COMMAND python testNET.py)
+add_test(NAME basicNET COMMAND python3 testNET.py)
 
 # Memory Tests
-add_test(NAME singleMem COMMAND python testMEM.py --procs 1)
-add_test(NAME childMem COMMAND python testMEM.py --procs 4)
+add_test(NAME singleMem COMMAND python3 testMEM.py --procs 1)
+add_test(NAME childMem COMMAND python3 testMEM.py --procs 4)
 
 # Process and thread counting Tests
-add_test(NAME basicCOUNT COMMAND python testCOUNT.py --procs 2 --threads 2)
+add_test(NAME basicCOUNT COMMAND python3 testCOUNT.py --procs 2 --threads 2)

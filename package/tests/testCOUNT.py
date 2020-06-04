@@ -1,7 +1,6 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 #
-# Probably we are python2, but use python3 syntax as much as possible
-from __future__ import print_function, unicode_literals
+# Copyright (C) CERN, 2018-2020
 
 import argparse
 import json

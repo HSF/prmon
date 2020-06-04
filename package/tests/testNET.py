@@ -1,9 +1,8 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 #
-# Copyright (C) CERN, 2018
+# Copyright (C) CERN, 2018-2020
 #
 # Test script for network IO
-from __future__ import print_function, unicode_literals
 
 import argparse
 import json
@@ -18,14 +17,14 @@ def setupConfigurableTest(blocks=None, requests=10, sleep=None, pause=None, slac
     class configurableProcessMonitor(unittest.TestCase):
         def setUp(self):
             # Start the simple python HTTP CGI server
-            httpServerCmd = ['python', '-m', 'CGIHTTPServer']
+            httpServerCmd = ['python3', '-m', 'http.server', '--cgi']
             self.httpServer = subprocess.Popen(httpServerCmd, shell = False)
             
         def tearDown(self):
             os.kill(self.httpServer.pid, signal.SIGTERM)
 
         def test_runTestWithParams(self):
-            burn_cmd = ['python', './netBurner.py']
+            burn_cmd = ['python3', './netBurner.py']
             if (requests):
                 burn_cmd.extend(['--requests', str(requests)])
             if (pause):
