@@ -25,7 +25,6 @@
 #include "registry.h"
 
 #include "prmonutils.h"
-#include "prmon.h"
 #include "wallmon.h"
 
 bool sigusr1 = false;
