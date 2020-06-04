@@ -57,7 +57,7 @@ void SignalChildHandler(int /*signal*/) {
 
 int MemoryMonitor(const pid_t mpid, const std::string filename,
                   const std::string json_summary_file, const unsigned int interval,
-                  const bool store_hw_info, const std::vector<std::string> netdevs),
+                  const bool store_hw_info, const std::vector<std::string> netdevs,
                   monitor_switch_t monitor_switches) {
   signal(SIGUSR1, SignalCallbackHandler);
   signal(SIGCHLD, SignalChildHandler);
