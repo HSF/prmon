@@ -286,7 +286,7 @@ int main(int argc, char* argv[]) {
         << "                          multiple times; default ALL devices)\n"
         << "[--monitor, -m mon]       Enable or disable monitors:\n"
         << "                           ~NAME disables that monitor\n"
-        << "                           +NAME or NAME enables that monitor\n"
+        << "                            NAME enables that monitor\n"
         << "                          comma separation supported or specifing\n"
         << "                          multiple times\n"
         << "                          Special name '[~]all' sets default state\n"
