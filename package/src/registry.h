@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace registry {
 
@@ -30,12 +31,12 @@ namespace registry {
     using desc_t = std::map<std::string, std::string>;
 
     template<typename ... Args>
-    static T* create(const std::string& class_name, Args && ... pack) {
+    static std::unique_ptr<T> create(const std::string& class_name, Args && ... pack) {
       if (ctors().count(class_name) == 1) {
-        return ctors()[class_name](std::forward<Args>(pack)...);
+        return std::unique_ptr<T>(ctors()[class_name](std::forward<Args>(pack)...));
       }
       std::cerr << "Registry: class " << class_name << " is not registered." << std::endl;
-      return nullptr;
+      return std::unique_ptr<T>(nullptr);
     }
 
     static bool register_class(const std::string& class_name, const ctor_t& ctor, const std::string& description) {
