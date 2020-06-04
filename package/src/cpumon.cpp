@@ -71,8 +71,8 @@ std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hard
   }
 
   // Metrics to read from the input
-  std::vector<std::string> metrics{"processor", "model name"};
-  unsigned int nCPU = 0;
+  std::vector<std::string> metrics{"processor", "model name", "siblings", "cpu cores"};
+  unsigned int nCPU = 0, nSiblings = 0, nCores = 0;
 
   // Loop over the file
   std::string line;
@@ -86,6 +86,8 @@ std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hard
       for (const auto& metric : metrics) {
         if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
           if (metric == "processor") nCPU++;
+          else if (metric == "siblings") { if(nSiblings == 0) nSiblings = std::stoi(val); }
+          else if (metric == "cpu cores") { if(nCores == 0) nCores = std::stoi(val); }
           else if (result["cpu"][metric].empty()) {
             result["cpu"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
           }
@@ -94,8 +96,15 @@ std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hard
     } // end of seperator check
   } // end of reading cpuInfoFile
 
-  // Fill nCPU
+  // The clear assumption here is that there is a single type of processor installed
+  // nCPU = nSockets * nSiblings
+  // nSiblings = nCores * nThreads
+  unsigned int nSockets = nCPU / nSiblings;
+  unsigned int nThreads = nSiblings / nCores;
   result["cpu"]["nCPU"] = std::to_string(nCPU);
+  result["cpu"]["nSockets"] = std::to_string(nSockets);
+  result["cpu"]["nCores"] = std::to_string(nCores);
+  result["cpu"]["nThreads"] = std::to_string(nThreads);
 
   // Close the file
   cpuInfoFile.close();
