@@ -88,6 +88,6 @@ std::map<std::string, double> const wallmon::get_json_average_stats(
 }
 
 // Collect related hardware information
-void const wallmon::get_hardware_info(nlohmann::json& j) {
+void const wallmon::get_hardware_info(nlohmann::json& hw_json) {
   return;
 }

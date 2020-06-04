@@ -78,7 +78,7 @@ std::map<std::string, double> const memmon::get_json_average_stats(
 }
 
 // Collect related hardware information
-void const memmon::get_hardware_info(nlohmann::json& j) {
+void const memmon::get_hardware_info(nlohmann::json& hw_json) {
 
   // Read some information from /proc/meminfo
   std::ifstream memInfoFile{"/proc/meminfo"};
@@ -102,7 +102,7 @@ void const memmon::get_hardware_info(nlohmann::json& j) {
       for (const auto& metric : metrics) {
         if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
           val = val.substr(0, val.size()-3); // strip the trailing kB
-          j["HW"]["mem"][metric] = std::stol(std::regex_replace(val, std::regex("^\\s+|\\s+$"), ""));
+          hw_json["HW"]["mem"][metric] = std::stol(std::regex_replace(val, std::regex("^\\s+|\\s+$"), ""));
         } // end of metric check
       } // end of populating metrics
     } // end of seperator check

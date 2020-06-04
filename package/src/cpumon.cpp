@@ -60,7 +60,7 @@ std::map<std::string, double> const cpumon::get_json_average_stats(
 }
 
 // Collect related hardware information
-void const cpumon::get_hardware_info(nlohmann::json& j) {
+void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
 
   // Read some information from /proc/cpuinfo
   std::ifstream cpuInfoFile{"/proc/cpuinfo"};
@@ -87,8 +87,8 @@ void const cpumon::get_hardware_info(nlohmann::json& j) {
           if (metric == "processor") nCPU++;
           else if (metric == "siblings") { if(nSiblings == 0) nSiblings = std::stoi(val); }
           else if (metric == "cpu cores") { if(nCores == 0) nCores = std::stoi(val); }
-          else if (j["HW"]["cpu"][metric].empty()) {
-            j["HW"]["cpu"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
+          else if (hw_json["HW"]["cpu"][metric].empty()) {
+            hw_json["HW"]["cpu"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
           }
         } // end of metric check
       } // end of populating metrics
@@ -100,10 +100,10 @@ void const cpumon::get_hardware_info(nlohmann::json& j) {
   // nSiblings = nCoresPerSocket * nThreadsPerCore
   unsigned int nSockets = nCPU / nSiblings;
   unsigned int nThreads = nSiblings / nCores;
-  j["HW"]["cpu"]["nCPU"] = nCPU;
-  j["HW"]["cpu"]["nSockets"] = nSockets;
-  j["HW"]["cpu"]["nCoresPerSocket"] = nCores;
-  j["HW"]["cpu"]["nThreadsPerCore"] = nThreads;
+  hw_json["HW"]["cpu"]["nCPU"] = nCPU;
+  hw_json["HW"]["cpu"]["nSockets"] = nSockets;
+  hw_json["HW"]["cpu"]["nCoresPerSocket"] = nCores;
+  hw_json["HW"]["cpu"]["nThreadsPerCore"] = nThreads;
 
   // Close the file
   cpuInfoFile.close();
