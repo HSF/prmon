@@ -10,27 +10,23 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <condition_variable>
 #include <cstddef>
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <mutex>
+#include <unordered_map>
 #include <sstream>
 #include <thread>
 #include <vector>
 #include <iomanip>
+#include <memory>
 
 #include <nlohmann/json.hpp>
 
-#include "cpumon.h"
-#include "iomon.h"
-#include "memmon.h"
-#include "netmon.h"
+#include "registry.h"
+
 #include "pidutils.h"
 #include "prmon.h"
 #include "wallmon.h"
-#include "countmon.h"
 
 bool sigusr1 = false;
 
@@ -67,31 +63,22 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   signal(SIGCHLD, SignalChildHandler);
 
   // This is the vector of all monitoring components
-  std::vector<Imonitor*> monitors{};
+  std::unordered_map<std::string, std::unique_ptr<Imonitor>> monitors{};
 
-  // Number of processes and threads monitoring
-  countmon count_monitor{};
-  monitors.push_back(&count_monitor);
-
-  // Wall clock monitoring
-  wallmon wall_monitor{};
-  monitors.push_back(&wall_monitor);
-
-  // CPU monitoring
-  cpumon cpu_monitor{};
-  monitors.push_back(&cpu_monitor);
-
-  // Memory monitoring
-  memmon mem_monitor{};
-  monitors.push_back(&mem_monitor);
-
-  // IO monitoring
-  iomon io_monitor{};
-  monitors.push_back(&io_monitor);
-
-  // Network monitoring
-  netmon network_monitor{netdevs};
-  monitors.push_back(&network_monitor);
+  auto registered_monitors = registry::Registry<Imonitor>::list_registered();
+  for (const auto& class_name : registered_monitors) {
+    std::unique_ptr<Imonitor> new_monitor_p(registry::Registry<Imonitor>::create(class_name));
+    if (new_monitor_p) {
+      monitors[class_name] = std::move(new_monitor_p);
+    } else {
+      std::cerr << "Registration of monitor " << class_name << " FAILED" << std::endl;
+    }
+  }
+  // The wallclock monitor is always needed as it is used for average stat generation
+  if (monitors.count("wallmon") != 1) {
+    std::cerr << "Failed to initialise mandatory wallclock monitoring class" << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
   int iteration = 0;
   time_t lastIteration = time(0) - interval;
@@ -101,8 +88,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   std::ofstream file;
   file.open(filename);
   file << "Time";
-  for (const auto monitor : monitors) {
-    for (const auto& stat : monitor->get_text_stats())
+  for (const auto& monitor : monitors) {
+    for (const auto& stat : monitor.second->get_text_stats())
       file << "\t" << stat.first;
   }
   file << std::endl;
@@ -124,6 +111,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   // Monitoring loop until process exits
   bool wroteFile = false;
   std::vector<pid_t> cpids{};
+  // Scope of 'monitors' ensures safety of bare pointer here
+  auto wallclock_monitor_p = static_cast<wallmon*>(monitors["wallmon"].get());
   while (kill(mpid, 0) == 0 && sigusr1 == false) {
     if (time(0) - lastIteration > interval) {
       iteration++;
@@ -136,24 +125,28 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         cpids = pstree_pids(mpid);
 
       try {
-        for (const auto monitor : monitors) monitor->update_stats(cpids);
+        for (const auto& monitor : monitors) monitor.second->update_stats(cpids);
 
         currentTime = time(0);
         file << currentTime;
-        for (const auto monitor : monitors) {
-          for (const auto& stat : monitor->get_text_stats())
+        for (const auto& monitor : monitors) {
+          for (const auto& stat : monitor.second->get_text_stats())
             file << "\t" << stat.second;
         }
         file << std::endl;
 
         // Create JSON realtime summary
-        for (const auto monitor : monitors)
-          for (const auto& stat : monitor->get_json_total_stats())
+        for (const auto& monitor : monitors) {
+          for (const auto& stat : monitor.second->get_json_total_stats()) {
             json_summary["Max"][(stat.first).c_str()] = stat.second;
-        for (const auto monitor : monitors)
-          for (const auto& stat : monitor->get_json_average_stats(
-                   wall_monitor.get_wallclock_clock_t()))
+          }
+        }
+        for (const auto& monitor : monitors) {
+          auto wallclock_time = wallclock_monitor_p->get_wallclock_clock_t();
+          for (const auto& stat : monitor.second->get_json_average_stats(wallclock_time)) {
             json_summary["Avg"][(stat.first).c_str()] = stat.second;
+          }
+        }
 
         // Write JSON realtime summary to a temporary file
         std::ofstream json_out(tmp_json_file.str());
@@ -269,6 +262,12 @@ int main(int argc, char* argv[]) {
         << "\n"
         << "One of --pid or a child program must be given (but not both)\n"
         << std::endl;
+      std::cout << "Monitors available:" << std::endl;
+      auto monitors = registry::Registry<Imonitor>::list_registered();
+      for( const auto& name : monitors ) {
+        std::cout << " - " << name << " : " << registry::Registry<Imonitor>::get_description(name) << std::endl;
+      }
+      std::cout << std::endl;
     return 0;
   }
 

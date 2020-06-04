@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "registry.h"
 
 class countmon final : public Imonitor {
  private:
@@ -38,5 +39,6 @@ class countmon final : public Imonitor {
   std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
 
 };
+REGISTER_MONITOR(Imonitor, countmon, "Monitor number of processes and threads")
 
 #endif  // PRMON_COUNTMON_H

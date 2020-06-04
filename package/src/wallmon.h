@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "registry.h"
 
 class wallmon final : public Imonitor {
  private:
@@ -42,5 +43,6 @@ class wallmon final : public Imonitor {
   // Class specific method to retrieve wallclock time in clock ticks
   unsigned long long const get_wallclock_clock_t();
 };
+REGISTER_MONITOR(Imonitor, wallmon, "Monitor wallclock time")
 
 #endif  // PRMON_WALLMON_H

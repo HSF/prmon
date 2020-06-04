@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "registry.h"
 
 class cpumon final : public Imonitor {
  private:
@@ -32,5 +33,6 @@ class cpumon final : public Imonitor {
   std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
 
 };
+REGISTER_MONITOR(Imonitor, cpumon, "Monitor cpu time used")
 
 #endif  // PRMON_CPUMON_H

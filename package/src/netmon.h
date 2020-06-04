@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "registry.h"
 
 class netmon final : public Imonitor {
  private:
@@ -69,5 +70,6 @@ class netmon final : public Imonitor {
   std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
 
 };
+REGISTER_MONITOR(Imonitor, netmon, "Monitor network activity (device level)")
 
 #endif  // PRMON_NETMON_H
