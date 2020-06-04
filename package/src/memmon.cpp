@@ -78,14 +78,13 @@ std::map<std::string, double> const memmon::get_json_average_stats(
 }
 
 // Collect related hardware information
-std::map<std::string, std::map<std::string, std::string>> const memmon::get_hardware_info() {
-  std::map<std::string, std::map<std::string, std::string>> result{};
+void const memmon::get_hardware_info(nlohmann::json& j) {
 
   // Read some information from /proc/meminfo
   std::ifstream memInfoFile{"/proc/meminfo"};
   if(!memInfoFile.is_open()) {
     std::cerr << "Failed to open /proc/meminfo" << std::endl;
-    return result;
+    return;
   }
 
   // Metrics to read from the input
@@ -102,7 +101,8 @@ std::map<std::string, std::map<std::string, std::string>> const memmon::get_hard
       if (val.empty()) continue;
       for (const auto& metric : metrics) {
         if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
-          result["mem"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
+          val = val.substr(0, val.size()-3); // strip the trailing kB
+          j["HW"]["mem"][metric] = std::stol(std::regex_replace(val, std::regex("^\\s+|\\s+$"), ""));
         } // end of metric check
       } // end of populating metrics
     } // end of seperator check
@@ -111,5 +111,5 @@ std::map<std::string, std::map<std::string, std::string>> const memmon::get_hard
   // Close the file
   memInfoFile.close();
 
-  return result;
+  return;
 }

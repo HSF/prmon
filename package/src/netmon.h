@@ -70,7 +70,7 @@ class netmon final : public Imonitor {
   std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once
-  std::map<std::string, std::map<std::string, std::string>> const get_hardware_info();
+  void const get_hardware_info(nlohmann::json& j);
 
 };
 REGISTER_MONITOR(Imonitor, netmon, "Monitor network activity (device level)")

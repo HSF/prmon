@@ -60,14 +60,13 @@ std::map<std::string, double> const cpumon::get_json_average_stats(
 }
 
 // Collect related hardware information
-std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hardware_info() {
-  std::map<std::string, std::map<std::string, std::string>> result{};
+void const cpumon::get_hardware_info(nlohmann::json& j) {
 
   // Read some information from /proc/cpuinfo
   std::ifstream cpuInfoFile{"/proc/cpuinfo"};
   if(!cpuInfoFile.is_open()) {
     std::cerr << "Failed to open /proc/cpuinfo" << std::endl;
-    return result;
+    return;
   }
 
   // Metrics to read from the input
@@ -88,8 +87,8 @@ std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hard
           if (metric == "processor") nCPU++;
           else if (metric == "siblings") { if(nSiblings == 0) nSiblings = std::stoi(val); }
           else if (metric == "cpu cores") { if(nCores == 0) nCores = std::stoi(val); }
-          else if (result["cpu"][metric].empty()) {
-            result["cpu"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
+          else if (j["HW"]["cpu"][metric].empty()) {
+            j["HW"]["cpu"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
           }
         } // end of metric check
       } // end of populating metrics
@@ -101,13 +100,13 @@ std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hard
   // nSiblings = nCoresPerSocket * nThreadsPerCore
   unsigned int nSockets = nCPU / nSiblings;
   unsigned int nThreads = nSiblings / nCores;
-  result["cpu"]["nCPU"] = std::to_string(nCPU);
-  result["cpu"]["nSockets"] = std::to_string(nSockets);
-  result["cpu"]["nCoresPerSocket"] = std::to_string(nCores);
-  result["cpu"]["nThreadsPerCore"] = std::to_string(nThreads);
+  j["HW"]["cpu"]["nCPU"] = nCPU;
+  j["HW"]["cpu"]["nSockets"] = nSockets;
+  j["HW"]["cpu"]["nCoresPerSocket"] = nCores;
+  j["HW"]["cpu"]["nThreadsPerCore"] = nThreads;
 
   // Close the file
   cpuInfoFile.close();
 
-  return result;
+  return;
 }
