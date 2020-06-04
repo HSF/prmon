@@ -104,8 +104,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
   // Collect some hardware information first (if requested)
   if (store_hw_info) {
-    for (const auto monitor : monitors)
-      for( const auto& stat : monitor->get_hardware_info())
+    for (const auto& monitor : monitors)
+      for( const auto& stat : monitor.second->get_hardware_info())
         json_summary["HW"][(stat.first).c_str()] = stat.second;
   }
 
