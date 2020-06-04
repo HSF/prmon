@@ -303,6 +303,7 @@ int main(int argc, char* argv[]) {
         std::cout << " - " << name << " : " << registry::Registry<Imonitor>::get_description(name) << std::endl;
       }
       std::cout << std::endl;
+      std::cout << "More information: https://github.com/HSF/prmon\n" << std::endl;
     return 0;
   }
 
