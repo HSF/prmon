@@ -98,13 +98,13 @@ std::map<std::string, std::map<std::string, std::string>> const cpumon::get_hard
 
   // The clear assumption here is that there is a single type of processor installed
   // nCPU = nSockets * nSiblings
-  // nSiblings = nCores * nThreads
+  // nSiblings = nCoresPerSocket * nThreadsPerCore
   unsigned int nSockets = nCPU / nSiblings;
   unsigned int nThreads = nSiblings / nCores;
   result["cpu"]["nCPU"] = std::to_string(nCPU);
   result["cpu"]["nSockets"] = std::to_string(nSockets);
-  result["cpu"]["nCores"] = std::to_string(nCores);
-  result["cpu"]["nThreads"] = std::to_string(nThreads);
+  result["cpu"]["nCoresPerSocket"] = std::to_string(nCores);
+  result["cpu"]["nThreadsPerCore"] = std::to_string(nThreads);
 
   // Close the file
   cpuInfoFile.close();
