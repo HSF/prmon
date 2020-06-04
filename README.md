@@ -74,6 +74,7 @@ The `prmon` binary is invoked with the following arguments:
 ```sh
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
       [--interval 30] [--store-hw-info] [--netdev DEV] \
+      [--monitor ~MON1,MON2,~MON3] \
       [-- prog arg arg ...]
 ```
 
@@ -83,17 +84,24 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 * `--interval` time, in seconds, between monitoring snapshots
 * `--store-hw-info` flag that turns-on hardware information collection
 * `--netdev` restricts network statistics to one (or more) network devices
+* `--monitor` is used to enable or disable specific monitors: prefixing
+  with `~` disables the monitor, the special `all` name sets the default
+  so, e.g., `--monitor ~all,wallmon,cpumon` would only enable the `wallmon`
+  and `cpumon` monitors (comma separation or multiple specification supported)
+  * Note that the `wallmon` monitor is the only monitor that cannot be disabled
 * `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
   instead of being given a PID via `--pid`
 
+When invoked with `-h` or `--help` usage information is printed, as well as a
+list of all available monitoring components.
 
 ## Outputs
 
 In the `filename` output file, plain text with statistics written every
 `interval` seconds are written. The first line gives the column names.
 
-In the `json-summmary` file values for the maximum and average statistics
+In the `json-summary` file values for the maximum and average statistics
 are given in JSON format. This file is rewritten every `interval` seconds
 with the current summary values.
 
@@ -154,4 +162,4 @@ to CMake using `Gperftools_ROOT_DIR`.
 
 # Copyright
 
-Copyright (c) 2018, CERN.
+Copyright (c) 2018-2020, CERN.
