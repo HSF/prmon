@@ -12,9 +12,9 @@ try:
     import matplotlib.pyplot as plt
     plt.style.use('seaborn-whitegrid')
 except ImportError:
-    print('This script needs numpy, pandas and matplotlib.')
-    print('Looks like at least one of these modules is missing.')
-    print('Please install them first and then retry.')
+    print('{0: <8}:: This script needs numpy, pandas and matplotlib.'.format('ERROR'))
+    print('{0: <8}:: Looks like at least one of these modules is missing.'.format('ERROR'))
+    print('{0: <8}:: Please install them first and then retry.'.format('ERROR'))
     sys.exit(-1)
 
 # Define the labels/units for beautification
@@ -36,8 +36,8 @@ axisunits = {'vmem':'kb',
              'nprocs':'1',
              'nthreads':'1'}
 
-axisnames = {'vmem':'Memory', 
-             'pss':'Memory', 
+axisnames = {'vmem':'Memory',
+             'pss':'Memory',
              'rss':'Memory',
              'swap':'Memory',
              'utime':'CPU-time',
@@ -54,8 +54,8 @@ axisnames = {'vmem':'Memory',
              'nprocs':'Count',
              'nthreads':'Count'}
 
-legendnames = {'vmem':'Virtual Memory', 
-               'pss':'Proportional Set Size', 
+legendnames = {'vmem':'Virtual Memory',
+               'pss':'Proportional Set Size',
                'rss':'Resident Set Size',
                'swap':'Swap Size',
                'utime':'User CPU-time',
@@ -85,7 +85,7 @@ multipliers = {'SEC': 1.,
 def get_axis_label(nom, denom = None):
     label = axisnames[nom]
     if denom:
-        label = '$\Delta$'+label+'/$\Delta$'+axisnames[denom] 
+        label = '$\Delta$'+label+'/$\Delta$'+axisnames[denom]
     return label
 
 def get_multiplier(label, unit):
@@ -100,7 +100,7 @@ if '__main__' in __name__:
 
     # Parse the user input
     parser = argparse.ArgumentParser(description = 'Configurable plotting script')
-    parser.add_argument('--input', type = str, default = 'prmon.txt', 
+    parser.add_argument('--input', type = str, default = 'prmon.txt',
                         help = 'PrMon TXT output that will be used as input')
     parser.add_argument('--output', type = str, default = None,
                         help = 'name of the output image without the file extension')
@@ -133,18 +133,28 @@ if '__main__' in __name__:
     if firstXVariable != default_xvar and axisunits[firstXVariable].upper() != default_xunit:
         old_xunit = args.xunit
         args.xunit = axisunits[firstXVariable].upper()
-        print('Changing xunit from {} to {} for consistency'.format(old_xunit,
-                                                                    args.xunit))
+        print('{0: <8}:: Changing xunit from {1} to {2} for consistency'.format('WARNING',
+                                                                                old_xunit,
+                                                                                args.xunit))
     firstYVariable = args.yvar.split(',')[0]
     if firstYVariable != default_yvar and axisunits[firstYVariable].upper() != default_yunit:
         old_yunit = args.yunit
         args.yunit = axisunits[firstYVariable].upper()
-        print('Changing yunit from {} to {} for consistency'.format(old_yunit,
-                                                                    args.yunit))
+        print('{0: <8}:: Changing yunit from {1} to {2} for consistency'.format('WARNING',
+                                                                                old_yunit,
+                                                                                args.yunit))
+
+    # Check if the user is trying to plot variables with inconsistent units
+    # If so simply print a message to warn them
+    if len(set([axisunits[i] for i in args.xvar.split(',')])) > 1:
+        print('{0: <8}:: Elements in xvar have inconsistent units, beware!'.format('WARNING'))
+
+    if len(set([axisunits[i] for i in args.yvar.split(',')])) > 1:
+        print('{0: <8}:: Elements in yvar have inconsistent units, beware!'.format('WARNING'))
 
     # Check the input file exists
     if not os.path.exists(args.input):
-        print('Input file {} does not exists'.format(args.input))
+        print('{0: <8}:: Input file {1} does not exists'.format('ERROR', args.input))
         sys.exit(-1)
 
     # Load the data
@@ -153,22 +163,22 @@ if '__main__' in __name__:
 
     # Check the variables are in data
     if args.xvar not in list(data):
-        print('Variable {} is not available in data'.format(args.xvar))
+        print('{0: <8}:: Variable {1} is not available in data'.format('ERROR',args.xvar))
         sys.exit(-1)
     ylist = args.yvar.split(',')
     for carg in ylist:
         if carg not in list(data):
-            print('Variable {} is not available in data'.format(carg))
+            print('{0: <8}:: Variable {1} is not available in data'.format('ERROR',carg))
             sys.exit(-1)
 
     # Labels and output information
     xlabel = args.xvar
     ylabel = ''
     for carg in ylist:
-        if ylabel: 
+        if ylabel:
             ylabel += '_'
         ylabel += carg.lower()
-    if args.diff: 
+    if args.diff:
         ylabel = 'diff_' + ylabel
     if not args.output:
         output = 'PrMon_{}_vs_{}.{}'.format(xlabel,ylabel,args.otype)
@@ -218,5 +228,5 @@ if '__main__' in __name__:
     plt.tight_layout()
     fig.savefig(output)
 
-    print('Saved output into {}'.format(output))
+    print('{0: <8}:: Saved output into {1}'.format('INFO', output))
     sys.exit(0)
