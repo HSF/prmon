@@ -10,6 +10,7 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
+#include <regex>
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -74,4 +75,41 @@ std::map<std::string, unsigned long long> const memmon::get_json_total_stats() {
 std::map<std::string, double> const memmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
   return mem_average_stats;
+}
+
+// Collect related hardware information
+void const memmon::get_hardware_info(nlohmann::json& hw_json) {
+
+  // Read some information from /proc/meminfo
+  std::ifstream memInfoFile{"/proc/meminfo"};
+  if(!memInfoFile.is_open()) {
+    std::cerr << "Failed to open /proc/meminfo" << std::endl;
+    return;
+  }
+
+  // Metrics to read from the input
+  std::vector<std::string> metrics{"MemTotal"};
+
+  // Loop over the file
+  std::string line;
+  while (std::getline(memInfoFile,line)) {
+    if (line.empty()) continue;
+    size_t splitIdx = line.find(":");
+    std::string val;
+    if (splitIdx != std::string::npos) {
+      val = line.substr(splitIdx + 1);
+      if (val.empty()) continue;
+      for (const auto& metric : metrics) {
+        if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
+          val = val.substr(0, val.size()-3); // strip the trailing kB
+          hw_json["HW"]["mem"][metric] = std::stol(std::regex_replace(val, std::regex("^\\s+|\\s+$"), ""));
+        } // end of metric check
+      } // end of populating metrics
+    } // end of seperator check
+  } // end of reading memInfoFile
+
+  // Close the file
+  memInfoFile.close();
+
+  return;
 }

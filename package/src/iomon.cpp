@@ -54,3 +54,8 @@ std::map<std::string, double> const iomon::get_json_average_stats(
   }
   return json_average_stats;
 }
+
+// Collect related hardware information
+void const iomon::get_hardware_info(nlohmann::json& hw_json) {
+  return;
+}

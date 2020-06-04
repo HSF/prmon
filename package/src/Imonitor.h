@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
 class Imonitor {
  public:
   virtual ~Imonitor() {};
@@ -25,6 +27,7 @@ class Imonitor {
   virtual std::map<std::string, unsigned long long> const get_json_total_stats() = 0;
   virtual std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks) = 0;
 
+  virtual void const get_hardware_info(nlohmann::json& hw_json) = 0;
 };
 
 #endif  // PRMON_IMONITOR_H
