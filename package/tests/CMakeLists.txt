@@ -40,12 +40,8 @@ script_install(SCRIPT httpBlock.py DESTINATION cgi-bin)
 script_install(SCRIPT testCOUNT.py)
 
 # Setup the target version of Python we will use for testing
-if(NOT DEFINED PYTHON_TEST)
-  message(STATUS "Setting default Python test binary to 'python3' (use -DPYTHON_TEST to override)")
-  set(PYTHON_TEST python3)
-else(NOT DEFINED PYTHON_TEST)
-  message(STATUS "Using '${PYTHON_TEST}' as Python test binary")
-endif(NOT DEFINED PYTHON_TEST)
+set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")
+message(STATUS "Setting Python test binary to '${PYTHON_TEST}' (use -DPYTHON_TEST to change)")
 
 # CPU Tests
 add_test(NAME testCPUsingle COMMAND ${PYTHON_TEST} testCPU.py --threads 1 --procs 1) 
