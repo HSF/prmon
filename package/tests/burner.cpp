@@ -162,8 +162,11 @@ int main(int argc, char* argv[]) {
 
   // Each process runs the requested number of threads
   std::vector<std::thread> pool;
-  for (unsigned int i = 0; i < threads; ++i)
+  for (unsigned int i = 1; i < threads; ++i)
     pool.push_back(std::thread(burn_for, runtime * std::kilo::num * (pid ? 1.0 : child_runtime_fraction)));
+  
+  // We also burn CPU in the mother thread
+  burn_for(runtime * std::kilo::num * (pid ? 1.0 : child_runtime_fraction));
 
   for (auto& th : pool) th.join();
 
