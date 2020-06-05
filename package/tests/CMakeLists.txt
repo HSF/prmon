@@ -39,6 +39,13 @@ script_install(SCRIPT netBurner.py)
 script_install(SCRIPT httpBlock.py DESTINATION cgi-bin)
 script_install(SCRIPT testCOUNT.py)
 
+# Python2 has a different version of the network test
+# as the modules are significantly different from Python3
+if(${PYTHON_TEST} MATCHES "python2")
+	script_install(SCRIPT testNET2.py)
+	script_install(SCRIPT netBurner2.py)
+endif()
+
 # Setup the target version of Python we will use for testing
 set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")
 message(STATUS "Setting Python test binary to '${PYTHON_TEST}' (use -DPYTHON_TEST to change)")
@@ -55,7 +62,12 @@ add_test(NAME basicIOmultithread COMMAND ${PYTHON_TEST} testIO.py --usleep 100 -
 add_test(NAME basicIOmultiproc COMMAND ${PYTHON_TEST} testIO.py --usleep 100 --io 10  --procs 2)
 
 # Net Tests
-add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET.py)
+# These have to be different for python2 and python3
+if(${PYTHON_TEST} MATCHES "python3")
+	add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET.py)
+elseif(${PYTHON_TEST} MATCHES "python2")
+	add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET2.py)
+endif()
 
 # Memory Tests
 add_test(NAME singleMem COMMAND ${PYTHON_TEST} testMEM.py --procs 1)
