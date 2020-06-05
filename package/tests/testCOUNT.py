@@ -45,7 +45,7 @@ def setupConfigurableTest(threads=1, procs=1, time=10.0, interval=1, invoke=Fals
                 totPROC      = prmonJSON["Max"]["nprocs"] 
                 totTHREAD    = prmonJSON["Max"]["nthreads"]
                 expectPROC   = procs
-                expectTHREAD = procs*threads 
+                expectTHREAD = procs*(threads+1)
                 self.assertAlmostEqual(totPROC, expectPROC, msg = "Inconsistent value for number of processes "
                              "(expected {0}, got {1})".format(expectPROC, totPROC))
                 self.assertAlmostEqual(totTHREAD, expectTHREAD, msg = "Inconsistent value for number of total threads "

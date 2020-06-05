@@ -38,7 +38,7 @@ void countmon::update_stats(const std::vector<pid_t>& pids) {
     }
     if (stat_entries.size() > prmon::stat_count_read_limit) {
       count_stats["nprocs"]   += 1L;
-      count_stats["nthreads"] += std::stol(stat_entries[prmon::num_threads]) - 1L;
+      count_stats["nthreads"] += std::stol(stat_entries[prmon::num_threads]);
     }
     stat_entries.clear();
   }
