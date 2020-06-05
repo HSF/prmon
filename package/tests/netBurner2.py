@@ -10,7 +10,7 @@ import time
 import urllib2
 
 def getNetData(host="localhost", port="8000", blocks=None):
-    url = "http://" + host + ":" + str(port) + "/cgi-bin/httpBlock.py"
+    url = "http://" + host + ":" + str(port) + "/cgi-bin/httpBlock2.py"
     if blocks:
         url += "?blocks=" + str(blocks)
     response = urllib2.urlopen(url)

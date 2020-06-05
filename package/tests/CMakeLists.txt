@@ -44,6 +44,7 @@ script_install(SCRIPT testCOUNT.py)
 if(${PYTHON_TEST} MATCHES "python2")
 	script_install(SCRIPT testNET2.py)
 	script_install(SCRIPT netBurner2.py)
+	script_install(SCRIPT httpBlock2.py DESTINATION cgi-bin)
 endif()
 
 # Setup the target version of Python we will use for testing
