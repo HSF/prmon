@@ -12,11 +12,11 @@ notifications:
 
 # Test across multiple containers
 env:
-  - DIMAGE=graemeastewart/c7-dev
-  - DIMAGE=graemeastewart/c7-dev CMAKE_EXTRA=-DPYTHON_TEST=python2
-  - DIMAGE=graemeastewart/u18-dev
-  - DIMAGE=graemeastewart/c8-dev
-  - DIMAGE=graemeastewart/u20-dev
+  - DIMAGE=hepsoftwarefoundation/c7-dev  CMAKE=cmake3
+  - DIMAGE=hepsoftwarefoundation/c7-dev  CMAKE=cmake3 CMAKE_EXTRA=-DPYTHON_TEST=python2
+  - DIMAGE=hepsoftwarefoundation/u18-dev CMAKE_EXTRA=-Dnlohmann_json_DIR=/usr/lib/cmake
+  - DIMAGE=hepsoftwarefoundation/c8-dev
+  - DIMAGE=hepsoftwarefoundation/u20-dev CXX=g++-9 CC=gcc-9
 
 services:
   - docker
@@ -29,7 +29,7 @@ install:
 
 # Light customisation of build for different container images
 script:
-  - if [ "$DIMAGE" = graemeastewart/c7-dev ]; then docker run -e CMAKE=cmake3 -e CMAKE_EXTRA=$CMAKE_EXTRA -v $(pwd):/mnt graemeastewart/c7-dev scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh; fi
-  - if [ "$DIMAGE" = graemeastewart/u18-dev ]; then docker run -e CMAKE_EXTRA="-Dnlohmann_json_DIR=/usr/lib/cmake" -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
-  - if [ "$DIMAGE" = graemeastewart/c8-dev ]; then docker run -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
-  - if [ "$DIMAGE" = graemeastewart/u20-dev ]; then docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
+  - if [ "$DIMAGE" = hepsoftwarefoundation/c7-dev ];  then docker run -v $(pwd):/mnt $DIMAGE scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh; fi
+  - if [ "$DIMAGE" = hepsoftwarefoundation/u18-dev ]; then docker run -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
+  - if [ "$DIMAGE" = hepsoftwarefoundation/c8-dev ];  then docker run -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
+  - if [ "$DIMAGE" = hepsoftwarefoundation/u20-dev ]; then docker run -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh; fi
