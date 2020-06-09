@@ -55,6 +55,10 @@ command line).
 Note that in a build environment with CVMFS available the C++ compiler
 and CMake can be taken by setting up a recent LCG release.
 
+The tests in prmon now run in Python3. If your environment does not
+support Python3 properly it is possible to use Python2 for the tests
+by setting `-DPYTHON_TEST=python2`.
+
 ### Creating a package with CPack
 
 A cpack based package can be created by invoking
@@ -66,6 +70,9 @@ A cpack based package can be created by invoking
 To run the tests of the project, first build it and then invoke
 
     make test
+
+As noted above these will use `python3` by default, but this can
+be changed via the `PYTHON_TEST` option to CMake.
 
 ## Running
 
@@ -106,7 +113,7 @@ default).
 
 ### Visualisation
 
-The `prmon_plot.py` script can be used to plot the outputs of prmon from the
+The `prmon_plot.py` script (Python3) can be used to plot the outputs of prmon from the
 timestamped output file (usually `prmon.txt`). Some examples include:
 
 * Memory usage as a function of wall-time:
@@ -154,4 +161,4 @@ to CMake using `Gperftools_ROOT_DIR`.
 
 # Copyright
 
-Copyright (c) 2018, CERN.
+Copyright (c) 2018-2020, CERN.

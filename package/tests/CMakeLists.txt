@@ -39,23 +39,40 @@ script_install(SCRIPT netBurner.py)
 script_install(SCRIPT httpBlock.py DESTINATION cgi-bin)
 script_install(SCRIPT testCOUNT.py)
 
+# Python2 has a different version of the network test
+# as the modules are significantly different from Python3
+if(${PYTHON_TEST} MATCHES "python2")
+	script_install(SCRIPT testNET2.py)
+	script_install(SCRIPT netBurner2.py)
+	script_install(SCRIPT httpBlock2.py DESTINATION cgi-bin)
+endif()
+
+# Setup the target version of Python we will use for testing
+set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")
+message(STATUS "Setting Python test binary to '${PYTHON_TEST}' (use -DPYTHON_TEST to change)")
+
 # CPU Tests
-add_test(NAME testCPUsingle COMMAND testCPU.py --threads 1 --procs 1) 
-add_test(NAME testCPUmultithread COMMAND testCPU.py --threads 2 --procs 1) 
-add_test(NAME testCPUmultiproc COMMAND testCPU.py --threads 1 --procs 2 --child-fraction 0.5 --time 12) 
-add_test(NAME testCPUinvoke COMMAND testCPU.py --invoke) 
+add_test(NAME testCPUsingle COMMAND ${PYTHON_TEST} testCPU.py --threads 1 --procs 1) 
+add_test(NAME testCPUmultithread COMMAND ${PYTHON_TEST} testCPU.py --threads 2 --procs 1) 
+add_test(NAME testCPUmultiproc COMMAND ${PYTHON_TEST} testCPU.py --threads 1 --procs 2 --child-fraction 0.5 --time 12) 
+add_test(NAME testCPUinvoke COMMAND ${PYTHON_TEST} testCPU.py --invoke) 
 
 # IO Tests
-add_test(NAME basicIOsingle COMMAND testIO.py --usleep 100 --io 10)
-add_test(NAME basicIOmultithread COMMAND testIO.py --usleep 100 --io 10 --threads 2)
-add_test(NAME basicIOmultiproc COMMAND testIO.py --usleep 100 --io 10  --procs 2)
+add_test(NAME basicIOsingle COMMAND ${PYTHON_TEST} testIO.py --usleep 100 --io 10)
+add_test(NAME basicIOmultithread COMMAND ${PYTHON_TEST} testIO.py --usleep 100 --io 10 --threads 2)
+add_test(NAME basicIOmultiproc COMMAND ${PYTHON_TEST} testIO.py --usleep 100 --io 10  --procs 2)
 
 # Net Tests
-add_test(NAME basicNET COMMAND python testNET.py)
+# These have to be different for python2 and python3
+if(${PYTHON_TEST} MATCHES "python3")
+	add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET.py)
+elseif(${PYTHON_TEST} MATCHES "python2")
+	add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET2.py)
+endif()
 
 # Memory Tests
-add_test(NAME singleMem COMMAND python testMEM.py --procs 1)
-add_test(NAME childMem COMMAND python testMEM.py --procs 4)
+add_test(NAME singleMem COMMAND ${PYTHON_TEST} testMEM.py --procs 1)
+add_test(NAME childMem COMMAND ${PYTHON_TEST} testMEM.py --procs 4)
 
 # Process and thread counting Tests
-add_test(NAME basicCOUNT COMMAND python testCOUNT.py --procs 2 --threads 2)
+add_test(NAME basicCOUNT COMMAND ${PYTHON_TEST} testCOUNT.py --procs 2 --threads 2)

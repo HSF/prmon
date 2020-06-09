@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python2
 #
 # Copyright (C) CERN, 2018-2020
 #
