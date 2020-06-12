@@ -11,24 +11,24 @@ add_executable(mem-burner mem-burner.cpp)
 
 # Custom targets for handling scripted wrappers for tests
 function(script_install)
-	cmake_parse_arguments(SCRIPT_INSTALL "" "SCRIPT;DESTINATION" "" ${ARGN})
-	if(NOT SCRIPT_INSTALL_SCRIPT)
-		message(FATAL "Script installer argument SCRIPT is mandatory")
-	endif(NOT SCRIPT_INSTALL_SCRIPT)
-	if(NOT SCRIPT_INSTALL_DESTINATION)
-		set(SCRIPT_INSTALL_DESTINATION ".")
-	endif(NOT SCRIPT_INSTALL_DESTINATION)
-	add_custom_command(
-		OUTPUT "${SCRIPT_INSTALL_DESTINATION}/${SCRIPT_INSTALL_SCRIPT}"
-		DEPENDS ${SCRIPT_INSTALL_SCRIPT}
-		COMMAND mkdir -p ${SCRIPT_INSTALL_DESTINATION}
-		COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${SCRIPT_INSTALL_SCRIPT} ${SCRIPT_INSTALL_DESTINATION}
-		VERBATIM
-	)
-	add_custom_target(
-		install_${SCRIPT_INSTALL_SCRIPT} ALL
-		DEPENDS ${SCRIPT_INSTALL_SCRIPT}
-	)
+    cmake_parse_arguments(SCRIPT_INSTALL "" "SCRIPT;DESTINATION" "" ${ARGN})
+    if(NOT SCRIPT_INSTALL_SCRIPT)
+        message(FATAL "Script installer argument SCRIPT is mandatory")
+    endif(NOT SCRIPT_INSTALL_SCRIPT)
+    if(NOT SCRIPT_INSTALL_DESTINATION)
+        set(SCRIPT_INSTALL_DESTINATION ".")
+    endif(NOT SCRIPT_INSTALL_DESTINATION)
+    add_custom_command(
+        OUTPUT "${SCRIPT_INSTALL_DESTINATION}/${SCRIPT_INSTALL_SCRIPT}"
+        DEPENDS ${SCRIPT_INSTALL_SCRIPT}
+        COMMAND mkdir -p ${SCRIPT_INSTALL_DESTINATION}
+        COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${SCRIPT_INSTALL_SCRIPT} ${SCRIPT_INSTALL_DESTINATION}
+        VERBATIM
+    )
+    add_custom_target(
+        install_${SCRIPT_INSTALL_SCRIPT} ALL
+        DEPENDS ${SCRIPT_INSTALL_SCRIPT}
+    )
 endfunction(script_install)
 
 script_install(SCRIPT testCPU.py)
@@ -42,9 +42,9 @@ script_install(SCRIPT testCOUNT.py)
 # Python2 has a different version of the network test
 # as the modules are significantly different from Python3
 if(${PYTHON_TEST} MATCHES "python2")
-	script_install(SCRIPT testNET2.py)
-	script_install(SCRIPT netBurner2.py)
-	script_install(SCRIPT httpBlock2.py DESTINATION cgi-bin)
+    script_install(SCRIPT testNET2.py)
+    script_install(SCRIPT netBurner2.py)
+    script_install(SCRIPT httpBlock2.py DESTINATION cgi-bin)
 endif()
 
 # Setup the target version of Python we will use for testing
@@ -65,9 +65,9 @@ add_test(NAME basicIOmultiproc COMMAND ${PYTHON_TEST} testIO.py --usleep 100 --i
 # Net Tests
 # These have to be different for python2 and python3
 if(${PYTHON_TEST} MATCHES "python3")
-	add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET.py)
+    add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET.py)
 elseif(${PYTHON_TEST} MATCHES "python2")
-	add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET2.py)
+    add_test(NAME basicNET COMMAND ${PYTHON_TEST} testNET2.py)
 endif()
 
 # Memory Tests

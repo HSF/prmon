@@ -1,6 +1,7 @@
 #! /usr/bin/env python2
 #
-# Copyright (C) CERN, 2020
+# Copyright (C) 2018-2020 CERN
+# License Apache2 - see LICENCE file
 #
 # Test script for network IO (Python2 version)
 from __future__ import print_function, unicode_literals

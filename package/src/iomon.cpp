@@ -1,11 +1,13 @@
-// Copyright (C) CERN, 2020
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
 
 #include "iomon.h"
-#include "utils.h"
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
+
+#include "utils.h"
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -16,19 +18,17 @@ iomon::iomon() : io_stats{} {
 void iomon::update_stats(const std::vector<pid_t>& pids) {
   std::string param{};
   unsigned long long value{};
-  for (auto& stat: io_stats)
-    stat.second = 0;
+  for (auto& stat : io_stats) stat.second = 0;
   for (const auto pid : pids) {
     std::stringstream io_fname{};
     io_fname << "/proc/" << pid << "/io" << std::ends;
     std::ifstream proc_io{io_fname.str()};
-    while(proc_io) {
+    while (proc_io) {
       proc_io >> param >> value;
       if (proc_io && param.size() > 0) {
-        param.erase(param.size()-1); // Chop off training ":"
+        param.erase(param.size() - 1);  // Chop off training ":"
         auto element = io_stats.find(param);
-        if (element != io_stats.end())
-          element->second += value;
+        if (element != io_stats.end()) element->second += value;
       }
     }
   }
@@ -56,6 +56,4 @@ std::map<std::string, double> const iomon::get_json_average_stats(
 }
 
 // Collect related hardware information
-void const iomon::get_hardware_info(nlohmann::json& hw_json) {
-  return;
-}
+void const iomon::get_hardware_info(nlohmann::json& hw_json) { return; }

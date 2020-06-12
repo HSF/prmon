@@ -1,13 +1,14 @@
-// Copyright (C) CERN, 2020
-//
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
+
 // I/O monitoring class
 //
 
 #ifndef PRMON_IOMON_H
 #define PRMON_IOMON_H 1
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "Imonitor.h"
@@ -29,11 +30,11 @@ class iomon final : public Imonitor {
   // These are the stat getter methods which retrieve current statistics
   std::map<std::string, unsigned long long> const get_text_stats();
   std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
+  std::map<std::string, double> const get_json_average_stats(
+      unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);
-
 };
 REGISTER_MONITOR(Imonitor, iomon, "Monitor input and output activity")
 

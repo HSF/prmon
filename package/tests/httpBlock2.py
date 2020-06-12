@@ -1,6 +1,7 @@
 #! /usr/bin/env python2
 #
-# Copyright (C) CERN, 2018-2020
+# Copyright (C) 2018-2020 CERN
+# License Apache2 - see LICENCE file
 #
 # Simple CGI script that delivers a known block
 # of data to the caller over HTTP

@@ -1,5 +1,10 @@
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
+
 // Simple CPU burner to simulate workload
 // for testing prmon
+
+#include "burner.h"
 
 #include <getopt.h>
 #include <signal.h>
@@ -14,8 +19,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include "burner.h"
 
 double burn(unsigned long iterations = 10000000lu) {
   // Perform a time wasting bit of maths
@@ -42,8 +45,7 @@ double burn_for(float ms_interval = 1.0) {
 
 void SignalChildHandler(int /*signal*/) {
   pid_t pid{1};
-  while (pid>0)
-    pid = waitpid((pid_t)-1, NULL, WNOHANG);
+  while (pid > 0) pid = waitpid((pid_t)-1, NULL, WNOHANG);
 }
 
 int main(int argc, char* argv[]) {
@@ -53,7 +55,8 @@ int main(int argc, char* argv[]) {
   const unsigned int default_threads = 1;
   const unsigned int default_procs = 1;
 
-  float runtime{default_runtime}, child_runtime_fraction{default_child_runtime_fraction};
+  float runtime{default_runtime},
+      child_runtime_fraction{default_child_runtime_fraction};
   unsigned int threads{default_threads}, procs{default_procs};
   int do_help{0};
 
@@ -89,9 +92,9 @@ int main(int argc, char* argv[]) {
       case 'c':
         child_runtime_fraction = std::stof(optarg);
         if (child_runtime_fraction <= 0 || child_runtime_fraction > 1.0) {
-          std::cerr
-              << "child runtime fraction must be in range (0,1.0] (--help for usage)"
-              << std::endl;
+          std::cerr << "child runtime fraction must be in range (0,1.0] "
+                       "(--help for usage)"
+                    << std::endl;
           return 1;
         }
         break;
@@ -126,7 +129,8 @@ int main(int argc, char* argv[]) {
               << default_threads << ")\n"
               << " [--procs, -p N]    Number of processes to run (default "
               << default_procs << ")\n"
-              << " [--child-fraction, -c F]     Run each child for a fraction F of the parent runtime (default "
+              << " [--child-fraction, -c F]     Run each child for a fraction "
+                 "F of the parent runtime (default "
               << default_child_runtime_fraction << ")\n"
               << " [--time, -r T]     Run for T seconds (default "
               << default_runtime << ")\n\n"
@@ -157,14 +161,15 @@ int main(int argc, char* argv[]) {
       ++children;
     }
   }
-  if (pid)
-    signal(SIGCHLD, SignalChildHandler);
+  if (pid) signal(SIGCHLD, SignalChildHandler);
 
   // Each process runs the requested number of threads
   std::vector<std::thread> pool;
   for (unsigned int i = 1; i < threads; ++i)
-    pool.push_back(std::thread(burn_for, runtime * std::kilo::num * (pid ? 1.0 : child_runtime_fraction)));
-  
+    pool.push_back(std::thread(
+        burn_for,
+        runtime * std::kilo::num * (pid ? 1.0 : child_runtime_fraction)));
+
   // We also burn CPU in the mother thread
   burn_for(runtime * std::kilo::num * (pid ? 1.0 : child_runtime_fraction));
 

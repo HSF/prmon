@@ -1,6 +1,8 @@
 // Simple IO burner to simulate workload
 // for testing prmon
 
+#include "io-burner.h"
+
 #include <getopt.h>
 #include <signal.h>
 #include <sys/wait.h>
@@ -15,8 +17,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include "io-burner.h"
 
 int io_burn(unsigned long bytes_to_write, std::chrono::nanoseconds nsleep,
             std::chrono::nanoseconds pause) {
@@ -64,8 +64,7 @@ int io_burn(unsigned long bytes_to_write, std::chrono::nanoseconds nsleep,
 
 void SignalChildHandler(int /*signal*/) {
   pid_t pid{1};
-  while (pid>0)
-    pid = waitpid((pid_t)-1, NULL, WNOHANG);
+  while (pid > 0) pid = waitpid((pid_t)-1, NULL, WNOHANG);
 }
 
 int main(int argc, char* argv[]) {
@@ -205,13 +204,13 @@ int main(int argc, char* argv[]) {
   }
 
   // Parent should respond to child exits
-  if (pid)
-    signal(SIGCHLD, SignalChildHandler);
+  if (pid) signal(SIGCHLD, SignalChildHandler);
 
   // Each process runs the requested number of threads
   std::vector<std::thread> pool;
   for (unsigned int i = 0; i < threads; ++i)
-    pool.push_back(std::thread(io_burn, io_bytes, nano_sleep / (pid ? 1 : children), nano_pause ));
+    pool.push_back(std::thread(io_burn, io_bytes,
+                               nano_sleep / (pid ? 1 : children), nano_pause));
   for (auto& th : pool) th.join();
 
   std::this_thread::sleep_for(nano_pause);
