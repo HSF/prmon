@@ -24,16 +24,16 @@ maximum values and average values. These are updated each update cycle.
 
 ## Initialisation
 
-Use an RAII pattern, so that on initialisation your monitor is valid and ready
+Use an RAII pattern, so that on initialisation the monitor is valid and ready
 to be used.
 
 ## Registry
 
-All monitors should use the `REGISTER_MONITOR` marco to register themselves. The
+All monitors should use the `REGISTER_MONITOR` macro to register themselves. The
 signature is:
 
 ```
-REGISTER_MONITOR(Imonitor, name, "Description")
+REGISTER_MONITOR(Imonitor, classname, "Description")
 ```
 
 The first parameter is currently always `Imonitor` (base class), the second is
@@ -67,13 +67,14 @@ accumulate over time (e.g., user cpu seconds used or bytes read), but are
 *maximums* in the case of statistics that rise and fall (e.g., number of
 threads).
 
-These statistics will be fed into the `Max` dictionary element of the JSON output from prmon.
+These statistics will be fed into the `Max` dictionary element of the JSON
+output from prmon.
 
 ### Average Values
 
 Polled from `get_json_average_stats(elapsed_clock_ticks)`, pass back a map of
 string keys (column headers) and floating point values (`double`). These
-statistics are *average values* for the metic. What than means depends on the
+statistics are *average values* for the metric. What than means depends on the
 statistic (e.g., the memory consumption over the job lifetime or the number of
 bytes written per second). If an average makes no real sense for what you
 measure then exclude that metric from the values returned (some monitors report
@@ -86,8 +87,8 @@ output from prmon.
 
 If your monitor provides interesting data on the hardware on which is it
 running, it can contribute to the optional report on hardware. This report is
-provided as a JSON structure, that will be passed by refernce into the
+provided as a JSON structure, that will be passed by reference into the
 `get_hardware_info()` method. This is a shared object so always create a
 subsection in the JSON dictionary for data from your monitor.
 
-If your monitor dßoes not provide hardware data, simply return.
+If your monitor does not provide hardware data, simply return.

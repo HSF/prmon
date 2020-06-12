@@ -7,8 +7,8 @@ happy to get contributions for
 - Feature requests, for things that prmon could do in the future
 - Documentation improvements, for things that could be better explained
 
-That does not cover all contributions, so if you believe something can be useful
-to the project, please raise the issue.
+That does not cover all possible contributions, so if you believe something can
+be useful to the project, please raise the issue.
 
 ## Code of Conduct
 
@@ -17,8 +17,8 @@ conduct](../CODE_OF_CONDUCT.md). Thanks for respecting it!
 
 ## Issues and Bug Reports
 
-Raise bug reports and general issues using the [*issues*](/HSF/prmon/issues).
-For bug reports make sure that you:
+Raise bug reports and general issues using the [*issues*](https://github.com/HSF/prmon/issues)
+feature. For bug reports make sure that you:
 
 - are using the latest release of prmon
 - explain how are are running the code
@@ -30,7 +30,7 @@ the project maintainers can verify the problem and validate a fix.
 
 Do bear in mind the scope of prmon is Linux systems (the availability of `/proc`
 is critical), so if the issue is that something does not work on another
-platform, that's out of scope for us.
+platform, that is out of scope for us.
 
 ## Feature Requests
 
@@ -41,6 +41,9 @@ repository.
 - the feature should be supported by an integration test
 - the code should be commented as needed so that others can understand it
 - code should be formatted using the *Google* style of `clang-format`
+  - i.e. `clang-format --style=Google ...`
+  - There is a `clang-format` CMake target that will do this automatically so we
+    recommend that is run before making the pull request
 
 We will review the code before accepting the pull request.
 
@@ -48,7 +51,7 @@ Please bear in mind the scope of prmon, which is to do *lightweight* monitoring
 of vast numbers of jobs. Thus features which are heavy or not of general
 interest across millions of jobs are out of scope for the project. In particular
 prmon focuses on resource consumption, it is not a profiling and optimisation
-too.
+tool.
 
 If you are not sure if the feature makes sense for the project, use a GitHub
 issue to first discuss with the maintainers.
@@ -67,6 +70,9 @@ specific files (like this one) and all improvements are welcome.
 ## Authorship and Copyright
 
 As members of the High-Energy Physics community, our host laboratory,
-[CERN](https://home.cern/), holds copyright on this project. All contributions
-need to agree to pass copyright to CERN. Every significant author of prmon will
-be acknowledged in our [AUTHORS](../AUTHORS) file.
+[CERN](https://home.cern/), holds copyright on this project. 
+
+All contributions need to agree to pass copyright to CERN. 
+
+Every significant author of prmon will be acknowledged in our
+[AUTHORS](../AUTHORS) file.

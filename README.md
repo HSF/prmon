@@ -146,7 +146,7 @@ Use `-h` for more information.
 
 We're very happy to get feedback on prmon as well as suggestions for future
 development. Please have a look at our [Contribution
-Guide](docs/CONTRIBUTING.md).
+Guide](doc/CONTRIBUTING.md).
 
 
 ### Profiling
