@@ -1,0 +1,28 @@
+# Name of the workflow
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master and stable branches
+on:
+  push:
+    branches: [ master, stable ]
+  pull_request:
+    branches: [ master, stable ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Pulls the Docker image, builds the code and runs the test (u20-dev)
+    - name: Build and Test (u20-dev)
+      run: |
+        docker pull hepsoftwarefoundation/u20-dev
+        docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt hepsoftwarefoundation/u20-dev /mnt/.travis-scripts/build-test.sh
