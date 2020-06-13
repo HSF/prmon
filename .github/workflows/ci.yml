@@ -11,82 +11,45 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # Main building and testing on c7-dev
-  Build-Test-c7-dev:
+  # Main building and testing
+  build-test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Define the platforms to run on. Later determines the Docker image that'll be used
+    strategy:
+      matrix:
+        platform: [ c7-dev, c8-dev, u18-dev, u20-dev ]
+
+    # Sets up environment variables
+    env:
+      DIMAGE: hepsoftwarefoundation/${{ matrix.platform }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
     - uses: actions/checkout@v2
 
-    # Pulls the Docker image, builds the code and runs the test (c7-dev)
-    - name: Build and Test (c7-dev)
+    # Pulls the associated Docker image
+    - name: Docker pull
+      run: docker pull $DIMAGE
+
+    # Builds the code and runs the test
+    - name: Build and Test
       run: |
-        docker pull hepsoftwarefoundation/c7-dev
-        docker run -e CMAKE=cmake3 -v $(pwd):/mnt hepsoftwarefoundation/c7-dev scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh
-
-  # Main building and testing on c7-dev-py2
-  Build-Test-c7-dev-py2:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-    # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
-    - uses: actions/checkout@v2
-
-    # Pulls the Docker image, builds the code and runs the test (c7-dev-py2)
-    - name: Build and Test (c7-dev-py2)
-      run: |
-        docker pull hepsoftwarefoundation/c7-dev
-        docker run -e CMAKE=cmake3 -e CMAKE_EXTRA=-DPYTHON_TEST=python2 -v $(pwd):/mnt hepsoftwarefoundation/c7-dev scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh
-
-  # Main building and testing on u18-dev
-  Build-Test-u18-dev:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-    # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
-    - uses: actions/checkout@v2
-
-    # Pulls the Docker image, builds the code and runs the test (u18-dev)
-    - name: Build and Test (u18-dev)
-      run: |
-        docker pull hepsoftwarefoundation/u18-dev
-        docker run -e CMAKE_EXTRA=-Dnlohmann_json_DIR=/usr/lib/cmake -v $(pwd):/mnt hepsoftwarefoundation/u18-dev /mnt/.travis-scripts/build-test.sh
-
-  # Main building and testing on c8-dev
-  Build-Test-c8-dev:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-    # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
-    - uses: actions/checkout@v2
-
-    # Pulls the Docker image, builds the code and runs the test (c8-dev)
-    - name: Build and Test (c8-dev)
-      run: |
-        docker pull hepsoftwarefoundation/c8-dev
-        docker run -v $(pwd):/mnt hepsoftwarefoundation/c8-dev /mnt/.travis-scripts/build-test.sh
-
-  # Main building and testing on u20-dev
-  Build-Test-u20-dev:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-    # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
-    - uses: actions/checkout@v2
-
-    # Pulls the Docker image, builds the code and runs the test (u20-dev)
-    - name: Build and Test (u20-dev)
-      run: |
-        docker pull hepsoftwarefoundation/u20-dev
-        docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt hepsoftwarefoundation/u20-dev /mnt/.travis-scripts/build-test.sh
+        if [ "$DIMAGE" == "hepsoftwarefoundation/c7-dev" ];
+        then
+          docker run -e CMAKE=cmake3 -e CMAKE_EXTRA=-DPYTHON_TEST=python2 -v $(pwd):/mnt $DIMAGE scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh;
+          docker run -e CMAKE=cmake3 -v $(pwd):/mnt $DIMAGE scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh;
+        elif [ "$DIMAGE" == "hepsoftwarefoundation/c8-dev" ];
+        then
+          docker run -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh;
+        elif [ "$DIMAGE" == "hepsoftwarefoundation/u18-dev" ];
+        then
+          docker run -e CMAKE_EXTRA=-Dnlohmann_json_DIR=/usr/lib/cmake -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh;
+        elif [ "$DIMAGE" == "hepsoftwarefoundation/u20-dev" ];
+        then
+          docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh;
+        else
+          echo "Uknown DIMAGE $DIMAGE"
+        fi
