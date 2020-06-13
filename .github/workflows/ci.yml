@@ -19,11 +19,11 @@ jobs:
     # Define the platforms to run on. Later determines the Docker image that'll be used
     strategy:
       matrix:
-        platform: [ c7-dev, c8-dev, u18-dev, u20-dev ]
+        platform: [ c7-dev-py2, c7-dev, c8-dev, u18-dev, u20-dev ]
 
     # Sets up environment variables
     env:
-      DIMAGE: hepsoftwarefoundation/${{ matrix.platform }}
+      PLATFORM: ${{ matrix.platform }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -32,24 +32,32 @@ jobs:
 
     # Pulls the associated Docker image
     - name: Docker pull
-      run: docker pull $DIMAGE
+      run: |
+        if [ "$PLATFORM" == "c7-dev-py2" ];
+        then
+          docker pull hepsoftwarefoundation/c7-dev
+        else
+          docker pull hepsoftwarefoundation/$PLATFORM
+        fi
 
     # Builds the code and runs the test
     - name: Build and Test
       run: |
-        if [ "$DIMAGE" == "hepsoftwarefoundation/c7-dev" ];
+        if [ "$PLATFORM" == "c7-dev-py2" ];
         then
-          docker run -e CMAKE=cmake3 -e CMAKE_EXTRA=-DPYTHON_TEST=python2 -v $(pwd):/mnt $DIMAGE scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh;
-          docker run -e CMAKE=cmake3 -v $(pwd):/mnt $DIMAGE scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh;
-        elif [ "$DIMAGE" == "hepsoftwarefoundation/c8-dev" ];
+          docker run -e CMAKE=cmake3 -e CMAKE_EXTRA=-DPYTHON_TEST=python2 -v $(pwd):/mnt hepsoftwarefoundation/c7-dev scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh;
+        elif [ "$PLATFORM" == "c7-dev" ];
         then
-          docker run -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh;
-        elif [ "$DIMAGE" == "hepsoftwarefoundation/u18-dev" ];
+          docker run -e CMAKE=cmake3 -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh;
+        elif [ "$PLATFORM" == "c8-dev" ];
         then
-          docker run -e CMAKE_EXTRA=-Dnlohmann_json_DIR=/usr/lib/cmake -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh;
-        elif [ "$DIMAGE" == "hepsoftwarefoundation/u20-dev" ];
+          docker run -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.travis-scripts/build-test.sh;
+        elif [ "$PLATFORM" == "u18-dev" ];
         then
-          docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.travis-scripts/build-test.sh;
+          docker run -e CMAKE_EXTRA=-Dnlohmann_json_DIR=/usr/lib/cmake -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.travis-scripts/build-test.sh;
+        elif [ "$PLATFORM" == "u20-dev" ];
+        then
+          docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.travis-scripts/build-test.sh;
         else
           echo "Uknown DIMAGE $DIMAGE"
         fi
