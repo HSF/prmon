@@ -45,19 +45,19 @@ jobs:
       run: |
         if [ "$PLATFORM" == "c7-dev-py2" ];
         then
-          docker run -e CMAKE=cmake3 -e CMAKE_EXTRA=-DPYTHON_TEST=python2 -v $(pwd):/mnt hepsoftwarefoundation/c7-dev scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh;
+          docker run -e CMAKE=cmake3 -e CMAKE_EXTRA=-DPYTHON_TEST=python2 -v $(pwd):/mnt hepsoftwarefoundation/c7-dev scl enable devtoolset-8 /mnt/.github/scripts/build-test.sh;
         elif [ "$PLATFORM" == "c7-dev" ];
         then
-          docker run -e CMAKE=cmake3 -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM scl enable devtoolset-8 /mnt/.travis-scripts/build-test.sh;
+          docker run -e CMAKE=cmake3 -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM scl enable devtoolset-8 /mnt/.github/scripts/build-test.sh;
         elif [ "$PLATFORM" == "c8-dev" ];
         then
-          docker run -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.travis-scripts/build-test.sh;
+          docker run -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.github/scripts/build-test.sh;
         elif [ "$PLATFORM" == "u18-dev" ];
         then
-          docker run -e CMAKE_EXTRA=-Dnlohmann_json_DIR=/usr/lib/cmake -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.travis-scripts/build-test.sh;
+          docker run -e CMAKE_EXTRA=-Dnlohmann_json_DIR=/usr/lib/cmake -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.github/scripts/build-test.sh;
         elif [ "$PLATFORM" == "u20-dev" ];
         then
-          docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.travis-scripts/build-test.sh;
+          docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt hepsoftwarefoundation/$PLATFORM /mnt/.github/scripts/build-test.sh;
         else
           echo "Uknown DIMAGE $DIMAGE"
         fi
