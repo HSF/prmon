@@ -1,11 +1,11 @@
-// Copyright (C) CERN, 2018
-//
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
+
 // Wall time monitoring class
 //
 // This is implemented separately from cputime as for walltime
 // there is one more public getter to extract the current wallclock
 // time for use in calculating the average JSON stats
-//
 
 #ifndef PRMON_WALLMON_H
 #define PRMON_WALLMON_H 1
@@ -38,7 +38,8 @@ class wallmon final : public Imonitor {
   // These are the stat getter methods which retrieve current statistics
   std::map<std::string, unsigned long long> const get_text_stats();
   std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
+  std::map<std::string, double> const get_json_average_stats(
+      unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);

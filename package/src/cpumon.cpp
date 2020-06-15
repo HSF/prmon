@@ -1,15 +1,17 @@
-// Copyright (C) CERN, 2020
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
 
 #include "cpumon.h"
-#include "utils.h"
 
 #include <string.h>
 #include <unistd.h>
 
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <regex>
+#include <sstream>
+
+#include "utils.h"
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -61,21 +63,21 @@ std::map<std::string, double> const cpumon::get_json_average_stats(
 
 // Collect related hardware information
 void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
-
   // Read some information from /proc/cpuinfo
   std::ifstream cpuInfoFile{"/proc/cpuinfo"};
-  if(!cpuInfoFile.is_open()) {
+  if (!cpuInfoFile.is_open()) {
     std::cerr << "Failed to open /proc/cpuinfo" << std::endl;
     return;
   }
 
   // Metrics to read from the input
-  std::vector<std::string> metrics{"processor", "model name", "siblings", "cpu cores"};
+  std::vector<std::string> metrics{"processor", "model name", "siblings",
+                                   "cpu cores"};
   unsigned int nCPU = 0, nSiblings = 0, nCores = 0;
 
   // Loop over the file
   std::string line;
-  while (std::getline(cpuInfoFile,line)) {
+  while (std::getline(cpuInfoFile, line)) {
     if (line.empty()) continue;
     size_t splitIdx = line.find(":");
     std::string val;
@@ -83,21 +85,26 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
       val = line.substr(splitIdx + 1);
       if (val.empty()) continue;
       for (const auto& metric : metrics) {
-        if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
-          if (metric == "processor") nCPU++;
-          else if (metric == "siblings") { if(nSiblings == 0) nSiblings = std::stoi(val); }
-          else if (metric == "cpu cores") { if(nCores == 0) nCores = std::stoi(val); }
-          else if (hw_json["HW"]["cpu"][metric].empty()) {
-            hw_json["HW"]["cpu"][metric] = std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
+        if (line.size() >= metric.size() &&
+            line.compare(0, metric.size(), metric) == 0) {
+          if (metric == "processor")
+            nCPU++;
+          else if (metric == "siblings") {
+            if (nSiblings == 0) nSiblings = std::stoi(val);
+          } else if (metric == "cpu cores") {
+            if (nCores == 0) nCores = std::stoi(val);
+          } else if (hw_json["HW"]["cpu"][metric].empty()) {
+            hw_json["HW"]["cpu"][metric] =
+                std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
           }
-        } // end of metric check
-      } // end of populating metrics
-    } // end of seperator check
-  } // end of reading cpuInfoFile
+        }  // end of metric check
+      }    // end of populating metrics
+    }      // end of seperator check
+  }        // end of reading cpuInfoFile
 
-  // The clear assumption here is that there is a single type of processor installed
-  // nCPU = nSockets * nSiblings
-  // nSiblings = nCoresPerSocket * nThreadsPerCore
+  // The clear assumption here is that there is a single type of processor
+  // installed nCPU = nSockets * nSiblings nSiblings = nCoresPerSocket *
+  // nThreadsPerCore
   unsigned int nSockets = nCPU / nSiblings;
   unsigned int nThreads = nSiblings / nCores;
   hw_json["HW"]["cpu"]["nCPU"] = nCPU;

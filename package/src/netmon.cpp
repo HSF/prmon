@@ -1,7 +1,7 @@
-// Copyright (C) CERN, 2020
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
 
 #include "netmon.h"
-#include "utils.h"
 
 #include <dirent.h>
 #include <time.h>
@@ -9,13 +9,13 @@
 #include <cstring>
 #include <memory>
 
+#include "utils.h"
 
 // Constructor; uses RAII pattern to open all monitored
 // network device streams and to take initial values
 // to the monitor relative differences
 netmon::netmon(std::vector<std::string> netdevs)
-    : interface_params{prmon::default_network_if_params},
-      network_if_streams{} {
+    : interface_params{prmon::default_network_if_params}, network_if_streams{} {
   if (netdevs.size() == 0) {
     monitored_netdevs = get_all_network_devs();
   } else {
@@ -86,7 +86,8 @@ void netmon::read_raw_network_stats(
 std::map<std::string, unsigned long long> const netmon::get_text_stats() {
   std::map<std::string, unsigned long long> text_stats{};
   for (const auto& if_param : interface_params) {
-    text_stats[if_param] = network_stats[if_param] - network_stats_start[if_param];
+    text_stats[if_param] =
+        network_stats[if_param] - network_stats_start[if_param];
   }
   return text_stats;
 }
@@ -97,16 +98,16 @@ std::map<std::string, unsigned long long> const netmon::get_json_total_stats() {
 }
 
 // For JSON averages, divide by elapsed time
-std::map<std::string, double> const netmon::get_json_average_stats(unsigned long long elapsed_clock_ticks) {
+std::map<std::string, double> const netmon::get_json_average_stats(
+    unsigned long long elapsed_clock_ticks) {
   std::map<std::string, unsigned long long> text_stats = get_text_stats();
   std::map<std::string, double> json_average_stats{};
   for (auto& stat : text_stats) {
-    json_average_stats[stat.first] = double(stat.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
+    json_average_stats[stat.first] =
+        double(stat.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
   }
   return json_average_stats;
 }
 
 // Collect related hardware information
-void const netmon::get_hardware_info(nlohmann::json& hw_json) {
-  return;
-}
+void const netmon::get_hardware_info(nlohmann::json& hw_json) { return; }

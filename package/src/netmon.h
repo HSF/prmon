@@ -1,5 +1,6 @@
-// Copyright (C) CERN, 2018
-//
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
+
 // Network monitoring class
 //
 // This is a more efficient network monitor that holds
@@ -11,9 +12,9 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
 #include <unordered_map>
 #include <vector>
 
@@ -30,14 +31,12 @@ class netmon final : public Imonitor {
   std::vector<std::string> monitored_netdevs;
 
   // Nested dictionary of network_if_streams[PARMETER][DEVICE][ISTREAM*]
-  std::map<
-      std::string,
-      std::unordered_map<std::string, std::unique_ptr<std::ifstream>>>
+  std::map<std::string,
+           std::unordered_map<std::string, std::unique_ptr<std::ifstream>>>
       network_if_streams;
 
   // Container for stats, initial and current
-  std::map<std::string, unsigned long long> network_stats_start,
-      network_stats;
+  std::map<std::string, unsigned long long> network_stats_start, network_stats;
 
   // Find all network interfaces on the system
   std::vector<std::string> const get_all_network_devs();
@@ -67,11 +66,11 @@ class netmon final : public Imonitor {
   // These are the stat getter methods which retrieve current statistics
   std::map<std::string, unsigned long long> const get_text_stats();
   std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
+  std::map<std::string, double> const get_json_average_stats(
+      unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);
-
 };
 REGISTER_MONITOR(Imonitor, netmon, "Monitor network activity (device level)")
 

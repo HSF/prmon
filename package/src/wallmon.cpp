@@ -1,7 +1,7 @@
-// Copyright (C) CERN, 2018
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
 
 #include "wallmon.h"
-#include "utils.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -10,6 +10,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "utils.h"
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -76,7 +77,8 @@ std::map<std::string, unsigned long long> const wallmon::get_text_stats() {
 }
 
 // Same for JSON
-std::map<std::string, unsigned long long> const wallmon::get_json_total_stats() {
+std::map<std::string, unsigned long long> const
+wallmon::get_json_total_stats() {
   return walltime_stats;
 }
 
@@ -88,6 +90,4 @@ std::map<std::string, double> const wallmon::get_json_average_stats(
 }
 
 // Collect related hardware information
-void const wallmon::get_hardware_info(nlohmann::json& hw_json) {
-  return;
-}
+void const wallmon::get_hardware_info(nlohmann::json& hw_json) { return; }

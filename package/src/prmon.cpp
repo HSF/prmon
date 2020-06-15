@@ -1,4 +1,5 @@
-//  Copyright (C) 2018, CERN
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
 
 // PRocess MONitor
 // See https://github.com/HSF/prmon
@@ -12,71 +13,46 @@
 
 #include <cstddef>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
-#include <unordered_map>
+#include <memory>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <thread>
+#include <unordered_map>
 #include <vector>
-#include <iomanip>
-#include <memory>
 
-#include <nlohmann/json.hpp>
-
+#include "prmonutils.h"
 #include "registry.h"
-
-#include "pidutils.h"
-#include "prmon.h"
 #include "wallmon.h"
 
-bool sigusr1 = false;
+bool prmon::sigusr1 = false;
 
-void SignalCallbackHandler(int /*signal*/) {
-  sigusr1 = true;
-}
-
-void SignalChildHandler(int /*signal*/) {
-  int status;
-  pid_t pid{1};
-  while (pid > 0) {
-    pid = waitpid((pid_t)-1, &status, WNOHANG);
-    if (status && pid > 0) {
-      if (WIFEXITED(status))
-        std::clog << "Child process " << pid
-                  << " had non-zero return value: " << WEXITSTATUS(status)
-                  << std::endl;
-      else if (WIFSIGNALED(status))
-        std::clog << "Child process " << pid << " exited from signal "
-                  << WTERMSIG(status) << std::endl;
-      else if (WIFSTOPPED(status))
-        std::clog << "Child process " << pid << " was stopped by signal"
-                  << WSTOPSIG(status) << std::endl;
-      else if (WIFCONTINUED(status))
-        std::clog << "Child process " << pid << " was continued" << std::endl;
-    }
-  }
-}
-
-int MemoryMonitor(const pid_t mpid, const std::string filename,
-                  const std::string json_summary_file, const unsigned int interval,
-                  const bool store_hw_info, const std::vector<std::string> netdevs) {
-  signal(SIGUSR1, SignalCallbackHandler);
-  signal(SIGCHLD, SignalChildHandler);
+int ProcessMonitor(const pid_t mpid, const std::string filename,
+                  const std::string json_summary_file,
+                  const unsigned int interval, const bool store_hw_info,
+                  const std::vector<std::string> netdevs) {
+  signal(SIGUSR1, prmon::SignalCallbackHandler);
 
   // This is the vector of all monitoring components
   std::unordered_map<std::string, std::unique_ptr<Imonitor>> monitors{};
 
   auto registered_monitors = registry::Registry<Imonitor>::list_registered();
   for (const auto& class_name : registered_monitors) {
-    std::unique_ptr<Imonitor> new_monitor_p(registry::Registry<Imonitor>::create(class_name));
+    std::unique_ptr<Imonitor> new_monitor_p(
+        registry::Registry<Imonitor>::create(class_name));
     if (new_monitor_p) {
       monitors[class_name] = std::move(new_monitor_p);
     } else {
-      std::cerr << "Registration of monitor " << class_name << " FAILED" << std::endl;
+      std::cerr << "Registration of monitor " << class_name << " FAILED"
+                << std::endl;
     }
   }
-  // The wallclock monitor is always needed as it is used for average stat generation
+  // The wallclock monitor is always needed as it is used for average stat
+  // generation
   if (monitors.count("wallmon") != 1) {
-    std::cerr << "Failed to initialise mandatory wallclock monitoring class" << std::endl;
+    std::cerr << "Failed to initialise mandatory wallclock monitoring class"
+              << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -94,7 +70,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   }
   file << std::endl;
 
-  // Create an empty JSON structure 
+  // Create an empty JSON structure
   nlohmann::json json_summary;
 
   std::stringstream tmp_json_file;
@@ -109,26 +85,27 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
   }
 
   // See if the kernel is new enough to have /proc/PID/task/PID/children
-  bool modern_kernel = kernel_proc_pid_test(mpid);
+  bool modern_kernel = prmon::kernel_proc_pid_test(mpid);
 
   // Monitoring loop until process exits
   bool wroteFile = false;
   std::vector<pid_t> cpids{};
   // Scope of 'monitors' ensures safety of bare pointer here
   auto wallclock_monitor_p = static_cast<wallmon*>(monitors["wallmon"].get());
-  while (kill(mpid, 0) == 0 && sigusr1 == false) {
+  while (kill(mpid, 0) == 0 && prmon::sigusr1 == false) {
     if (time(0) - lastIteration > interval) {
       iteration++;
       // Reset lastIteration
       lastIteration = time(0);
 
       if (modern_kernel)
-        cpids = offspring_pids(mpid);
+        cpids = prmon::offspring_pids(mpid);
       else
-        cpids = pstree_pids(mpid);
+        cpids = prmon::pstree_pids(mpid);
 
       try {
-        for (const auto& monitor : monitors) monitor.second->update_stats(cpids);
+        for (const auto& monitor : monitors)
+          monitor.second->update_stats(cpids);
 
         currentTime = time(0);
         file << currentTime;
@@ -146,7 +123,8 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
         }
         for (const auto& monitor : monitors) {
           auto wallclock_time = wallclock_monitor_p->get_wallclock_clock_t();
-          for (const auto& stat : monitor.second->get_json_average_stats(wallclock_time)) {
+          for (const auto& stat :
+               monitor.second->get_json_average_stats(wallclock_time)) {
             json_summary["Avg"][(stat.first).c_str()] = stat.second;
           }
         }
@@ -159,9 +137,11 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
 
         // Move temporary file to the snapshot file
         if (wroteFile) {
-          if (rename(tmp_json_file.str().c_str(), json_snapshot_file.str().c_str()) != 0) {
+          if (rename(tmp_json_file.str().c_str(),
+                     json_snapshot_file.str().c_str()) != 0) {
             perror("rename fails");
-            std::cerr << tmp_json_file.str() << " " << json_snapshot_file.str() << "\n";
+            std::cerr << tmp_json_file.str() << " " << json_snapshot_file.str()
+                      << "\n";
           }
         }
       } catch (const std::ifstream::failure& e) {
@@ -173,6 +153,7 @@ int MemoryMonitor(const pid_t mpid, const std::string filename,
       }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    prmon::reap_children();
   }
   file.close();
 
@@ -273,19 +254,21 @@ int main(int argc, char* argv[]) {
         << "\n"
         << "One of --pid or a child program must be given (but not both)\n"
         << std::endl;
-      std::cout << "Monitors available:" << std::endl;
-      auto monitors = registry::Registry<Imonitor>::list_registered();
-      for( const auto& name : monitors ) {
-        std::cout << " - " << name << " : " << registry::Registry<Imonitor>::get_description(name) << std::endl;
-      }
-      std::cout << std::endl;
+    std::cout << "Monitors available:" << std::endl;
+    auto monitors = registry::Registry<Imonitor>::list_registered();
+    for (const auto& name : monitors) {
+      std::cout << " - " << name << " : "
+                << registry::Registry<Imonitor>::get_description(name)
+                << std::endl;
+    }
+    std::cout << std::endl;
     return 0;
   }
 
   int child_args = -1;
-  for (int i = 0; i < argc; i++ ) {
+  for (int i = 0; i < argc; i++) {
     if (!strcmp(argv[i], "--")) {
-      child_args = i+1;
+      child_args = i + 1;
       break;
     }
   }
@@ -305,17 +288,19 @@ int main(int argc, char* argv[]) {
       std::cerr << "Bad PID to monitor.\n";
       return 1;
     }
-    MemoryMonitor(pid, filename, jsonSummary, interval, store_hw_info, netdevs);
+    ProcessMonitor(pid, filename, jsonSummary, interval, store_hw_info, netdevs);
   } else {
     if (child_args == argc) {
-      std::cerr << "Found marker for child program to execute, but with no program argument.\n";
+      std::cerr << "Found marker for child program to execute, but with no "
+                   "program argument.\n";
       return 1;
     }
     pid_t child = fork();
-    if( child == 0 ) {
-      execvp(argv[child_args],&argv[child_args]);
-    } else if ( child > 0 ) {
-      MemoryMonitor(child, filename, jsonSummary, interval, store_hw_info, netdevs);
+    if (child == 0) {
+      execvp(argv[child_args], &argv[child_args]);
+    } else if (child > 0) {
+      ProcessMonitor(child, filename, jsonSummary, interval, store_hw_info,
+                    netdevs);
     }
   }
 

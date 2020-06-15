@@ -1,9 +1,10 @@
-// Copyright (C) CERN, 2018
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
 
-// A few utilities handling PID operations
+#include "prmonutils.h"
 
-#include <sys/stat.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #include <cstddef>
 #include <deque>
@@ -11,7 +12,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "pidutils.h"
+namespace prmon {
 
 bool kernel_proc_pid_test(const pid_t pid) {
   // Return true if the kernel has child PIDs
@@ -26,6 +27,10 @@ bool kernel_proc_pid_test(const pid_t pid) {
 std::vector<pid_t> pstree_pids(const pid_t mother_pid) {
   // This is the old style method to get the list
   // of PIDs, which uses pstree
+  //
+  // At least this was what was needed on SLC6 (kernel 2.6)
+  // so at some point all useful machines will support the new
+  // method
   std::vector<pid_t> cpids;
   char smaps_buffer[64];
   snprintf(smaps_buffer, 64, "pstree -A -p %ld | tr \\- \\\\n",
@@ -59,8 +64,7 @@ std::vector<pid_t> pstree_pids(const pid_t mother_pid) {
 }
 
 std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
-  // Get child process IDs in the new way, using
-  // /proc
+  // Get child process IDs in the new way, using /proc
   std::vector<pid_t> pid_list{};
   std::deque<pid_t> unprocessed_pids{};
 
@@ -70,7 +74,7 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
   // Now loop over all unprocessed PIDs, querying children
   // and pushing them onto the unprocessed queue, while
   // poping the front onto the final PID list
-  while(unprocessed_pids.size() > 0) {
+  while (unprocessed_pids.size() > 0) {
     std::stringstream child_pid_fname{};
     pid_t next_pid;
     child_pid_fname << "/proc/" << unprocessed_pids[0] << "/task/"
@@ -78,11 +82,36 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
     std::ifstream proc_children{child_pid_fname.str()};
     while (proc_children) {
       proc_children >> next_pid;
-      if (proc_children)
-        unprocessed_pids.push_back(next_pid);
+      if (proc_children) unprocessed_pids.push_back(next_pid);
     }
     pid_list.push_back(unprocessed_pids[0]);
     unprocessed_pids.pop_front();
   }
   return pid_list;
 }
+
+void SignalCallbackHandler(int /*signal*/) { sigusr1 = true; }
+
+void reap_children() {
+  int status;
+  pid_t pid{1};
+  while (pid > 0) {
+    pid = waitpid((pid_t)-1, &status, WNOHANG);
+    if (status && pid > 0) {
+      if (WIFEXITED(status))
+        std::clog << "Child process " << pid
+                  << " had non-zero return value: " << WEXITSTATUS(status)
+                  << std::endl;
+      else if (WIFSIGNALED(status))
+        std::clog << "Child process " << pid << " exited from signal "
+                  << WTERMSIG(status) << std::endl;
+      else if (WIFSTOPPED(status))
+        std::clog << "Child process " << pid << " was stopped by signal"
+                  << WSTOPSIG(status) << std::endl;
+      else if (WIFCONTINUED(status))
+        std::clog << "Child process " << pid << " was continued" << std::endl;
+    }
+  }
+}
+
+}  // namespace prmon

@@ -1,7 +1,7 @@
-// Copyright (C) CERN, 2020
+// Copyright (C) 2018-2020 CERN
+// License Apache2 - see LICENCE file
 
 #include "memmon.h"
-#include "utils.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -9,8 +9,10 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
-#include <sstream>
 #include <regex>
+#include <sstream>
+
+#include "utils.h"
 
 // Constructor; uses RAII pattern to be valid
 // after construction
@@ -35,7 +37,7 @@ void memmon::update_stats(const std::vector<pid_t>& pids) {
       // Read off the potentially interesting "key: value", then discard
       // the rest of the line
       smap_stat >> key_str >> value_str;
-      smap_stat.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+      smap_stat.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       if (smap_stat) {
         if (key_str == "Size:") {
           mem_stats["vmem"] += std::stol(value_str);
@@ -52,11 +54,12 @@ void memmon::update_stats(const std::vector<pid_t>& pids) {
 
   // Update the statistics with the new snapshot values
   ++iterations;
-  for(const auto& mem_param : mem_params) {
+  for (const auto& mem_param : mem_params) {
     if (mem_stats[mem_param] > mem_peak_stats[mem_param])
       mem_peak_stats[mem_param] = mem_stats[mem_param];
     mem_total_stats[mem_param] += mem_stats[mem_param];
-    mem_average_stats[mem_param] = double(mem_total_stats[mem_param]) / iterations;
+    mem_average_stats[mem_param] =
+        double(mem_total_stats[mem_param]) / iterations;
   }
 }
 
@@ -79,10 +82,9 @@ std::map<std::string, double> const memmon::get_json_average_stats(
 
 // Collect related hardware information
 void const memmon::get_hardware_info(nlohmann::json& hw_json) {
-
   // Read some information from /proc/meminfo
   std::ifstream memInfoFile{"/proc/meminfo"};
-  if(!memInfoFile.is_open()) {
+  if (!memInfoFile.is_open()) {
     std::cerr << "Failed to open /proc/meminfo" << std::endl;
     return;
   }
@@ -92,7 +94,7 @@ void const memmon::get_hardware_info(nlohmann::json& hw_json) {
 
   // Loop over the file
   std::string line;
-  while (std::getline(memInfoFile,line)) {
+  while (std::getline(memInfoFile, line)) {
     if (line.empty()) continue;
     size_t splitIdx = line.find(":");
     std::string val;
@@ -100,13 +102,15 @@ void const memmon::get_hardware_info(nlohmann::json& hw_json) {
       val = line.substr(splitIdx + 1);
       if (val.empty()) continue;
       for (const auto& metric : metrics) {
-        if (line.size() >= metric.size() && line.compare(0, metric.size(), metric) == 0) {
-          val = val.substr(0, val.size()-3); // strip the trailing kB
-          hw_json["HW"]["mem"][metric] = std::stol(std::regex_replace(val, std::regex("^\\s+|\\s+$"), ""));
-        } // end of metric check
-      } // end of populating metrics
-    } // end of seperator check
-  } // end of reading memInfoFile
+        if (line.size() >= metric.size() &&
+            line.compare(0, metric.size(), metric) == 0) {
+          val = val.substr(0, val.size() - 3);  // strip the trailing kB
+          hw_json["HW"]["mem"][metric] =
+              std::stol(std::regex_replace(val, std::regex("^\\s+|\\s+$"), ""));
+        }  // end of metric check
+      }    // end of populating metrics
+    }      // end of seperator check
+  }        // end of reading memInfoFile
 
   // Close the file
   memInfoFile.close();

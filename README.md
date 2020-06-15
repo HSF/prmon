@@ -144,13 +144,12 @@ The script allows the user to specify variables, their units, plotting
 style (stacked vs overlaid), as well as the format of the output image.
 Use `-h` for more information.
 
-## Developer
+## Feedback and Contributions
 
-We're very happy to get feedback on prmon. Please raise an
-[issue](https://github.com/HSF/prmon/issues) if you have a
-problem or a suggestion.
+We're very happy to get feedback on prmon as well as suggestions for future
+development. Please have a look at our [Contribution
+Guide](doc/CONTRIBUTING.md).
 
-Pull requests are very welcome.
 
 ### Profiling
 
@@ -163,4 +162,4 @@ to CMake using `Gperftools_ROOT_DIR`.
 
 # Copyright
 
-Copyright (c) 2018-2020, CERN.
+Copyright (c) 2018-2020 CERN.

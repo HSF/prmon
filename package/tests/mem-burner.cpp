@@ -17,8 +17,7 @@
 
 void SignalChildHandler(int /*signal*/) {
   pid_t pid{1};
-  while (pid > 0)
-    pid = waitpid((pid_t)-1, NULL, WNOHANG);
+  while (pid > 0) pid = waitpid((pid_t)-1, NULL, WNOHANG);
 }
 
 int main(int argc, char* argv[]) {

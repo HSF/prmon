@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) CERN, 2018-2020
+# Copyright (C) 2018-2020 CERN
+# License Apache2 - see LICENCE file
 #
 # Test script for network IO
 
