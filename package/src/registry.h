@@ -3,9 +3,6 @@
 
 // Implementation of a class registry that is used
 // for all prmon monitoring classes
-//
-// Grateful acknowledgement to https://github.com/psalvaggio/cppregpattern
-// which inspired this implementation of the pattern
 
 #ifndef PRMON_REGISTRY_H
 #define PRMON_REGISTRY_H
