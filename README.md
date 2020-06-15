@@ -1,11 +1,13 @@
 # Process Monitor (prmon)
 
-[![Build Status][build-img]][build-link]  [![License][license-img]][license-url]
+[![Build Status][build-img]][build-link]  [![License][license-img]][license-url] [![Codefactor][codefactor-img]][codefactor-url]
 
-[build-img]: https://travis-ci.com/HSF/prmon.svg?branch=master
-[build-link]: https://travis-ci.com/HSF/prmon
+[build-img]: https://github.com/HSF/prmon/workflows/CI/badge.svg?branch=master
+[build-link]: https://github.com/HSF/prmon/actions?query=workflow%3ACI+branch%3Amaster
 [license-img]: https://img.shields.io/github/license/hsf/prmon.svg
 [license-url]: https://github.com/hsf/prmon/blob/master/LICENSE
+[codefactor-img]: https://www.codefactor.io/repository/github/HSF/prmon/badge
+[codefactor-url]: https://www.codefactor.io/repository/github/HSF/prmon
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2554202.svg)](https://doi.org/10.5281/zenodo.2554202)
 
