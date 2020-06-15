@@ -6,8 +6,8 @@
 #ifndef PRMON_NVIDIAMON_H
 #define PRMON_NVIDIAMON_H 1
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "Imonitor.h"
@@ -44,14 +44,12 @@ class nvidiamon final : public Imonitor {
   // These are the stat getter methods which retrieve current statistics
   std::map<std::string, unsigned long long> const get_text_stats();
   std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(unsigned long long elapsed_clock_ticks);
+  std::map<std::string, double> const get_json_average_stats(
+      unsigned long long elapsed_clock_ticks);
 
   void const get_hardware_info(nlohmann::json& hw_json);
-  
-  bool const is_valid() {
-    return valid;
-  }
 
+  bool const is_valid() { return valid; }
 };
 REGISTER_MONITOR(Imonitor, nvidiamon, "Monitor NVIDIA GPU activity")
 

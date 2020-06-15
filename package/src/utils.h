@@ -7,14 +7,11 @@
 #ifndef PRMON_UTILS_H
 #define PRMON_UTILS_H 1
 
-#include <vector>
+#include <signal.h>
+#include <unistd.h>
+
 #include <string>
 #include <utility>
-
-#include <unistd.h>
-#include <signal.h>
-
-#include <string>
 #include <vector>
 
 namespace prmon {
@@ -40,8 +37,8 @@ const static std::vector<std::string> default_io_params{
     "rchar", "wchar", "read_bytes", "write_bytes"};
 const static std::vector<std::string> default_count_params{"nprocs",
                                                            "nthreads"};
-const static std::vector<std::string> default_nvidia_params{"ngpus", "gpusmpct", 
-                                                            "gpumempct", "gpufbmem"};
+const static std::vector<std::string> default_nvidia_params{
+    "ngpus", "gpusmpct", "gpumempct", "gpufbmem"};
 
 // This is a utility function that executes a command and
 // pipes the output back, returning a vector of strings

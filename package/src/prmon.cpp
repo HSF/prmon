@@ -29,9 +29,9 @@
 bool prmon::sigusr1 = false;
 
 int ProcessMonitor(const pid_t mpid, const std::string filename,
-                  const std::string json_summary_file,
-                  const unsigned int interval, const bool store_hw_info,
-                  const std::vector<std::string> netdevs) {
+                   const std::string json_summary_file,
+                   const unsigned int interval, const bool store_hw_info,
+                   const std::vector<std::string> netdevs) {
   signal(SIGUSR1, prmon::SignalCallbackHandler);
 
   // This is the vector of all monitoring components
@@ -290,7 +290,8 @@ int main(int argc, char* argv[]) {
       std::cerr << "Bad PID to monitor.\n";
       return 1;
     }
-    ProcessMonitor(pid, filename, jsonSummary, interval, store_hw_info, netdevs);
+    ProcessMonitor(pid, filename, jsonSummary, interval, store_hw_info,
+                   netdevs);
   } else {
     if (child_args == argc) {
       std::cerr << "Found marker for child program to execute, but with no "
@@ -302,7 +303,7 @@ int main(int argc, char* argv[]) {
       execvp(argv[child_args], &argv[child_args]);
     } else if (child > 0) {
       ProcessMonitor(child, filename, jsonSummary, interval, store_hw_info,
-                    netdevs);
+                     netdevs);
     }
   }
 

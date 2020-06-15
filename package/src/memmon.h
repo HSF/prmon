@@ -41,8 +41,7 @@ class memmon final : public Imonitor {
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);
-  bool const is_valid() {return true;}
-
+  bool const is_valid() { return true; }
 };
 REGISTER_MONITOR(Imonitor, memmon, "Monitor memory usage")
 

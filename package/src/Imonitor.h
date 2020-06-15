@@ -31,7 +31,6 @@ class Imonitor {
 
   virtual void const get_hardware_info(nlohmann::json& hw_json) = 0;
   virtual bool const is_valid() = 0;
-
 };
 
 #endif  // PRMON_IMONITOR_H
