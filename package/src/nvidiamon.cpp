@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 #include "utils.h"
 
@@ -57,48 +58,45 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
   }
 
   // Loop over output
-  unsigned int gpu_idx, sm, mem, enc, dec, fb_mem;
-  pid_t pid;
-  std::string cg_type, cmd_name;
-  std::vector<unsigned int> activegpus{};  // Avoid double counting active GPUs
+  unsigned int gpu_idx{}, sm{}, mem{}, enc{}, dec{}, fb_mem{};
+  pid_t pid{};
+  std::string cg_type{}, cmd_name{};
+  std::unordered_map<unsigned int, bool>
+      activegpus{};  // Avoid double counting active GPUs
   for (const auto& s : cmd_result.second) {
-    if (s[0] != '#') {
-      std::istringstream instr(s);
-      instr >> gpu_idx >> pid >> cg_type >> sm >> mem >> enc >> dec >> fb_mem >>
-          cmd_name;
-      if (!(instr.fail() || instr.bad())) {
-        if (NVIDIA_DEBUG) {
-          std::cout << "Good read: " << gpu_idx << " " << pid << " " << cg_type
-                    << " " << sm << " " << mem << " " << enc << " " << dec
-                    << " " << fb_mem << " " << cmd_name << std::endl;
-        }
-
-        // Filter on PID value, so we only add stats for our processes
-        for (auto const p : pids) {
-          if (p == pid) {
-            nvidia_stats["gpusmpct"] += sm;
-            nvidia_stats["gpumempct"] += mem;
-            nvidia_stats["gpufbmem"] += fb_mem;
-            bool new_gpu = true;
-            for (auto const gpu : activegpus) {
-              if (gpu == gpu_idx) new_gpu = false;
-            }
-            if (new_gpu) {
-              activegpus.push_back(gpu_idx);
-              ++nvidia_stats["ngpus"];
-            }
-          }
-        }
-      } else if (NVIDIA_DEBUG) {
-        std::clog << "Bad read of line: " << s << std::endl;
-        std::cout << "Parsed to: " << gpu_idx << " " << pid << " " << cg_type
+    if (s[0] != '#') continue;
+    std::istringstream instr(s);
+    instr >> gpu_idx >> pid >> cg_type >> sm >> mem >> enc >> dec >> fb_mem >>
+        cmd_name;
+    auto read_ok = !(instr.fail() || instr.bad());  // eof() is ok
+    if (read_ok) {
+      if (NVIDIA_DEBUG) {
+        std::cout << "Good read: " << gpu_idx << " " << pid << " " << cg_type
                   << " " << sm << " " << mem << " " << enc << " " << dec << " "
                   << fb_mem << " " << cmd_name << std::endl;
-        std::cout << " good()=" << instr.good();
-        std::cout << " eof()=" << instr.eof();
-        std::cout << " fail()=" << instr.fail();
-        std::cout << " bad()=" << instr.bad() << std::endl;
       }
+
+      // Filter on PID value, so we only add stats for our processes
+      for (auto const p : pids) {
+        if (p == pid) {
+          nvidia_stats["gpusmpct"] += sm;
+          nvidia_stats["gpumempct"] += mem;
+          nvidia_stats["gpufbmem"] += fb_mem;
+          if (!activegpus.count(gpu_idx)) {
+            ++nvidia_stats["ngpus"];
+            activegpus[gpu_idx] = true;
+          }
+        }
+      }
+    } else if (NVIDIA_DEBUG) {
+      std::clog << "Bad read of line: " << s << std::endl;
+      std::cout << "Parsed to: " << gpu_idx << " " << pid << " " << cg_type
+                << " " << sm << " " << mem << " " << enc << " " << dec << " "
+                << fb_mem << " " << cmd_name << std::endl;
+      std::cout << "StringStream status: good()=" << instr.good();
+      std::cout << " eof()=" << instr.eof();
+      std::cout << " fail()=" << instr.fail();
+      std::cout << " bad()=" << instr.bad() << std::endl;
     }
   }
 
