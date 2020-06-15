@@ -75,4 +75,4 @@ As members of the High-Energy Physics community, our host laboratory,
 All contributions need to agree to pass copyright to CERN. 
 
 Every significant author of prmon will be acknowledged in our
-[AUTHORS](../AUTHORS) file.
+[AUTHORS](../AUTHORS.md) file.
