@@ -17,8 +17,9 @@ jobs:
     - uses: actions/checkout@v2
 
     # Sets up environment variables
-    env:
-      DIMAGE: hepsoftwarefoundation/u20-dev
+    - name: Set environment variables
+      run: |
+        echo "::set-env name=DIMAGE::hepsoftwarefoundation/u20-dev"
 
     # Pulls the necessary Docker image
     - name: Docker pull
