@@ -1,10 +1,14 @@
 # Name of the workflow
 name: Clang-Format
 
-# Controls when the action will run. Triggers the workflow on push for all branches
-on: push
+# Controls when the action will run. Triggers the workflow on push for
+# the master and stable branches
+on:
+  push:
+    branches: [ master, stable ]
 
-# Defines the main job where we checkout our code, run clang-format and commit changes
+# Defines the main job where we checkout our code, run clang-format
+# and commit changes
 jobs:
   clang-format:
     runs-on: ubuntu-latest
