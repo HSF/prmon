@@ -28,9 +28,7 @@ jobs:
     # Runs make clang-format
     - name: Run make clang-format
       run: |
-        ulimit -c unlimited
-        sudo docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/clang-format.sh;
-        #docker run -v $GITHUB_WORKSPACE:/mnt $DIMAGE /mnt/.github/scripts/clang-format.sh
+        docker run -v $GITHUB_WORKSPACE:/mnt $DIMAGE /mnt/.github/scripts/clang-format.sh
 
     # Check to see if we need to update anything
     - name: Check and update
