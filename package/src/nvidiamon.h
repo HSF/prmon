@@ -36,6 +36,10 @@ class nvidiamon final : public Imonitor {
   // Test if nvidia-smi is available
   bool test_nvidia_smi();
 
+  // Conversion from MB to kB for (this is to be more consistent with other
+  // memory units in prmon)
+  const unsigned int MB_to_KB = 1024;
+
  public:
   nvidiamon();
 

@@ -3,12 +3,12 @@ find_package(nlohmann_json REQUIRED)
 add_executable(prmon src/prmon.cpp
            src/prmonutils.cpp
            src/utils.cpp
-					 src/netmon.cpp
-					 src/iomon.cpp
-					 src/cpumon.cpp
-					 src/countmon.cpp
-					 src/wallmon.cpp
-					 src/memmon.cpp
+           src/netmon.cpp
+           src/iomon.cpp
+           src/cpumon.cpp
+           src/countmon.cpp
+           src/wallmon.cpp
+           src/memmon.cpp
            src/nvidiamon.cpp
            )
 

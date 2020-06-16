@@ -44,6 +44,8 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
   auto cmd_result = prmon::cmd_pipe_output(cmd);
   if (cmd_result.first) {
     // Failed
+    std::cerr << "Failed to execute 'nvidia-smi' to get GPU status (code "
+              << cmd_result.first << ")" << std::endl;
     return;
   }
 
@@ -64,7 +66,7 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
   std::unordered_map<unsigned int, bool>
       activegpus{};  // Avoid double counting active GPUs
   for (const auto& s : cmd_result.second) {
-    if (s[0] != '#') continue;
+    if (s[0] == '#') continue;
     std::istringstream instr(s);
     instr >> gpu_idx >> pid >> cg_type >> sm >> mem >> enc >> dec >> fb_mem >>
         cmd_name;
@@ -81,7 +83,7 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
         if (p == pid) {
           nvidia_stats["gpusmpct"] += sm;
           nvidia_stats["gpumempct"] += mem;
-          nvidia_stats["gpufbmem"] += fb_mem;
+          nvidia_stats["gpufbmem"] += fb_mem * MB_to_KB;
           if (!activegpus.count(gpu_idx)) {
             ++nvidia_stats["ngpus"];
             activegpus[gpu_idx] = true;
@@ -118,7 +120,7 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
   }
 }
 
-// Return the nvidiaers
+// Return NVIDIA stats
 std::map<std::string, unsigned long long> const nvidiamon::get_text_stats() {
   return nvidia_stats;
 }
@@ -129,7 +131,7 @@ nvidiamon::get_json_total_stats() {
   return nvidia_peak_stats;
 }
 
-// An the averages
+// And the averages
 std::map<std::string, double> const nvidiamon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
   return nvidia_average_stats;
@@ -195,8 +197,7 @@ void const nvidiamon::get_hardware_info(nlohmann::json& hw_json) {
       std::string gpu_number = "gpu_" + std::to_string(count);
       hw_json["HW"]["gpu"][gpu_number]["name"] = name;
       hw_json["HW"]["gpu"][gpu_number]["sm_freq"] = sm_freq;
-      hw_json["HW"]["gpu"][gpu_number]["total_mem"] =
-          total_mem * 1024;  // To kB
+      hw_json["HW"]["gpu"][gpu_number]["total_mem"] = total_mem * MB_to_KB;
     } else {
       std::clog << "Unexpected line from GPU hardware query: " << s
                 << std::endl;
