@@ -15,8 +15,7 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-cpumon::cpumon() : cpu_params{prmon::default_cpu_params}, cpu_stats{} { for (const auto& cpu_param : cpu_params) cpu_stats[cpu_param] = 0;
-}
+cpumon::cpumon() : cpu_params{prmon::default_cpu_params}, cpu_stats{} { for (const auto& cpu_param : cpu_params) cpu_stats[cpu_param] = 0; }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
   for (auto stat : cpu_stats) stat.second = 0;
