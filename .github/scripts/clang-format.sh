@@ -6,9 +6,9 @@
 
 # Setup
 echo ">> Setting things up..."
-CXX=`which clang++-10`
-CC=`which clang-10`
-CMAKE=`which cmake`
+CXX=$(type -p clang++-10)
+CC=$(type -p clang-10)
+CMAKE=$(type -p cmake)
 
 # Configure cmake from /tmp
 echo ">> Running the cmake configuration..."
