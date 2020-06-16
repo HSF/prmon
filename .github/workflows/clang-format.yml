@@ -3,9 +3,9 @@ name: Clang-Format
 
 # Controls when the action will run. Triggers the workflow on push for
 # the master and stable branches
-on:
-  push:
-    branches: [ master, stable ]
+on: push
+  #  push:
+  #    branches: [ master, stable ]
 
 # Defines the main job where we checkout our code, run clang-format
 # and commit changes
@@ -13,5 +13,34 @@ jobs:
   clang-format:
     runs-on: ubuntu-latest
     steps:
+    # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
     - uses: actions/checkout@v2
-    - uses: amete/clang-format-action@v0.1
+
+    # Sets up environment variables
+    env:
+      DIMAGE: hepsoftwarefoundation/u20-dev
+
+    # Pulls the necessary Docker image
+    - name: Docker pull
+      run: docker pull $DIMAGE
+
+    # Runs make clang-format
+    - name: Run make clang-format
+      run: docker run -v $GITHUB_WORKSPACE:/mnt $DIMAGE /mnt/.github/scripts/clang-format.sh
+
+    # Check to see if we need to update anything
+    - name: Check and update
+      run: |
+        cd $GITHUB_WORKSPACE
+        if ! git diff --quiet; then
+          echo "There are changes, committing and pushing..."
+          # Setup email and name
+          git config --global user.email "clang-format@github-actions"
+          git config --global user.name "clang-format"
+          # Apply the changes
+          git commit -a -m "Apply clang-format" || true
+          # Push the changes to the relevant branch
+          git push -u origin ${GITHUB_REF#*refs/heads/}
+        else
+          echo "There are no changes, all good!"
+        fi
