@@ -1,0 +1,28 @@
+# Name of the workflow
+name: Clang-Format
+
+# Controls when the action will run. Triggers the workflow on push for
+# the master and stable branches
+on:
+  push:
+    branches: [ master, stable ]
+
+# Defines the main job where we checkout our code, run clang-format
+# and commit changes
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
+    - uses: actions/checkout@v2
+
+    # Applies clang-format to all C/C++ files w/ the specified style
+    - name: Apply clang-format
+      id: formatting
+      uses: HSF/clang-format-action@v0.2
+      with:
+        style: 'Google'
+
+    # Gets and prints the output message
+    - name: Get the output message
+      run: echo "${{ steps.formatting.outputs.message }}"
