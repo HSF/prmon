@@ -16,33 +16,13 @@ jobs:
     # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
     - uses: actions/checkout@v2
 
-    # Sets up environment variables
-    - name: Set environment variables
-      run: |
-        echo "::set-env name=DIMAGE::hepsoftwarefoundation/u20-dev"
+    # Applies clang-format to all C/C++ files w/ the specified style
+    - name: Apply clang-format
+      id: formatting
+      uses: amete/clang-format-action@v0.2
+      with:
+        style: 'Google'
 
-    # Pulls the necessary Docker image
-    - name: Docker pull
-      run: docker pull $DIMAGE
-
-    # Runs make clang-format
-    - name: Run make clang-format
-      run: |
-        docker run -v $GITHUB_WORKSPACE:/mnt $DIMAGE /mnt/.github/scripts/clang-format.sh
-
-    # Check to see if we need to update anything
-    - name: Check and update
-      run: |
-        cd $GITHUB_WORKSPACE
-        if ! git diff --quiet; then
-          echo "There are changes, committing and pushing..."
-          # Setup email and name
-          git config --global user.email "clang-format@github-actions"
-          git config --global user.name "clang-format"
-          # Apply the changes
-          git commit -a -m "Apply clang-format" || true
-          # Push the changes to the relevant branch
-          git push -u origin ${GITHUB_REF#*refs/heads/}
-        else
-          echo "There are no changes, all good!"
-        fi
+    # Gets and prints the output message
+    - name: Get the output message
+      run: echo "${{ steps.formatting.outputs.message }}"
