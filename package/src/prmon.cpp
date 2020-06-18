@@ -29,8 +29,8 @@
 bool prmon::sigusr1 = false;
 
 int ProcessMonitor(const pid_t mpid, const std::string filename,
-                   const std::string json_summary_file,
-                   const time_t interval, const bool store_hw_info,
+                   const std::string json_summary_file, const time_t interval,
+                   const bool store_hw_info,
                    const std::vector<std::string> netdevs) {
   signal(SIGUSR1, prmon::SignalCallbackHandler);
 

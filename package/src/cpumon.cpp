@@ -106,10 +106,8 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
   // installed nCPU = nSockets * nSiblings nSiblings = nCoresPerSocket *
   // nThreadsPerCore
   // Next 4 lines are a workaround for Raspberry Pi
-  if (!nSiblings)
-    nSiblings = nCPU;
-  if (!nCores)
-    nCores = nCPU;
+  if (!nSiblings) nSiblings = nCPU;
+  if (!nCores) nCores = nCPU;
   unsigned int nSockets = nCPU / nSiblings;
   unsigned int nThreads = nSiblings / nCores;
   hw_json["HW"]["cpu"]["nCPU"] = nCPU;
