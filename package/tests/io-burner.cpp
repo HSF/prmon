@@ -90,10 +90,10 @@ int main(int argc, char* argv[]) {
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
 
-  char c;
+  int c;
   while ((c = getopt_long(argc, argv, "i:t:p:u:s:h", long_options, NULL)) !=
          -1) {
-    switch (c) {
+    switch (char(c)) {
       case 'i':
         if (std::stol(optarg) < 1) {
           std::cerr << "IO parameter must be greater than 0 (--help for usage)"

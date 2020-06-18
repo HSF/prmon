@@ -105,6 +105,9 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
   // The clear assumption here is that there is a single type of processor
   // installed nCPU = nSockets * nSiblings nSiblings = nCoresPerSocket *
   // nThreadsPerCore
+  // Next 4 lines are a workaround for Raspberry Pi
+  if (!nSiblings) nSiblings = nCPU;
+  if (!nCores) nCores = nCPU;
   unsigned int nSockets = nCPU / nSiblings;
   unsigned int nThreads = nSiblings / nCores;
   hw_json["HW"]["cpu"]["nCPU"] = nCPU;
