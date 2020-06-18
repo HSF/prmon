@@ -58,6 +58,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set the compiler to be more picky
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic -Werror")
+string(REGEX MATCH "^arm" ARM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR})
+if("${ARM_PROCESSOR}" STREQUAL "arm")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
+  message(STATUS "Disabled ABI warnings on ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+endif()
+
 
 # Add package utilities to CMake path
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
