@@ -75,15 +75,15 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
     return;
   }
 
-  // Metrics that'll be kept from the lscpu output 
-  const std::vector<std::string> metrics{"Model name",  "Socket(s)", 
-    "Core(s) per socket", "Thread(s) per core"};
+  // Metrics that'll be kept from the lscpu output
+  const std::vector<std::string> metrics{
+      "Model name", "Socket(s)", "Core(s) per socket", "Thread(s) per core"};
 
   // Useful function to determine if a string is purely a number
-  auto isNumber = [] (const std::string& s) 
-  {
-    return !s.empty() && std::find_if(s.begin(), 
-          s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+  auto isNumber = [](const std::string& s) {
+    return !s.empty() && std::find_if(s.begin(), s.end(), [](unsigned char c) {
+                           return !std::isdigit(c);
+                         }) == s.end();
   };
 
   // Loop over the output, parse the line, check the key and store the value if
@@ -91,7 +91,6 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
   std::string key{}, value{};
 
   for (const auto& line : cmd_result.second) {
-
     // Continue on empty line
     if (line.empty()) continue;
 
@@ -101,16 +100,18 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
 
     // Read "key":"value" pairs
     key = line.substr(0, splitIdx);
-    value = line.substr(splitIdx+1);
-    if ( key.empty() || value.empty() ) continue;
+    value = line.substr(splitIdx + 1);
+    if (key.empty() || value.empty()) continue;
     key = std::regex_replace(key, std::regex("^\\s+|\\s+$"), "");
     value = std::regex_replace(value, std::regex("^\\s+|\\s+$"), "");
 
     // Fill the JSON with the information
     for (const auto& metric : metrics) {
-      if ( key.compare(metric) != 0 ) continue;
-      if ( isNumber(value) ) hw_json["HW"]["cpu"][key] = std::stoi(value);
-      else hw_json["HW"]["cpu"][key] = value;
+      if (key.compare(metric) != 0) continue;
+      if (isNumber(value))
+        hw_json["HW"]["cpu"][key] = std::stoi(value);
+      else
+        hw_json["HW"]["cpu"][key] = value;
     }
   }
 
