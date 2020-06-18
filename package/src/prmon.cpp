@@ -30,7 +30,7 @@ bool prmon::sigusr1 = false;
 
 int ProcessMonitor(const pid_t mpid, const std::string filename,
                    const std::string json_summary_file,
-                   const unsigned int interval, const bool store_hw_info,
+                   const time_t interval, const bool store_hw_info,
                    const std::vector<std::string> netdevs) {
   signal(SIGUSR1, prmon::SignalCallbackHandler);
 
@@ -197,10 +197,10 @@ int main(int argc, char* argv[]) {
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
 
-  char c;
+  int c;
   while ((c = getopt_long(argc, argv, "p:f:j:i:sn:h", long_options, NULL)) !=
          -1) {
-    switch (c) {
+    switch (char(c)) {
       case 'p':
         pid = std::stoi(optarg);
         got_pid = true;

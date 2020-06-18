@@ -68,9 +68,9 @@ int main(int argc, char* argv[]) {
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
 
-  char c;
+  int c;
   while ((c = getopt_long(argc, argv, "t:p:c:r:h", long_options, NULL)) != -1) {
-    switch (c) {
+    switch (char(c)) {
       case 't':
         if (std::stoi(optarg) < 0) {
           std::cerr << "threads parameter must be greater than or equal to 0 "
