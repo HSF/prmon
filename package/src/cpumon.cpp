@@ -63,60 +63,56 @@ std::map<std::string, double> const cpumon::get_json_average_stats(
 
 // Collect related hardware information
 void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
-  // Read some information from /proc/cpuinfo
-  std::ifstream cpuInfoFile{"/proc/cpuinfo"};
-  if (!cpuInfoFile.is_open()) {
-    std::cerr << "Failed to open /proc/cpuinfo" << std::endl;
+  // Define the command and run it
+  const std::vector<std::string> cmd = {"lscpu"};
+
+  auto cmd_result = prmon::cmd_pipe_output(cmd);
+
+  // If the command failed print an error and move on
+  if (cmd_result.first) {
+    std::cerr << "Failed to execute 'lscpu' to get CPU information (code "
+              << cmd_result.first << ")" << std::endl;
     return;
   }
 
-  // Metrics to read from the input
-  std::vector<std::string> metrics{"processor", "model name", "siblings",
-                                   "cpu cores"};
-  unsigned int nCPU = 0, nSiblings = 0, nCores = 0;
+  // Metrics that'll be kept from the lscpu output 
+  const std::vector<std::string> metrics{"Model name",  "Socket(s)", 
+    "Core(s) per socket", "Thread(s) per core"};
 
-  // Loop over the file
-  std::string line;
-  while (std::getline(cpuInfoFile, line)) {
+  // Useful function to determine if a string is purely a number
+  auto isNumber = [] (const std::string& s) 
+  {
+    return !s.empty() && std::find_if(s.begin(), 
+          s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+  };
+
+  // Loop over the output, parse the line, check the key and store the value if
+  // requested
+  std::string key{}, value{};
+
+  for (const auto& line : cmd_result.second) {
+
+    // Continue on empty line
     if (line.empty()) continue;
+
+    // Tokenize by ":"
     size_t splitIdx = line.find(":");
-    std::string val;
-    if (splitIdx != std::string::npos) {
-      val = line.substr(splitIdx + 1);
-      if (val.empty()) continue;
-      for (const auto& metric : metrics) {
-        if (line.size() >= metric.size() &&
-            line.compare(0, metric.size(), metric) == 0) {
-          if (metric == "processor")
-            nCPU++;
-          else if (metric == "siblings") {
-            if (nSiblings == 0) nSiblings = std::stoi(val);
-          } else if (metric == "cpu cores") {
-            if (nCores == 0) nCores = std::stoi(val);
-          } else if (hw_json["HW"]["cpu"][metric].empty()) {
-            hw_json["HW"]["cpu"][metric] =
-                std::regex_replace(val, std::regex("^\\s+|\\s+$"), "");
-          }
-        }  // end of metric check
-      }    // end of populating metrics
-    }      // end of seperator check
-  }        // end of reading cpuInfoFile
+    if (splitIdx == std::string::npos) continue;
 
-  // The clear assumption here is that there is a single type of processor
-  // installed nCPU = nSockets * nSiblings nSiblings = nCoresPerSocket *
-  // nThreadsPerCore
-  // Next 4 lines are a workaround for Raspberry Pi
-  if (!nSiblings) nSiblings = nCPU;
-  if (!nCores) nCores = nCPU;
-  unsigned int nSockets = nCPU / nSiblings;
-  unsigned int nThreads = nSiblings / nCores;
-  hw_json["HW"]["cpu"]["nCPU"] = nCPU;
-  hw_json["HW"]["cpu"]["nSockets"] = nSockets;
-  hw_json["HW"]["cpu"]["nCoresPerSocket"] = nCores;
-  hw_json["HW"]["cpu"]["nThreadsPerCore"] = nThreads;
+    // Read "key":"value" pairs
+    key = line.substr(0, splitIdx);
+    value = line.substr(splitIdx+1);
+    if ( key.empty() || value.empty() ) continue;
+    key = std::regex_replace(key, std::regex("^\\s+|\\s+$"), "");
+    value = std::regex_replace(value, std::regex("^\\s+|\\s+$"), "");
 
-  // Close the file
-  cpuInfoFile.close();
+    // Fill the JSON with the information
+    for (const auto& metric : metrics) {
+      if ( key.compare(metric) != 0 ) continue;
+      if ( isNumber(value) ) hw_json["HW"]["cpu"][key] = std::stoi(value);
+      else hw_json["HW"]["cpu"][key] = value;
+    }
+  }
 
   return;
 }
