@@ -76,7 +76,7 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
   }
 
   // Map lscpu names to the desired ones in the JSON
-  const std::map<std::string, std::string> metricToName{
+  const std::unordered_map<std::string, std::string> metricToName{
       {"Model name", "ModelName"},
       {"CPU(s)", "CPUs"},
       {"Socket(s)", "Sockets"},
