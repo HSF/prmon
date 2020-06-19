@@ -75,9 +75,13 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
     return;
   }
 
-  // Metrics that'll be kept from the lscpu output
-  const std::vector<std::string> metrics{
-      "Model name", "Socket(s)", "Core(s) per socket", "Thread(s) per core"};
+  // Map lscpu names to the desired ones in the JSON
+  const std::map<std::string, std::string> prettyNames{
+      {"Model name", "ModelName"},
+      {"CPU(s)", "CPUs"},
+      {"Socket(s)", "Sockets"},
+      {"Core(s) per socket", "CoresPerSocket"},
+      {"Thread(s) per core", "ThreadsPerCore"}};
 
   // Useful function to determine if a string is purely a number
   auto isNumber = [](const std::string& s) {
@@ -106,12 +110,12 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
     value = std::regex_replace(value, std::regex("^\\s+|\\s+$"), "");
 
     // Fill the JSON with the information
-    for (const auto& metric : metrics) {
-      if (key.compare(metric) != 0) continue;
+    if (key == "Model name" || key == "CPU(s)" || key == "Socket(s)" ||
+        key == "Core(s) per socket" || key == "Thread(s) per core") {
       if (isNumber(value))
-        hw_json["HW"]["cpu"][key] = std::stoi(value);
+        hw_json["HW"]["cpu"][prettyNames.at(key)] = std::stoi(value);
       else
-        hw_json["HW"]["cpu"][key] = value;
+        hw_json["HW"]["cpu"][prettyNames.at(key)] = value;
     }
   }
 
