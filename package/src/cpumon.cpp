@@ -110,13 +110,11 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
     value = std::regex_replace(value, std::regex("^\\s+|\\s+$"), "");
 
     // Fill the JSON with the information
-    for (const auto& metric : metricToName) {
-      if (key != metric.first) continue;
+    if (metricToName.count(key) == 1) {
       if (isNumber(value))
-        hw_json["HW"]["cpu"][metric.second] = std::stoi(value);
+        hw_json["HW"]["cpu"][key] = std::stoi(value);
       else
-        hw_json["HW"]["cpu"][metric.second] = value;
-      break;
+        hw_json["HW"]["cpu"][key] = value;
     }
   }
 
