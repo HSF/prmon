@@ -113,9 +113,9 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
     for (const auto& metric : metricToName) {
       if (key != metric.first) continue;
       if (isNumber(value))
-        hw_json["HW"]["cpu"][metricToName.at(key)] = std::stoi(value);
+        hw_json["HW"]["cpu"][metric.second] = std::stoi(value);
       else
-        hw_json["HW"]["cpu"][metricToName.at(key)] = value;
+        hw_json["HW"]["cpu"][metric.second] = value;
       break;
     }
   }
