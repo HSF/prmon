@@ -76,7 +76,7 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
   }
 
   // Map lscpu names to the desired ones in the JSON
-  const std::map<std::string, std::string> prettyNames{
+  const std::map<std::string, std::string> metricToName{
       {"Model name", "ModelName"},
       {"CPU(s)", "CPUs"},
       {"Socket(s)", "Sockets"},
@@ -110,12 +110,13 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
     value = std::regex_replace(value, std::regex("^\\s+|\\s+$"), "");
 
     // Fill the JSON with the information
-    if (key == "Model name" || key == "CPU(s)" || key == "Socket(s)" ||
-        key == "Core(s) per socket" || key == "Thread(s) per core") {
+    for (const auto& metric : metricToName) {
+      if (key != metric.first) continue;
       if (isNumber(value))
-        hw_json["HW"]["cpu"][prettyNames.at(key)] = std::stoi(value);
+        hw_json["HW"]["cpu"][metricToName.at(key)] = std::stoi(value);
       else
-        hw_json["HW"]["cpu"][prettyNames.at(key)] = value;
+        hw_json["HW"]["cpu"][metricToName.at(key)] = value;
+      break;
     }
   }
 
