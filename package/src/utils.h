@@ -17,6 +17,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "parameter.h"
+
 namespace prmon {
 // These constants define where in the stat entry from proc
 // we find the parameters of interest
@@ -30,20 +32,6 @@ const size_t stat_count_read_limit = 19;
 const size_t uptime_pos = 21;
 
 // Default parameter lists for monitor classes
-// Every parameter that is monitored has a to have a name (the key)
-// And define it's units for maximum/current values and for average values (the pair)
-// using param_units = struct {
-//     std::string max_unit, avg_unit;
-// };
-using mon_param_t = std::unordered_map<std::string, std::pair<std::string, std::string>>;
-
-using test_t = int;
-
-const static mon_param_t default_cpu_params2 = {
-    {"utime", {"s", ""}},
-    {"stime", {"s", "dummy_a"}}
-};
-
 const static std::vector<std::string> default_cpu_params{"utime", "stime"};
 const static std::vector<std::string> default_network_if_params{
     "rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
@@ -75,7 +63,7 @@ const std::pair<int, std::vector<std::string>> cmd_pipe_output(
     const std::vector<std::string> cmdargs);
 
 // Utility function to add the units' values to the JSON output
-const void fill_units(nlohmann::json& unit_json, mon_param_t i);
+const void fill_units(nlohmann::json& unit_json, const parameter_list& params);
 
 }  // namespace prmon
 

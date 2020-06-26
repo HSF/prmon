@@ -95,14 +95,13 @@ const std::pair<int, std::vector<std::string>> prmon::cmd_pipe_output(
 }
 
 
-const void prmon::fill_units(nlohmann::json& unit_json, mon_param_t parameters) {
-  // auto parameters = prmon::default_cpu_params2;
-  for (const auto& param: parameters) {
-    if (!param.second.first.empty())
-      unit_json["Units"]["Max"][param.first] = param.second.first;
-    if (!param.second.second.empty())
-      unit_json["Units"]["Avg"][param.first] = param.second.second;
+const void prmon::fill_units(nlohmann::json& unit_json, const parameter_list& params) {
+  for (const auto& param: params) {
+    std::cout << param.get_name() << std::endl;
+    if (!((param.get_max_unit()).empty()))
+      unit_json["Units"]["Max"][param.get_name()] = param.get_max_unit();
+    if (!param.get_avg_unit().empty())
+      unit_json["Units"]["Avg"][param.get_name()] = param.get_avg_unit();
   }
-  // std::cout << i << std::endl;
   return;
 }

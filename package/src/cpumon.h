@@ -14,11 +14,19 @@
 
 #include "Imonitor.h"
 #include "registry.h"
+#include "parameter.h"
 
 class cpumon final : public Imonitor {
  private:
+  // Setup the parameters to monitor here
+  const prmon::parameter_list params = {
+    {"utime", "s", ""},
+    {"stime", "s", "dummy_a"}
+  };
+
   // Which network cpu paramters to measure and output key names
-  // This will be filled at initialisation
+  // This will be filled at initialisation, taking the names
+  // from the above params
   std::vector<std::string> cpu_params;
 
   // Container for total stats
