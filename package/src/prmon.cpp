@@ -85,6 +85,8 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
     for (const auto& monitor : monitors)
       monitor.second->get_hardware_info(json_summary);
   }
+  for (const auto& monitor : monitors)
+    monitor.second->get_unit_info(json_summary);
 
   // See if the kernel is new enough to have /proc/PID/task/PID/children
   bool modern_kernel = prmon::kernel_proc_pid_test(mpid);

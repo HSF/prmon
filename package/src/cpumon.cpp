@@ -15,8 +15,15 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-cpumon::cpumon() : cpu_params{prmon::default_cpu_params}, cpu_stats{} {
-  for (const auto& cpu_param : cpu_params) cpu_stats[cpu_param] = 0;
+cpumon::cpumon() {
+  cpu_params.reserve(prmon::default_cpu_params2.size());
+  for (const auto& param: prmon::default_cpu_params2) {
+    cpu_params.push_back(param.first);
+    cpu_stats[param.first] = 0;
+
+    std::cout << "Parameter " << param.first << " has units " <<
+    param.second.first << " and "  << param.second.second << std::endl;
+  }
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
@@ -118,5 +125,10 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
     }
   }
 
+  return;
+}
+
+void const cpumon::get_unit_info(nlohmann::json& unit_json) {
+  prmon::fill_units(unit_json, prmon::default_cpu_params2);
   return;
 }

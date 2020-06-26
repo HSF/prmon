@@ -206,3 +206,5 @@ void const nvidiamon::get_hardware_info(nlohmann::json& hw_json) {
   }
   return;
 }
+
+void const nvidiamon::get_unit_info(nlohmann::json& unit_json) { return; }

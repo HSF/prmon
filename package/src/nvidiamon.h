@@ -52,7 +52,7 @@ class nvidiamon final : public Imonitor {
       unsigned long long elapsed_clock_ticks);
 
   void const get_hardware_info(nlohmann::json& hw_json);
-
+  void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return valid; }
 };
 REGISTER_MONITOR(Imonitor, nvidiamon, "Monitor NVIDIA GPU activity")

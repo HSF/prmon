@@ -18,6 +18,7 @@
 class cpumon final : public Imonitor {
  private:
   // Which network cpu paramters to measure and output key names
+  // This will be filled at initialisation
   std::vector<std::string> cpu_params;
 
   // Container for total stats
@@ -36,6 +37,8 @@ class cpumon final : public Imonitor {
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);
+
+  void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return true; }
 };
 REGISTER_MONITOR(Imonitor, cpumon, "Monitor cpu time used")

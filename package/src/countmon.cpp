@@ -80,3 +80,5 @@ std::map<std::string, double> const countmon::get_json_average_stats(
 
 // Collect related hardware information
 void const countmon::get_hardware_info(nlohmann::json& hw_json) { return; }
+
+void const countmon::get_unit_info(nlohmann::json& unit_json) { return; }

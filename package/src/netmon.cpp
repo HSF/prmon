@@ -111,3 +111,5 @@ std::map<std::string, double> const netmon::get_json_average_stats(
 
 // Collect related hardware information
 void const netmon::get_hardware_info(nlohmann::json& hw_json) { return; }
+
+void const netmon::get_unit_info(nlohmann::json& unit_json) { return; }

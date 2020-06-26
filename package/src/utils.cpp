@@ -12,8 +12,7 @@
 #include <iostream>
 #include <string>
 
-namespace prmon {
-const std::pair<int, std::vector<std::string>> cmd_pipe_output(
+const std::pair<int, std::vector<std::string>> prmon::cmd_pipe_output(
     const std::vector<std::string> cmdargs) {
   std::vector<std::string> split_output{};
   std::string output;
@@ -95,4 +94,15 @@ const std::pair<int, std::vector<std::string>> cmd_pipe_output(
   return ret;
 }
 
-}  // namespace prmon
+
+const void prmon::fill_units(nlohmann::json& unit_json, mon_param_t parameters) {
+  // auto parameters = prmon::default_cpu_params2;
+  for (const auto& param: parameters) {
+    if (!param.second.first.empty())
+      unit_json["Units"]["Max"][param.first] = param.second.first;
+    if (!param.second.second.empty())
+      unit_json["Units"]["Avg"][param.first] = param.second.second;
+  }
+  // std::cout << i << std::endl;
+  return;
+}

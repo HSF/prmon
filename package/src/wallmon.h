@@ -43,6 +43,7 @@ class wallmon final : public Imonitor {
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);
+  void const get_unit_info(nlohmann::json& unit_json);
 
   // Class specific method to retrieve wallclock time in clock ticks
   unsigned long long const get_wallclock_clock_t();
