@@ -11,10 +11,18 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "parameter.h"
 #include "registry.h"
 
 class nvidiamon final : public Imonitor {
  private:
+  // const static std::vector<std::string> default_nvidia_params{
+  //   "ngpus", "gpusmpct", "gpumempct", "gpufbmem"};
+  const prmon::parameter_list params = {{"ngpus", "n_gpus", "n_gpus"},
+                                        {"gpusmpct", "percent", "percent"},
+                                        {"gpumempct", "percent", "percent"},
+                                        {"gpufbmem", "kB", "kB"}};
+
   // Which paramters to measure and output key names
   std::vector<std::string> nvidia_params;
 

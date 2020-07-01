@@ -38,8 +38,6 @@ const static std::vector<std::string> default_cpu_params{"utime", "stime"};
 const static std::vector<std::string> default_wall_params{"wtime"};
 const static std::vector<std::string> default_count_params{"nprocs",
                                                            "nthreads"};
-const static std::vector<std::string> default_nvidia_params{
-    "ngpus", "gpusmpct", "gpumempct", "gpufbmem"};
 
 // This is a utility function that executes a command and
 // pipes the output back, returning a vector of strings

@@ -18,16 +18,17 @@
 
 // Constructor; uses RAII pattern to be valid after construction
 nvidiamon::nvidiamon()
-    : nvidia_params{prmon::default_nvidia_params},
-      nvidia_stats{},
+    : nvidia_stats{},
       nvidia_average_stats{},
       nvidia_total_stats{},
       iterations{0L} {
-  for (const auto& nvidia_param : nvidia_params) {
-    nvidia_stats[nvidia_param] = 0;
-    nvidia_peak_stats[nvidia_param] = 0;
-    nvidia_average_stats[nvidia_param] = 0;
-    nvidia_total_stats[nvidia_param] = 0;
+  nvidia_params.reserve(params.size());
+  for (const auto& param : params) {
+    nvidia_params.push_back(param.get_name());
+    nvidia_stats[param.get_name()] = 0;
+    nvidia_peak_stats[param.get_name()] = 0;
+    nvidia_average_stats[param.get_name()] = 0;
+    nvidia_total_stats[param.get_name()] = 0;
   }
 
   // Attempt to execute nvidia-smi
@@ -207,4 +208,7 @@ void const nvidiamon::get_hardware_info(nlohmann::json& hw_json) {
   return;
 }
 
-void const nvidiamon::get_unit_info(nlohmann::json& unit_json) { return; }
+void const nvidiamon::get_unit_info(nlohmann::json& unit_json) {
+  prmon::fill_units(unit_json, params);
+  return;
+}
