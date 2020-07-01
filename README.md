@@ -82,7 +82,7 @@ The `prmon` binary is invoked with the following arguments:
 
 ```sh
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
-      [--interval 30] [--store-hw-info] [--netdev DEV] \
+      [--interval 30] [--suppress-hw-info] [--netdev DEV] \
       [-- prog arg arg ...]
 ```
 
@@ -90,7 +90,7 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 * `--filename` output file for timestamped monitored values
 * `--json-summmary` output file for summary data written in JSON format
 * `--interval` time, in seconds, between monitoring snapshots
-* `--store-hw-info` flag that turns-on hardware information collection
+* `--suppress-hw-info` flag that turns-off hardware information collection
 * `--netdev` restricts network statistics to one (or more) network devices
 * `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
