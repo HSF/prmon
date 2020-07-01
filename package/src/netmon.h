@@ -19,12 +19,19 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "parameter.h"
 #include "registry.h"
 
 class netmon final : public Imonitor {
  private:
-  // Which network interface paramters to measure (in this simple case
-  // these are also the output key names)
+  // Setup the parameters to monitor here
+  const prmon::parameter_list params = {
+      {"rx_bytes", "B", "B/s"},
+      {"rx_packets", "n_packets", "n_packets/s"},
+      {"tx_bytes", "B", "B/s"},
+      {"tx_packets", "n_packets", "n_packets/s"}};
+
+  // Vector for network interface paramters to measure (will be constructed)
   std::vector<std::string> interface_params;
 
   // Which network interfaces to monitor

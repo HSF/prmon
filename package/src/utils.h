@@ -35,8 +35,6 @@ const size_t uptime_pos = 21;
 // TODO - move these to the per-monitor headers, they do not need to be known
 // by all monitors
 const static std::vector<std::string> default_cpu_params{"utime", "stime"};
-const static std::vector<std::string> default_network_if_params{
-    "rx_bytes", "rx_packets", "tx_bytes", "tx_packets"};
 const static std::vector<std::string> default_wall_params{"wtime"};
 const static std::vector<std::string> default_count_params{"nprocs",
                                                            "nthreads"};
