@@ -12,10 +12,19 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "parameter.h"
 #include "registry.h"
 
 class iomon final : public Imonitor {
  private:
+  // Setup the parameters to monitor here
+  //"rchar", "wchar", "read_bytes", "write_bytes"
+  const prmon::parameter_list params = {{"rchar", "B", "B/s"},
+                                        {"wchar", "B", "B/s"},
+                                        {"read_bytes", "B", "B/s"},
+                                        {"write_bytes", "B", "B/s"}};
+
+
   // Which network io paramters to measure and output key names
   std::vector<std::string> io_params;
 

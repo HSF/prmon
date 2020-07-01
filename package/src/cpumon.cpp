@@ -17,12 +17,9 @@
 // after construction
 cpumon::cpumon() {
   cpu_params.reserve(params.size());
-  for (const auto& param: params) {
+  for (const auto& param : params) {
     cpu_params.push_back(param.get_name());
     cpu_stats[param.get_name()] = 0;
-
-    std::cout << "Parameter " << param.get_name() << " has units " <<
-    param.get_max_unit() << " and "  << param.get_avg_unit() << std::endl;
   }
 }
 
