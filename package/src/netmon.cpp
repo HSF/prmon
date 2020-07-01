@@ -14,7 +14,8 @@
 // Constructor; uses RAII pattern to open all monitored
 // network device streams and to take initial values
 // to the monitor relative differences
-netmon::netmon(std::vector<std::string> netdevs) : network_if_streams{} {
+netmon::netmon(std::vector<std::string> netdevs)
+    : interface_params{}, network_if_streams{} {
   interface_params.reserve(params.size());
   for (const auto& param : params) interface_params.push_back(param.get_name());
 

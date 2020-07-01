@@ -16,7 +16,13 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-memmon::memmon() : iterations{0} {
+memmon::memmon()
+    : mem_params{},
+      mem_stats{},
+      mem_peak_stats{},
+      mem_average_stats{},
+      mem_total_stats{},
+      iterations{0} {
   mem_params.reserve(params.size());
   for (const auto& param : params) {
     mem_params.push_back(param.get_name());

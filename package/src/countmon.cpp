@@ -15,7 +15,9 @@
 // Constructor; uses RAII pattern to be valid
 // after construction
 countmon::countmon()
-    : count_stats{},
+    : count_params{},
+      count_stats{},
+      count_peak_stats{},
       count_average_stats{},
       count_total_stats{},
       iterations{0L} {

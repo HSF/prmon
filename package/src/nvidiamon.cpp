@@ -19,6 +19,7 @@
 // Constructor; uses RAII pattern to be valid after construction
 nvidiamon::nvidiamon()
     : nvidia_stats{},
+      nvidia_peak_stats{},
       nvidia_average_stats{},
       nvidia_total_stats{},
       iterations{0L} {

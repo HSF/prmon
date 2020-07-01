@@ -15,7 +15,7 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-cpumon::cpumon() {
+cpumon::cpumon() : cpu_params{}, cpu_stats{} {
   cpu_params.reserve(params.size());
   for (const auto& param : params) {
     cpu_params.push_back(param.get_name());

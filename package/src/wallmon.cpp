@@ -15,7 +15,10 @@
 // Constructor; uses RAII pattern to be valid
 // after construction
 wallmon::wallmon()
-    : start_time_clock_t{0}, current_clock_t{0}, got_mother_starttime{false} {
+    : walltime_param{},
+      start_time_clock_t{0},
+      current_clock_t{0},
+      got_mother_starttime{false} {
   walltime_param.reserve(params.size());
   for (const auto& param : params) walltime_param.push_back(param.get_name());
 }

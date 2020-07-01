@@ -11,7 +11,7 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-iomon::iomon() : io_stats{} {
+iomon::iomon() : io_params{}, io_stats{} {
   io_params.reserve(params.size());
   for (const auto& param : params) {
     io_params.push_back(param.get_name());
