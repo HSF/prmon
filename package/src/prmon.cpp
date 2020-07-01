@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
   const char* default_filename = "prmon.txt";
   const char* default_json_summary = "prmon.json";
   const unsigned int default_interval = 30;
-  const bool default_store_hw_info = false;
+  const bool default_store_hw_info = true;
 
   pid_t pid = -1;
   bool got_pid = false;
@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
       {"filename", required_argument, NULL, 'f'},
       {"json-summary", required_argument, NULL, 'j'},
       {"interval", required_argument, NULL, 'i'},
-      {"store-hw-info", no_argument, NULL, 's'},
+      {"suppress-hw-info", no_argument, NULL, 's'},
       {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
@@ -215,7 +215,7 @@ int main(int argc, char* argv[]) {
         interval = std::stoi(optarg);
         break;
       case 's':
-        store_hw_info = true;
+        store_hw_info = false;
         break;
       case 'n':
         netdevs.push_back(optarg);
@@ -245,8 +245,8 @@ int main(int argc, char* argv[]) {
         << default_json_summary << ")\n"
         << "[--interval, -i TIME]     Seconds between samples (default "
         << default_interval << ")\n"
-        << "[--store-hw-info, -s]     Store hardware information (default "
-        << (default_store_hw_info ? "true" : "false") << ")\n"
+        << "[--suppress-hw-info, -s]  Disable hardware information (default "
+        << (default_store_hw_info ? "false" : "true") << ")\n"
         << "[--netdev, -n dev]        Network device to monitor (can be given\n"
         << "                          multiple times; default ALL devices)\n"
         << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
