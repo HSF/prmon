@@ -76,3 +76,6 @@ add_test(NAME childMem COMMAND ${PYTHON_TEST} testMEM.py --procs 4)
 
 # Process and thread counting Tests
 add_test(NAME basicCOUNT COMMAND ${PYTHON_TEST} testCOUNT.py --procs 2 --threads 2)
+
+# Units check test
+add_test(NAME testUnits COMMAND ${PYTHON_TEST} testCPU.py --units --time 3 --slack 0 --interval 1) 
