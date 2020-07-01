@@ -24,7 +24,6 @@ class iomon final : public Imonitor {
                                         {"read_bytes", "B", "B/s"},
                                         {"write_bytes", "B", "B/s"}};
 
-
   // Which network io paramters to measure and output key names
   std::vector<std::string> io_params;
 

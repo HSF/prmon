@@ -19,8 +19,7 @@
 class cpumon final : public Imonitor {
  private:
   // Setup the parameters to monitor here
-  const prmon::parameter_list params = {{"utime", "s", ""},
-                                        {"stime", "s", ""}};
+  const prmon::parameter_list params = {{"utime", "s", ""}, {"stime", "s", ""}};
 
   // Which network cpu paramters to measure and output key names
   // This will be filled at initialisation, taking the names
