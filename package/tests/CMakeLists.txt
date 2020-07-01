@@ -39,6 +39,10 @@ script_install(SCRIPT netBurner.py)
 script_install(SCRIPT httpBlock.py DESTINATION cgi-bin)
 script_install(SCRIPT testCOUNT.py)
 
+# Setup the target version of Python we will use for testing
+set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")
+message(STATUS "Setting Python test binary to '${PYTHON_TEST}' (use -DPYTHON_TEST to change)")
+
 # Python2 has a different version of the network test
 # as the modules are significantly different from Python3
 if(${PYTHON_TEST} MATCHES "python2")
@@ -46,10 +50,6 @@ if(${PYTHON_TEST} MATCHES "python2")
     script_install(SCRIPT netBurner2.py)
     script_install(SCRIPT httpBlock2.py DESTINATION cgi-bin)
 endif()
-
-# Setup the target version of Python we will use for testing
-set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")
-message(STATUS "Setting Python test binary to '${PYTHON_TEST}' (use -DPYTHON_TEST to change)")
 
 # CPU Tests
 add_test(NAME testCPUsingle COMMAND ${PYTHON_TEST} testCPU.py --threads 1 --procs 1) 
