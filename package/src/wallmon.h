@@ -16,10 +16,16 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "parameter.h"
 #include "registry.h"
 
 class wallmon final : public Imonitor {
  private:
+  // const static std::vector<std::string> default_wall_params{"wtime"};
+  const prmon::parameter_list params = {{"wtime", "s", ""}};
+
+  std::vector<std::string> walltime_param;
+
   // Container for total stat
   std::map<std::string, unsigned long long> walltime_stats;
 

@@ -13,10 +13,15 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "parameter.h"
 #include "registry.h"
 
 class countmon final : public Imonitor {
  private:
+  // Setup the parameters to monitor here
+  const prmon::parameter_list params = {{"nprocs", "n_procs", "n_procs"},
+                                        {"nthreads", "n_threads", "n_threads"}};
+
   // Which network count paramters to measure and output key names
   std::vector<std::string> count_params;
 
