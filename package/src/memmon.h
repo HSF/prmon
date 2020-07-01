@@ -12,10 +12,19 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "parameter.h"
 #include "registry.h"
 
 class memmon final : public Imonitor {
  private:
+  // Default paramater list
+  // const static std::vector<std::string> default_memory_params{"vmem", "pss",
+  // "rss", "swap"};
+  const prmon::parameter_list params = {{"vmem", "kB", "kB"},
+                                        {"pss", "kB", "kB"},
+                                        {"rss", "kB", "kB"},
+                                        {"swap", "kB", "kB"}};
+
   // Which network memory parameters to measure and output key names
   std::vector<std::string> mem_params;
 

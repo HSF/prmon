@@ -16,12 +16,14 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-memmon::memmon() : mem_params{prmon::default_memory_params}, iterations{0} {
-  for (const auto& mem_param : mem_params) {
-    mem_stats[mem_param] = 0;
-    mem_peak_stats[mem_param] = 0;
-    mem_average_stats[mem_param] = 0;
-    mem_total_stats[mem_param] = 0;
+memmon::memmon() : iterations{0} {
+  mem_params.reserve(params.size());
+  for (const auto& param : params) {
+    mem_params.push_back(param.get_name());
+    mem_stats[param.get_name()] = 0;
+    mem_peak_stats[param.get_name()] = 0;
+    mem_average_stats[param.get_name()] = 0;
+    mem_total_stats[param.get_name()] = 0;
   }
 }
 
@@ -118,4 +120,7 @@ void const memmon::get_hardware_info(nlohmann::json& hw_json) {
   return;
 }
 
-void const memmon::get_unit_info(nlohmann::json& unit_json) { return; }
+void const memmon::get_unit_info(nlohmann::json& unit_json) {
+  prmon::fill_units(unit_json, params);
+  return;
+}

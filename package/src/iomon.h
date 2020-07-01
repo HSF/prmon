@@ -18,7 +18,6 @@
 class iomon final : public Imonitor {
  private:
   // Setup the parameters to monitor here
-  //"rchar", "wchar", "read_bytes", "write_bytes"
   const prmon::parameter_list params = {{"rchar", "B", "B/s"},
                                         {"wchar", "B", "B/s"},
                                         {"read_bytes", "B", "B/s"},
