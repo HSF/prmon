@@ -10,12 +10,11 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include <nlohmann/json.hpp>
 
 #include "parameter.h"
 
