@@ -34,9 +34,9 @@ def setupConfigurableTest(io=10, threads=1, procs=1, usleep=10, pause=1, slack=0
 
                 # IO tests
                 expectedBytes = io*threads*procs*slack * 1.0e6
-                self.assertGreater(prmonJSON["Max"]["wchar"], expectedBytes, "Too low value for IO bytes written "
+                self.assertGreaterEqual(prmonJSON["Max"]["wchar"], expectedBytes, "Too low value for IO bytes written "
                                    "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["wchar"]))
-                self.assertGreater(prmonJSON["Max"]["rchar"], expectedBytes, "Too low value for IO bytes read "
+                self.assertGreaterEqual(prmonJSON["Max"]["rchar"], expectedBytes, "Too low value for IO bytes read "
                                    "(expected minimum of {0}, got {1})".format(expectedBytes, prmonJSON["Max"]["rchar"]))
     
     return configurableProcessMonitor
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser.add_argument('--io', type=int, default=10)
     parser.add_argument('--usleep', type=int, default=10)
     parser.add_argument('--pause', type=float, default=1)
-    parser.add_argument('--slack', type=float, default=0.95)
+    parser.add_argument('--slack', type=float, default=0.9)
     parser.add_argument('--interval', type=int, default=1)
     args = parser.parse_args()
     # Stop unittest from being confused by the arguments

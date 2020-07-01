@@ -58,7 +58,7 @@ if __name__ == '__main__':
     parser.add_argument('--malloc', type=int, default=100)
     parser.add_argument('--writef', type=float, default=0.5)
     parser.add_argument('--sleep', type=int, default=10)
-    parser.add_argument('--slack', type=float, default=0.9)
+    parser.add_argument('--slack', type=float, default=0.85)
     parser.add_argument('--interval', type=int, default=1)  
 
     args = parser.parse_args()
