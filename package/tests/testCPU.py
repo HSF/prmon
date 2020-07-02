@@ -10,7 +10,8 @@ import subprocess
 import sys
 import unittest
 
-def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, slack=0.75, interval=1, invoke=False):
+def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, 
+    slack=0.75, interval=1, invoke=False, units=False):
     '''Wrap the class definition in a function to allow arguments to be passed'''
     class configurableProcessMonitor(unittest.TestCase):
         def test_runTestWithParams(self):
@@ -23,6 +24,8 @@ def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, sla
                 burn_cmd.extend(['--child-fraction', str(child_fraction)])
 
             prmon_cmd = ['../prmon', '--interval', str(interval)]
+            if units:
+                prmon_cmd.append('--units')
             if invoke:
                 prmon_cmd.append('--')
                 prmon_cmd.extend(burn_cmd)
@@ -56,6 +59,18 @@ def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, sla
                                 "(expected maximum of {0}, got {1})".format(time, totWALL))
                 self.assertGreaterEqual(totWALL, time*slack, "Too low value for wall time "
                                    "(expected minimum of {0}, got {1}".format(time*slack, totWALL))
+
+                # Unit test
+                if units:
+                    for group in ("Max", "Avg"):
+                        value_params = set(prmonJSON[group].keys())
+                        unit_params = set(prmonJSON["Units"][group].keys())
+                        missing = value_params - unit_params
+                        self.assertEqual(len(missing), 0, 
+                            "Wrong number of unit values for '{0}' - missing parameters are {1}".format(group, missing))
+                        extras = unit_params - value_params
+                        self.assertEqual(len(extras), 0, 
+                            "Wrong number of unit values for '{0}' - extra parameters are {1}".format(group, extras))
     
     return configurableProcessMonitor
 
@@ -68,12 +83,14 @@ if __name__ == '__main__':
     parser.add_argument('--time', type=float, default=10)
     parser.add_argument('--slack', type=float, default=0.7)
     parser.add_argument('--interval', type=int, default=1)
-    parser.add_argument('--invoke', dest='invoke', action='store_true', default=False)
+    parser.add_argument('--invoke', action='store_true')
+    parser.add_argument('--units', action='store_true')
 
     args = parser.parse_args()
     # Stop unittest from being confused by the arguments
     sys.argv=sys.argv[:1]
     
-    cpm = setupConfigurableTest(args.threads,args.procs,args.child_fraction,args.time,args.slack,args.interval,args.invoke)
+    cpm = setupConfigurableTest(args.threads,args.procs,args.child_fraction,args.time,
+        args.slack,args.interval,args.invoke,args.units)
     
     unittest.main()

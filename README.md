@@ -82,7 +82,7 @@ The `prmon` binary is invoked with the following arguments:
 
 ```sh
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
-      [--interval 30] [--suppress-hw-info] [--netdev DEV] \
+      [--interval 30] [--suppress-hw-info] [--units] [--netdev DEV] \
       [-- prog arg arg ...]
 ```
 
@@ -91,6 +91,7 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 * `--json-summmary` output file for summary data written in JSON format
 * `--interval` time, in seconds, between monitoring snapshots
 * `--suppress-hw-info` flag that turns-off hardware information collection
+* `--units` add information on units for each metric to JSON file
 * `--netdev` restricts network statistics to one (or more) network devices
 * `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
@@ -104,7 +105,9 @@ In the `filename` output file, plain text with statistics written every
 
 In the `json-summmary` file values for the maximum and average statistics
 are given in JSON format. This file is rewritten every `interval` seconds
-with the current summary values.
+with the current summary values. Use the `--units` option to see exactly
+which units are used for each metric (the value of `1` for a unit means
+it is a pure number).
 
 Monitoring of CPU, I/O and memory is reliably accurate, at least to within
 the sampling time. Monitoring of network I/O is **not reliable** unless the

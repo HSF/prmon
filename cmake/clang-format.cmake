@@ -3,6 +3,10 @@
 # Requires clang-format to be available in the
 # environment
 
+# Setup the target version of clang-format we will use
+set(CLANG_FORMAT "clang-format" CACHE STRING "Clang format binary")
+message(STATUS "Setting clang-format test binary to '${CLANG_FORMAT}' (use -DCLANG_FORMAT to change)")
+
 # Get all project files
 file(GLOB_RECURSE ALL_SOURCE_FILES *.cpp *.h)
 

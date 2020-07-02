@@ -19,12 +19,18 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "parameter.h"
 #include "registry.h"
 
 class netmon final : public Imonitor {
  private:
-  // Which network interface paramters to measure (in this simple case
-  // these are also the output key names)
+  // Setup the parameters to monitor here
+  const prmon::parameter_list params = {{"rx_bytes", "B", "B/s"},
+                                        {"rx_packets", "1", "1/s"},
+                                        {"tx_bytes", "B", "B/s"},
+                                        {"tx_packets", "1", "1/s"}};
+
+  // Vector for network interface paramters to measure (will be constructed)
   std::vector<std::string> interface_params;
 
   // Which network interfaces to monitor
@@ -71,6 +77,7 @@ class netmon final : public Imonitor {
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);
+  void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return true; }
 };
 REGISTER_MONITOR(Imonitor, netmon, "Monitor network activity (device level)")

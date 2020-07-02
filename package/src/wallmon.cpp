@@ -15,8 +15,12 @@
 // Constructor; uses RAII pattern to be valid
 // after construction
 wallmon::wallmon()
-    : start_time_clock_t{0}, current_clock_t{0}, got_mother_starttime{false} {
-  walltime_stats["wtime"] = 0;
+    : walltime_param{},
+      start_time_clock_t{0},
+      current_clock_t{0},
+      got_mother_starttime{false} {
+  walltime_param.reserve(params.size());
+  for (const auto& param : params) walltime_param.push_back(param.get_name());
 }
 
 int wallmon::get_mother_starttime(pid_t mother_pid) {
@@ -91,3 +95,8 @@ std::map<std::string, double> const wallmon::get_json_average_stats(
 
 // Collect related hardware information
 void const wallmon::get_hardware_info(nlohmann::json& hw_json) { return; }
+
+void const wallmon::get_unit_info(nlohmann::json& unit_json) {
+  prmon::fill_units(unit_json, params);
+  return;
+}

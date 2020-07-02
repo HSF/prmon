@@ -15,16 +15,19 @@
 // Constructor; uses RAII pattern to be valid
 // after construction
 countmon::countmon()
-    : count_params{prmon::default_count_params},
+    : count_params{},
       count_stats{},
+      count_peak_stats{},
       count_average_stats{},
       count_total_stats{},
       iterations{0L} {
-  for (const auto& count_param : count_params) {
-    count_stats[count_param] = 0;
-    count_peak_stats[count_param] = 0;
-    count_average_stats[count_param] = 0;
-    count_total_stats[count_param] = 0;
+  count_params.reserve(params.size());
+  for (const auto& param : params) {
+    count_params.push_back(param.get_name());
+    count_stats[param.get_name()] = 0;
+    count_peak_stats[param.get_name()] = 0;
+    count_average_stats[param.get_name()] = 0;
+    count_total_stats[param.get_name()] = 0;
   }
 }
 
@@ -80,3 +83,8 @@ std::map<std::string, double> const countmon::get_json_average_stats(
 
 // Collect related hardware information
 void const countmon::get_hardware_info(nlohmann::json& hw_json) { return; }
+
+void const countmon::get_unit_info(nlohmann::json& unit_json) {
+  prmon::fill_units(unit_json, params);
+  return;
+}

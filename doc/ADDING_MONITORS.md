@@ -8,10 +8,16 @@ All of the prmon monitors are concrete implementations of the virtual
 `Imonitor.h` interface. Inside the `package/src` directory you will find all of
 the current examples and these are an excellent guide.
 
-## `util.h`
+## `parameter.h`
 
-Every monitor describes its column headers (*what* it will monitor), so add
-short, descriptive names for the columns you will output.
+Every monitor describes its column headers (*what* it will monitor) and the
+units for this parameter as a vector of `parameter` classes. This is a very
+simple class, initialised with three strings:
+- name of parameter
+- units for maximum/continuous value
+- units for average value
+If the later is an empty string it means that there is no meaningful value
+for the average and so nothing is output.
 
 ## Data Structures
 
@@ -26,6 +32,10 @@ maximum values and average values. These are updated each update cycle.
 
 Use an RAII pattern, so that on initialisation the monitor is valid and ready
 to be used.
+
+For most monitors a vector of monitored quantities is constructed from the
+parameter class, as the units are only needed once. Counters are mostly
+set to zero as well.
 
 ## Registry
 

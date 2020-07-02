@@ -30,7 +30,7 @@ bool prmon::sigusr1 = false;
 
 int ProcessMonitor(const pid_t mpid, const std::string filename,
                    const std::string json_summary_file, const time_t interval,
-                   const bool store_hw_info,
+                   const bool store_hw_info, const bool store_unit_info,
                    const std::vector<std::string> netdevs) {
   signal(SIGUSR1, prmon::SignalCallbackHandler);
 
@@ -84,6 +84,10 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   if (store_hw_info) {
     for (const auto& monitor : monitors)
       monitor.second->get_hardware_info(json_summary);
+  }
+  if (store_unit_info) {
+    for (const auto& monitor : monitors)
+      monitor.second->get_unit_info(json_summary);
   }
 
   // See if the kernel is new enough to have /proc/PID/task/PID/children
@@ -177,6 +181,7 @@ int main(int argc, char* argv[]) {
   const char* default_json_summary = "prmon.json";
   const unsigned int default_interval = 30;
   const bool default_store_hw_info = true;
+  const bool default_store_unit_info = false;
 
   pid_t pid = -1;
   bool got_pid = false;
@@ -185,6 +190,7 @@ int main(int argc, char* argv[]) {
   std::vector<std::string> netdevs{};
   unsigned int interval{default_interval};
   bool store_hw_info{default_store_hw_info};
+  bool store_unit_info{default_store_unit_info};
   int do_help{0};
 
   static struct option long_options[] = {
@@ -193,12 +199,13 @@ int main(int argc, char* argv[]) {
       {"json-summary", required_argument, NULL, 'j'},
       {"interval", required_argument, NULL, 'i'},
       {"suppress-hw-info", no_argument, NULL, 's'},
+      {"units", no_argument, NULL, 'u'},
       {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
       {0, 0, 0, 0}};
 
   int c;
-  while ((c = getopt_long(argc, argv, "p:f:j:i:sn:h", long_options, NULL)) !=
+  while ((c = getopt_long(argc, argv, "p:f:j:i:sun:h", long_options, NULL)) !=
          -1) {
     switch (char(c)) {
       case 'p':
@@ -216,6 +223,9 @@ int main(int argc, char* argv[]) {
         break;
       case 's':
         store_hw_info = false;
+        break;
+      case 'u':
+        store_unit_info = true;
         break;
       case 'n':
         netdevs.push_back(optarg);
@@ -247,6 +257,9 @@ int main(int argc, char* argv[]) {
         << default_interval << ")\n"
         << "[--suppress-hw-info, -s]  Disable hardware information (default "
         << (default_store_hw_info ? "false" : "true") << ")\n"
+        << "[--units, -u]             Add units information to JSON file "
+           "(default "
+        << (default_store_unit_info ? "true" : "false") << ")\n"
         << "[--netdev, -n dev]        Network device to monitor (can be given\n"
         << "                          multiple times; default ALL devices)\n"
         << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
@@ -291,7 +304,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
     ProcessMonitor(pid, filename, jsonSummary, interval, store_hw_info,
-                   netdevs);
+                   store_unit_info, netdevs);
   } else {
     if (child_args == argc) {
       std::cerr << "Found marker for child program to execute, but with no "
@@ -303,7 +316,7 @@ int main(int argc, char* argv[]) {
       execvp(argv[child_args], &argv[child_args]);
     } else if (child > 0) {
       ProcessMonitor(child, filename, jsonSummary, interval, store_hw_info,
-                     netdevs);
+                     store_unit_info, netdevs);
     }
   }
 

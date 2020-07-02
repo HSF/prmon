@@ -11,8 +11,12 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-iomon::iomon() : io_stats{} {
-  for (const auto& io_param : prmon::default_io_params) io_stats[io_param] = 0;
+iomon::iomon() : io_params{}, io_stats{} {
+  io_params.reserve(params.size());
+  for (const auto& param : params) {
+    io_params.push_back(param.get_name());
+    io_stats[param.get_name()] = 0;
+  }
 }
 
 void iomon::update_stats(const std::vector<pid_t>& pids) {
@@ -57,3 +61,8 @@ std::map<std::string, double> const iomon::get_json_average_stats(
 
 // Collect related hardware information
 void const iomon::get_hardware_info(nlohmann::json& hw_json) { return; }
+
+void const iomon::get_unit_info(nlohmann::json& unit_json) {
+  prmon::fill_units(unit_json, params);
+  return;
+}

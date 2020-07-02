@@ -15,7 +15,10 @@
 // network device streams and to take initial values
 // to the monitor relative differences
 netmon::netmon(std::vector<std::string> netdevs)
-    : interface_params{prmon::default_network_if_params}, network_if_streams{} {
+    : interface_params{}, network_if_streams{} {
+  interface_params.reserve(params.size());
+  for (const auto& param : params) interface_params.push_back(param.get_name());
+
   if (netdevs.size() == 0) {
     monitored_netdevs = get_all_network_devs();
   } else {
@@ -111,3 +114,8 @@ std::map<std::string, double> const netmon::get_json_average_stats(
 
 // Collect related hardware information
 void const netmon::get_hardware_info(nlohmann::json& hw_json) { return; }
+
+void const netmon::get_unit_info(nlohmann::json& unit_json) {
+  prmon::fill_units(unit_json, params);
+  return;
+}

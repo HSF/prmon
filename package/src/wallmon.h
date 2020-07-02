@@ -16,10 +16,15 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "parameter.h"
 #include "registry.h"
 
 class wallmon final : public Imonitor {
  private:
+  const prmon::parameter_list params = {{"wtime", "s", ""}};
+
+  std::vector<std::string> walltime_param;
+
   // Container for total stat
   std::map<std::string, unsigned long long> walltime_stats;
 
@@ -43,6 +48,7 @@ class wallmon final : public Imonitor {
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);
+  void const get_unit_info(nlohmann::json& unit_json);
 
   // Class specific method to retrieve wallclock time in clock ticks
   unsigned long long const get_wallclock_clock_t();
