@@ -46,9 +46,9 @@ def setupConfigurableTest(threads=1, procs=1, child_fraction=1.0, time=10.0, sla
                 # CPU time tests
                 totCPU = prmonJSON["Max"]["utime"] + prmonJSON["Max"]["stime"]
                 expectCPU = (1.0 + (procs-1)*child_fraction) * time * threads
-                self.assertLess(totCPU, expectCPU, "Too high value for CPU time "
+                self.assertLessEqual(totCPU, expectCPU, "Too high value for CPU time "
                                 "(expected maximum of {0}, got {1})".format(expectCPU, totCPU))
-                self.assertGreater(totCPU, expectCPU*slack, "Too low value for CPU time "
+                self.assertGreaterEqual(totCPU, expectCPU*slack, "Too low value for CPU time "
                                    "(expected minimum of {0}, got {1}".format(expectCPU*slack, totCPU))
                 # Wall time tests
                 totWALL = prmonJSON["Max"]["wtime"]
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--procs', type=int, default=1)
     parser.add_argument('--child-fraction', type=float, default=1.0)
     parser.add_argument('--time', type=float, default=10)
-    parser.add_argument('--slack', type=float, default=0.75)
+    parser.add_argument('--slack', type=float, default=0.7)
     parser.add_argument('--interval', type=int, default=1)
     parser.add_argument('--invoke', dest='invoke', action='store_true', default=False)
 
