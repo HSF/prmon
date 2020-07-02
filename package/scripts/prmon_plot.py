@@ -34,7 +34,11 @@ axisunits = {'vmem':'kb',
              'rx_bytes':'b',
              'tx_bytes':'b',
              'nprocs':'1',
-             'nthreads':'1'}
+             'nthreads':'1',
+             'gpufbmem':'kb',
+             'gpumempct':'%',
+             'gpusmpct':'%',
+             'ngpus':'1'}
 
 axisnames = {'vmem':'Memory',
              'pss':'Memory',
@@ -52,7 +56,11 @@ axisnames = {'vmem':'Memory',
              'rx_bytes':'Network',
              'tx_bytes':'Network',
              'nprocs':'Count',
-             'nthreads':'Count'}
+             'nthreads':'Count',
+             'gpufbmem':'Memory',
+             'gpumempct':'Memory',
+             'gpusmpct':'Streaming Multiprocessors',
+             'ngpus':'Count'}
 
 legendnames = {'vmem':'Virtual Memory',
                'pss':'Proportional Set Size',
@@ -70,7 +78,11 @@ legendnames = {'vmem':'Virtual Memory',
                'rx_bytes':'Network Received (bytes)',
                'tx_bytes':'Network Transmitted (bytes)',
                'nprocs':'Number of Processes',
-               'nthreads':'Number of Threads'}
+               'nthreads':'Number of Threads',
+               'gpufbmem':'GPU Memory',
+               'gpumempct':'GPU Memory',
+               'gpusmpct':'GPU Streaming Multiprocessors',
+               'ngpus':'Number of GPUs'}
 
 multipliers = {'SEC': 1.,
                'MIN': 60.,
@@ -79,7 +91,8 @@ multipliers = {'SEC': 1.,
                'KB': 1024.,
                'MB': 1024.*1024.,
                'GB': 1024.*1024.*1024.,
-               '1': 1.}
+               '1': 1.,
+               '%': 1.}
 
 # A few basic functions for labels/ conversions
 def get_axis_label(nom, denom = None):
@@ -107,13 +120,13 @@ if '__main__' in __name__:
     parser.add_argument('--xvar', type = str, default = default_xvar,
                         help = 'name of the variable to be plotted in the x-axis')
     parser.add_argument('--xunit', nargs = '?', default = default_xunit,
-                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1'],
+                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1','%'],
                         help = 'unit of the variable to be plotted in the x-axis')
     parser.add_argument('--yvar', type = str, default = default_yvar,
                         help = 'name(s) of the variable(s) to be plotted in the y-axis'
                                ' (comma seperated list is accepted)')
     parser.add_argument('--yunit', nargs = '?', default = default_yunit,
-                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1'],
+                        choices=['SEC', 'MIN', 'HOUR', 'B', 'KB', 'MB', 'GB', '1','%'],
                         help = 'unit of the variable(s) to be plotted in the y-axis')
     parser.add_argument('--stacked', dest = 'stacked', action = 'store_true',
                         help = 'stack plots if specified')
