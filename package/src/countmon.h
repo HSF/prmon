@@ -19,8 +19,8 @@
 class countmon final : public Imonitor {
  private:
   // Setup the parameters to monitor here
-  const prmon::parameter_list params = {{"nprocs", "n_procs", "n_procs"},
-                                        {"nthreads", "n_threads", "n_threads"}};
+  const prmon::parameter_list params = {{"nprocs", "1", "1"},
+                                        {"nthreads", "1", "1"}};
 
   // Which network count paramters to measure and output key names
   std::vector<std::string> count_params;

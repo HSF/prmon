@@ -97,7 +97,7 @@ const std::pair<int, std::vector<std::string>> prmon::cmd_pipe_output(
 const void prmon::fill_units(nlohmann::json& unit_json,
                              const parameter_list& params) {
   for (const auto& param : params) {
-    if (!((param.get_max_unit()).empty()))
+    if (!param.get_max_unit().empty())
       unit_json["Units"]["Max"][param.get_name()] = param.get_max_unit();
     if (!param.get_avg_unit().empty())
       unit_json["Units"]["Avg"][param.get_name()] = param.get_avg_unit();

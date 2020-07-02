@@ -18,9 +18,9 @@ class nvidiamon final : public Imonitor {
  private:
   // const static std::vector<std::string> default_nvidia_params{
   //   "ngpus", "gpusmpct", "gpumempct", "gpufbmem"};
-  const prmon::parameter_list params = {{"ngpus", "n_gpus", "n_gpus"},
-                                        {"gpusmpct", "percent", "percent"},
-                                        {"gpumempct", "percent", "percent"},
+  const prmon::parameter_list params = {{"ngpus", "1", "1"},
+                                        {"gpusmpct", "%", "%"},
+                                        {"gpumempct", "%", "%"},
                                         {"gpufbmem", "kB", "kB"}};
 
   // Which paramters to measure and output key names
