@@ -20,7 +20,10 @@ wallmon::wallmon()
       current_clock_t{0},
       got_mother_starttime{false} {
   walltime_param.reserve(params.size());
-  for (const auto& param : params) walltime_param.push_back(param.get_name());
+  for (const auto& param : params) {
+    walltime_param.push_back(param.get_name());
+    walltime_stats[param.get_name()] = 0;
+  }
 }
 
 int wallmon::get_mother_starttime(pid_t mother_pid) {
