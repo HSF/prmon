@@ -18,32 +18,11 @@ except ImportError:
     sys.exit(-1)
 
 # Define the labels/units for beautification
-axisunits = {'vmem':'kb',
-             'pss':'kb',
-             'rss':'kb',
-             'swap':'kb',
-             'utime':'sec',
-             'stime':'sec',
-             'wtime':'sec',
-             'rchar':'b',
-             'wchar':'b',
-             'read_bytes':'b',
-             'write_bytes':'b',
-             'rx_packets':'1',
-             'tx_packets':'1',
-             'rx_bytes':'b',
-             'tx_bytes':'b',
-             'nprocs':'1',
-             'nthreads':'1',
-             'gpufbmem':'kb',
-             'gpumempct':'%',
-             'gpusmpct':'%',
-             'ngpus':'1'}
-
-allowedunits = {'vmem':['b','kb','mb','gb'],
-                'pss':['b','kb','mb','gb'],
-                'rss':['b','kb','mb','gb'],
-                'swap':['b','kb','mb','gb'],
+# First allowed unit is the default
+allowedunits = {'vmem':['kb','b','mb','gb'],
+                'pss':['kb','b','mb','gb'],
+                'rss':['kb','b','mb','gb'],
+                'swap':['kb','b','mb','gb'],
                 'utime':['sec','min','hour'],
                 'stime':['sec','min','hour'],
                 'wtime':['sec','min','hour'],
@@ -57,7 +36,7 @@ allowedunits = {'vmem':['b','kb','mb','gb'],
                 'tx_bytes':['b','kb','mb','gb'],
                 'nprocs':['1'],
                 'nthreads':['1'],
-                'gpufbmem':['b','kb','mb','gb'],
+                'gpufbmem':['kb','b','mb','gb'],
                 'gpumempct':['%'],
                 'gpusmpct':['%'],
                 'ngpus':['1']}
@@ -124,14 +103,14 @@ def get_axis_label(nom, denom = None):
     return label
 
 def get_multiplier(label, unit):
-    return multipliers[axisunits[label].upper()]/multipliers[unit]
+    return multipliers[allowedunits[label][0].upper()]/multipliers[unit]
 
 # Main function
 if '__main__' in __name__:
 
     # Default xvar, xunit, yvar, and yunit
-    default_xvar, default_xunit = 'wtime', axisunits['wtime'].upper()
-    default_yvar, default_yunit = 'pss', axisunits['pss'].upper()
+    default_xvar, default_xunit = 'wtime', allowedunits['wtime'][0].upper()
+    default_yvar, default_yunit = 'pss', allowedunits['pss'][0].upper()
 
     # Parse the user input
     parser = argparse.ArgumentParser(description = 'Configurable plotting script')
@@ -162,31 +141,6 @@ if '__main__' in __name__:
     parser.set_defaults(diff = False)
     args = parser.parse_args()
 
-    # Here catch if the user provided a variable but not the units
-    # If so check if the units make sense, if not convert to an appropriate unit
-    firstXVariable = args.xvar.split(',')[0]
-    if args.xunit.lower() not in allowedunits[firstXVariable]:
-        old_xunit = args.xunit
-        args.xunit = axisunits[firstXVariable].upper()
-        print('{0: <8}:: Changing xunit from {1} to {2} for consistency'.format('WARNING',
-                                                                                old_xunit,
-                                                                                args.xunit))
-    firstYVariable = args.yvar.split(',')[0]
-    if args.yunit.lower() not in allowedunits[firstYVariable]:
-        old_yunit = args.yunit
-        args.yunit = axisunits[firstYVariable].upper()
-        print('{0: <8}:: Changing yunit from {1} to {2} for consistency'.format('WARNING',
-                                                                                old_yunit,
-                                                                                args.yunit))
-
-    # Check if the user is trying to plot variables with inconsistent units
-    # If so simply print a message to warn them
-    if len(set([axisunits[i] for i in args.xvar.split(',')])) > 1:
-        print('{0: <8}:: Elements in xvar have inconsistent units, beware!'.format('WARNING'))
-
-    if len(set([axisunits[i] for i in args.yvar.split(',')])) > 1:
-        print('{0: <8}:: Elements in yvar have inconsistent units, beware!'.format('WARNING'))
-
     # Check the input file exists
     if not os.path.exists(args.input):
         print('{0: <8}:: Input file {1} does not exists'.format('ERROR', args.input))
@@ -205,6 +159,31 @@ if '__main__' in __name__:
         if carg not in list(data):
             print('{0: <8}:: Variable {1} is not available in data'.format('ERROR',carg))
             sys.exit(-1)
+
+    # Check the consistancy of variables and units
+    # If they don't match, reset the units to defaults
+    firstXVariable = args.xvar.split(',')[0]
+    if args.xunit.lower() not in allowedunits[firstXVariable]:
+        old_xunit = args.xunit
+        args.xunit = allowedunits[firstXVariable][0].upper()
+        print('{0: <8}:: Changing xunit from {1} to {2} for consistency'.format('WARNING',
+                                                                                old_xunit,
+                                                                                args.xunit))
+    firstYVariable = args.yvar.split(',')[0]
+    if args.yunit.lower() not in allowedunits[firstYVariable]:
+        old_yunit = args.yunit
+        args.yunit = allowedunits[firstYVariable][0].upper()
+        print('{0: <8}:: Changing yunit from {1} to {2} for consistency'.format('WARNING',
+                                                                                old_yunit,
+                                                                                args.yunit))
+
+    # Check if the user is trying to plot variables with inconsistent units
+    # If so simply print a message to warn them
+    if len(set([allowedunits[i][0] for i in args.xvar.split(',')])) > 1:
+        print('{0: <8}:: Elements in xvar have inconsistent units, beware!'.format('WARNING'))
+
+    if len(set([allowedunits[i][0] for i in args.yvar.split(',')])) > 1:
+        print('{0: <8}:: Elements in yvar have inconsistent units, beware!'.format('WARNING'))
 
     # Labels and output information
     xlabel = args.xvar
