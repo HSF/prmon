@@ -160,7 +160,7 @@ if '__main__' in __name__:
             print('{0: <8}:: Variable {1} is not available in data'.format('ERROR',carg))
             sys.exit(-1)
 
-    # Check the consistancy of variables and units
+    # Check the consistency of variables and units
     # If they don't match, reset the units to defaults
     firstXVariable = args.xvar.split(',')[0]
     if args.xunit.lower() not in allowedunits[firstXVariable]:
