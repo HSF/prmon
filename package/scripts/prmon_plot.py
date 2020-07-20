@@ -40,6 +40,28 @@ axisunits = {'vmem':'kb',
              'gpusmpct':'%',
              'ngpus':'1'}
 
+allowedunits = {'vmem':['b','kb','mb','gb'],
+                'pss':['b','kb','mb','gb'],
+                'rss':['b','kb','mb','gb'],
+                'swap':['b','kb','mb','gb'],
+                'utime':['sec','min','hour'],
+                'stime':['sec','min','hour'],
+                'wtime':['sec','min','hour'],
+                'rchar':['b','kb','mb','gb'],
+                'wchar':['b','kb','mb','gb'],
+                'read_bytes':['b','kb','mb','gb'],
+                'write_bytes':['b','kb','mb','gb'],
+                'rx_packets':['1'],
+                'tx_packets':['1'],
+                'rx_bytes':['b','kb','mb','gb'],
+                'tx_bytes':['b','kb','mb','gb'],
+                'nprocs':['1'],
+                'nthreads':['1'],
+                'gpufbmem':['b','kb','mb','gb'],
+                'gpumempct':['%'],
+                'gpusmpct':['%'],
+                'ngpus':['1']}
+
 axisnames = {'vmem':'Memory',
              'pss':'Memory',
              'rss':'Memory',
@@ -143,14 +165,14 @@ if '__main__' in __name__:
     # Here catch if the user provided a variable but not the units
     # If so check if the units make sense, if not convert to an appropriate unit
     firstXVariable = args.xvar.split(',')[0]
-    if firstXVariable != default_xvar and axisunits[firstXVariable].upper() != default_xunit:
+    if args.xunit.lower() not in allowedunits[firstXVariable]:
         old_xunit = args.xunit
         args.xunit = axisunits[firstXVariable].upper()
         print('{0: <8}:: Changing xunit from {1} to {2} for consistency'.format('WARNING',
                                                                                 old_xunit,
                                                                                 args.xunit))
     firstYVariable = args.yvar.split(',')[0]
-    if firstYVariable != default_yvar and axisunits[firstYVariable].upper() != default_yunit:
+    if args.yunit.lower() not in allowedunits[firstYVariable]:
         old_yunit = args.yunit
         args.yunit = axisunits[firstYVariable].upper()
         print('{0: <8}:: Changing yunit from {1} to {2} for consistency'.format('WARNING',
