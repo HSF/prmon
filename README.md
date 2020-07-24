@@ -123,13 +123,13 @@ timestamped output file (usually `prmon.txt`). Some examples include:
 
 * Memory usage as a function of wall-time:
 ```sh
-prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap
+prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap --yunit GB
 ```
 ![](example-plots/PrMon_wtime_vs_vmem_pss_rss_swap.png)
 
 * Rate of change in memory usage as a function of wall-time:
 ```sh
-prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap --diff
+prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap --diff --yunit MB
 ```
 ![](example-plots/PrMon_wtime_vs_diff_vmem_pss_rss_swap.png)
 
