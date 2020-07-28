@@ -27,6 +27,10 @@ void SignalCallbackHandler(int);
 // Child process reaper
 void reap_children();
 
+// Precision specifier for average output, to limit
+// to 1 per 1000 (permil)
+const long avg_precision = 1000;
+
 }  // namespace prmon
 
 #endif  // PRMON_UTIL_H
