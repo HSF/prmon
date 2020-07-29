@@ -1,0 +1,27 @@
+{
+    "title": "prmon: process monitor",
+    "description": "A lightweight monitor for resource consumption of processes and their children",
+    "creators": [
+      {
+        "affiliation": "CERN",
+        "name": "Stewart, Graeme A",
+        "orcid": "0000-0003-0182-7088"
+      },
+      {
+        "affiliation": "Argonne National Laboratory",
+        "name": "Mete, Alaettin Serhan",
+        "orcid": "0000-0002-5508-530X"
+      }
+    ],
+    "upload_type": "software",
+    "license": "Apache-2.0",
+    "access_right": "open",
+    "keywords": [
+      "process-monitor",
+      "scientific-computing",
+      "high-energy-physics",
+      "cpp",
+      "python",
+      "cmake"
+    ]
+}
