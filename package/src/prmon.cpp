@@ -131,7 +131,27 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
           auto wallclock_time = wallclock_monitor_p->get_wallclock_clock_t();
           for (const auto& stat :
                monitor.second->get_json_average_stats(wallclock_time)) {
-            json_summary["Avg"][(stat.first).c_str()] = stat.second;
+            // We will limit the decimal place accuracy here as it doesn't
+            // make any sense to provide tens of decimal places of
+            // precision (this is a limitation of the nlohmann::json
+            // library, which is always striving for minimal precision
+            // loss when converting float types to decimal strings)
+            double integer_piece;
+            // Volatile to prevent optimisation if performing rounding
+            volatile double fractional_piece;
+            fractional_piece = std::modf(stat.second, &integer_piece);
+            // The rounding method of casting to int, then back to double is
+            // expensive, so try to avoid it
+            if (integer_piece > prmon::avg_precision ||
+                fractional_piece == 0.0) {
+              json_summary["Avg"][(stat.first).c_str()] = integer_piece;
+            } else {
+              fractional_piece =
+                  static_cast<int>(fractional_piece * prmon::avg_precision) /
+                  static_cast<double>(prmon::avg_precision);
+              json_summary["Avg"][(stat.first).c_str()] =
+                  integer_piece + fractional_piece;
+            }
           }
         }
 
