@@ -27,8 +27,8 @@ void SignalCallbackHandler(int);
 // Child process reaper
 void reap_children();
 
-// Precision specifier for average output, to truncate to an integer 
-// for anything >avg_precision and round the fraction to 
+// Precision specifier for average output, to truncate to an integer
+// for anything >avg_precision and round the fraction to
 // essentially 1/avg_precision (thus 1000 = 3 decimal places) for
 // anything smaller
 const long avg_precision = 1000;
