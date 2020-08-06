@@ -25,7 +25,7 @@ extern bool sigusr1;
 void SignalCallbackHandler(int);
 
 // Child process reaper
-void reap_children();
+int reap_children();
 
 // Precision specifier for average output, to truncate to an integer
 // for anything >avg_precision and round the fraction to
