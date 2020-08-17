@@ -102,8 +102,7 @@ int reap_children() {
       if (WIFEXITED(status)) {
         return_code = WEXITSTATUS(status);
         std::clog << "Child process " << pid
-                  << " had non-zero return value: " << return_code
-                  << std::endl;
+                  << " had non-zero return value: " << return_code << std::endl;
       } else if (WIFSIGNALED(status)) {
         std::clog << "Child process " << pid << " exited from signal "
                   << WTERMSIG(status) << std::endl;

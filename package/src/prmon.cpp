@@ -336,8 +336,8 @@ int main(int argc, char* argv[]) {
     if (child == 0) {
       execvp(argv[child_args], &argv[child_args]);
     } else if (child > 0) {
-      return ProcessMonitor(child, filename, jsonSummary, interval, store_hw_info,
-                            store_unit_info, netdevs);
+      return ProcessMonitor(child, filename, jsonSummary, interval,
+                            store_hw_info, store_unit_info, netdevs);
     }
   }
 
