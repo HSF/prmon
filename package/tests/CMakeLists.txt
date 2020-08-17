@@ -38,6 +38,7 @@ script_install(SCRIPT testMEM.py)
 script_install(SCRIPT netBurner.py)
 script_install(SCRIPT httpBlock.py DESTINATION cgi-bin)
 script_install(SCRIPT testCOUNT.py)
+script_install(SCRIPT testEXIT.py)
 
 # Setup the target version of Python we will use for testing
 set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")
@@ -79,3 +80,6 @@ add_test(NAME basicCOUNT COMMAND ${PYTHON_TEST} testCOUNT.py --procs 2 --threads
 
 # Units check test
 add_test(NAME testUnits COMMAND ${PYTHON_TEST} testCPU.py --units --time 3 --slack 0 --interval 1) 
+
+# Test passing the child exit code works
+add_test(NAME testExitCode COMMAND ${PYTHON_TEST} testEXIT.py --exit-code 43)
