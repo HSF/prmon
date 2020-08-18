@@ -97,6 +97,10 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
   and remaining arguments are passed to it; `prmon` will then monitor this process
   instead of being given a PID via `--pid`
 
+`prmon` will exit with `1` if there is a problem with inconsistent or 
+incomplete arguments. If `prmon` starts a program itself (using `--`) then
+`prmon` will exit with the exit code of the child process.
+
 
 ## Outputs
 

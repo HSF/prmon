@@ -96,6 +96,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   // Monitoring loop until process exits
   bool wroteFile = false;
   std::vector<pid_t> cpids{};
+  int return_code = 0;
   // Scope of 'monitors' ensures safety of bare pointer here
   auto wallclock_monitor_p = static_cast<wallmon*>(monitors["wallmon"].get());
   while (kill(mpid, 0) == 0 && prmon::sigusr1 == false) {
@@ -179,7 +180,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
       }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    prmon::reap_children();
+    return_code = prmon::reap_children();
   }
   file.close();
 
@@ -192,7 +193,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   file << std::setw(2) << json_summary << std::endl;
   file.close();
 
-  return 0;
+  return return_code;
 }
 
 int main(int argc, char* argv[]) {
@@ -335,8 +336,8 @@ int main(int argc, char* argv[]) {
     if (child == 0) {
       execvp(argv[child_args], &argv[child_args]);
     } else if (child > 0) {
-      ProcessMonitor(child, filename, jsonSummary, interval, store_hw_info,
-                     store_unit_info, netdevs);
+      return ProcessMonitor(child, filename, jsonSummary, interval,
+                            store_hw_info, store_unit_info, netdevs);
     }
   }
 

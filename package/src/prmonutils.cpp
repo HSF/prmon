@@ -92,26 +92,29 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
 
 void SignalCallbackHandler(int /*signal*/) { sigusr1 = true; }
 
-void reap_children() {
+int reap_children() {
   int status;
+  int return_code = 0;
   pid_t pid{1};
   while (pid > 0) {
     pid = waitpid((pid_t)-1, &status, WNOHANG);
     if (status && pid > 0) {
-      if (WIFEXITED(status))
+      if (WIFEXITED(status)) {
+        return_code = WEXITSTATUS(status);
         std::clog << "Child process " << pid
-                  << " had non-zero return value: " << WEXITSTATUS(status)
-                  << std::endl;
-      else if (WIFSIGNALED(status))
+                  << " had non-zero return value: " << return_code << std::endl;
+      } else if (WIFSIGNALED(status)) {
         std::clog << "Child process " << pid << " exited from signal "
                   << WTERMSIG(status) << std::endl;
-      else if (WIFSTOPPED(status))
+      } else if (WIFSTOPPED(status)) {
         std::clog << "Child process " << pid << " was stopped by signal"
                   << WSTOPSIG(status) << std::endl;
-      else if (WIFCONTINUED(status))
+      } else if (WIFCONTINUED(status)) {
         std::clog << "Child process " << pid << " was continued" << std::endl;
+      }
     }
   }
+  return return_code;
 }
 
 }  // namespace prmon
