@@ -193,6 +193,15 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   file << std::setw(2) << json_summary << std::endl;
   file.close();
 
+  // Check that we ran for a reasonable number of iterations
+  if (wallclock_monitor_p->get_wallclock_clock_t() /
+          (interval * sysconf(_SC_CLK_TCK)) <
+      1) {
+    std::clog << "Wallclock time of monitored process was less than the "
+                 "monitoring interval, so average statistics will be unreliable"
+              << std::endl;
+  }
+
   return return_code;
 }
 
