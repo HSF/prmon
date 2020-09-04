@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-'''prmon output data plotting script'''
+"""prmon output data plotting script"""
 
 import argparse
 import sys
@@ -108,9 +108,10 @@ MULTIPLIERS = {
     "%": 1.0,
 }
 
-# A few basic functions for labels/ conversions
+
+# A few basic functions for labels and conversions
 def get_axis_label(nom, denom=None):
-    '''Generate axis label from variable and units'''
+    """Generate axis label from variable and units"""
     label = AXISNAME[nom]
     if denom:
         label = r"$\Delta$" + label + r"/$\Delta$" + AXISNAME[denom]
@@ -118,12 +119,12 @@ def get_axis_label(nom, denom=None):
 
 
 def get_multiplier(label, unit):
-    '''Get the multiplication constant for a label'''
+    """Get the multiplication constant for a label"""
     return MULTIPLIERS[ALLOWEDUNITS[label][0].upper()] / MULTIPLIERS[unit]
 
 
 def main():
-    '''prmon plotting main function'''
+    """prmon plotting main function"""
 
     # Default xvar, xunit, yvar, and yunit
     default_xvar, default_xunit = "wtime", ALLOWEDUNITS["wtime"][0].upper()
