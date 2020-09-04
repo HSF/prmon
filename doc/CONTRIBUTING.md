@@ -40,10 +40,16 @@ repository.
 
 - the feature should be supported by an integration test
 - the code should be commented as needed so that others can understand it
-- code should be formatted using the *Google* style of `clang-format`
+- C++ code should be formatted using the *Google* style of `clang-format`
   - i.e. `clang-format --style=Google ...`
   - There is a `clang-format` CMake target that will do this automatically so we
     recommend that is run before making the pull request
+- Python code should be formatted with `black` (following the Scikit-HEP
+  recommendation) and should also be clean with the `flake8` linter
+  - See the `.flake8` file for the configuration to be compatible with
+    `black`
+  - There are `black` and `flake8` build targets that will run the
+    formatter and linter respectively
 
 We will review the code before accepting the pull request.
 
