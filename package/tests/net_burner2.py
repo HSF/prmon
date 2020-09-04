@@ -2,8 +2,8 @@
 #
 # Copyright (C) 2018-2020 CERN
 # License Apache2 - see LICENCE file
-#
-# Request network data for prmon unittest (Python2 version)
+
+"""Request network data for prmon unittest (Python2 version)"""
 from __future__ import print_function, unicode_literals
 
 import argparse
@@ -11,7 +11,8 @@ import time
 import urllib2
 
 
-def getNetData(host="localhost", port="8000", blocks=None):
+def get_net_data(host="localhost", port="8000", blocks=None):
+    """read network data from local http server"""
     url = "http://" + host + ":" + str(port) + "/cgi-bin/http_block2.py"
     if blocks:
         url += "?blocks=" + str(blocks)
@@ -21,7 +22,8 @@ def getNetData(host="localhost", port="8000", blocks=None):
     return len(html)
 
 
-if __name__ == "__main__":
+def main():
+    """parse arguments and read data"""
     parser = argparse.ArgumentParser(description="Network data burner")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--host", default="localhost")
@@ -33,10 +35,15 @@ if __name__ == "__main__":
 
     time.sleep(args.pause)
 
-    readBytes = 0
-    for req in range(args.requests):
+    read_bytes = 0
+    for _ in range(args.requests):
         time.sleep(args.sleep)
-        readBytes += getNetData(args.host, args.port, args.blocks)
+        read_bytes += get_net_data(args.host, args.port, args.blocks)
 
-    print("Read total of {0} bytes in {1} requests".format(readBytes, args.requests))
+    print("Read total of {0} bytes in {1} requests".format(read_bytes, args.requests))
+
     time.sleep(args.pause)
+
+
+if __name__ == "__main__":
+    main()
