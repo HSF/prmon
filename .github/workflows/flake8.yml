@@ -15,27 +15,27 @@ jobs:
     build-test:
       # The type of runner that the job will run on
       runs-on: ubuntu-latest
-  
+
       # Define the platforms to run on. Later determines the Docker image that'll be used
       strategy:
         platform: u20-dev
-  
+
       # Steps represent a sequence of tasks that will be executed as part of the job
       steps:
       # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
       - uses: actions/checkout@v2
-  
+
       # Sets up useful environment variables
       - name: Setup environment variables
         run: |
           echo "::set-env name=DIMAGE::hepsoftwarefoundation/${PLATFORM}"
         env:
           PLATFORM: ${{ platform }}
-  
+
       # Pulls the associated Docker image
       - name: Docker pull
         run: docker pull $DIMAGE
-  
+
       # Builds the code and runs the test
       - name: Flake8 Lint
         run: docker run -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/flake8.sh

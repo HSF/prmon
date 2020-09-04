@@ -29,8 +29,7 @@ def main():
         print("Invalid block value")
         sys.exit(1)
 
-    my_string = "somehow the world seems more curious"
-    " than when i was a child xx\n"
+    my_string = "somehow the world seems more curious than when i was a child xx\n"
     my_block = my_string * 16  # 1KB
 
     for _ in range(blocks):
