@@ -94,5 +94,6 @@ add_subdirectory(package)
 #--- create uninstall target ---------------------------------------------------
 include(cmake/prmonUninstall.cmake)
 
-#--- clang-format target -------------------------------------------------------
+#--- code format targets -------------------------------------------------------
 include(cmake/clang-format.cmake)
+include(cmake/python-format.cmake)
