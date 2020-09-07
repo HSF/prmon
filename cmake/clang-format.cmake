@@ -17,7 +17,7 @@ file(GLOB_RECURSE ALL_SOURCE_FILES *.cpp *.h)
 # versions to baulk
 add_custom_target(
         clang-format
-        COMMAND clang-format
+        COMMAND ${CLANG_FORMAT}
         --style=Google
         -i
         ${ALL_SOURCE_FILES}
