@@ -18,7 +18,8 @@ jobs:
 
       # Define the platforms to run on. Later determines the Docker image that'll be used
       strategy:
-        platform: u20-dev
+        matrix: 
+          platform: [ u20-dev ]
 
       # Steps represent a sequence of tasks that will be executed as part of the job
       steps:
