@@ -11,8 +11,6 @@ import subprocess
 import sys
 import unittest
 
-THE_TEST = None
-
 
 def setup_configurable_test(
     procs=4, malloc_mb=100, write_fraction=0.5, sleep=10, slack=0.9, interval=1
@@ -85,8 +83,10 @@ def setup_configurable_test(
     return ConfigurableProcessMonitor
 
 
-def main():
-    """Parse arguments and call test class generator"""
+def main_parse_args_and_get_test():
+    """Parse arguments and call test class generator
+    returning the test case (which is unusual for a
+    main() function)"""
     parser = argparse.ArgumentParser(description="Configurable memory test runner")
     parser.add_argument("--procs", type=int, default=4)
     parser.add_argument("--malloc", type=int, default=100)
@@ -99,14 +99,13 @@ def main():
     # Stop unittest from being confused by the arguments
     sys.argv = sys.argv[:1]
 
-    # unittest will only run tests that live in the global namespace
-    global THE_TEST
-    THE_TEST = setup_configurable_test(
+    return setup_configurable_test(
         args.procs, args.malloc, args.writef, args.sleep, args.slack, args.interval
     )
 
-    unittest.main()
-
 
 if __name__ == "__main__":
-    main()
+    # As unitest will only run tests in the global namespace
+    # we return the test instance from main()
+    the_test = main_parse_args_and_get_test()
+    unittest.main()

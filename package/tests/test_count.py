@@ -11,8 +11,6 @@ import subprocess
 import sys
 import unittest
 
-THE_TEST = None
-
 
 def setup_configurable_test(threads=1, procs=1, time=10.0, interval=1, invoke=False):
     """Wrap the class definition in a function to allow arguments to be passed"""
@@ -70,8 +68,10 @@ def setup_configurable_test(threads=1, procs=1, time=10.0, interval=1, invoke=Fa
     return ConfigurableProcessMonitor
 
 
-def main():
-    """Parse arguments and call test class generator"""
+def main_parse_args_and_get_test():
+    """Parse arguments and call test class generator
+    returning the test case (which is unusual for a
+    main() function)"""
     parser = argparse.ArgumentParser(description="Configurable test runner")
     parser.add_argument("--threads", type=int, default=1)
     parser.add_argument("--procs", type=int, default=1)
@@ -83,14 +83,13 @@ def main():
     # Stop unittest from being confused by the arguments
     sys.argv = sys.argv[:1]
 
-    # unittest will only run tests that live in the global namespace
-    global THE_TEST
-    THE_TEST = setup_configurable_test(
+    return setup_configurable_test(
         args.threads, args.procs, args.time, args.interval, args.invoke
     )
 
-    unittest.main()
-
 
 if __name__ == "__main__":
-    main()
+    # As unitest will only run tests in the global namespace
+    # we return the test instance from main()
+    the_test = main_parse_args_and_get_test()
+    unittest.main()
