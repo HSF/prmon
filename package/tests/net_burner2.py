@@ -40,7 +40,7 @@ def main():
         time.sleep(args.sleep)
         read_bytes += get_net_data(args.host, args.port, args.blocks)
 
-    print("Read total of {0} bytes in {1} requests".format(read_bytes, args.requests))
+    print("Read total of {0} bytes in {1} requests".format(read_bytes, args.requests))
 
     time.sleep(args.pause)
 
