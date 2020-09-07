@@ -15,7 +15,8 @@ def get_net_data(host="localhost", port="8000", blocks=None):
     url = "http://" + host + ":" + str(port) + "/cgi-bin/http_block.py"
     if blocks:
         url += "?blocks=" + str(blocks)
-    response = urllib.request.urlopen(url)
+    # This URL is fine as it's from the server we setup
+    response = urllib.request.urlopen(url) # nosec
     html = response.read()
     print("Read {0} bytes".format(len(html)))
     return len(html)
