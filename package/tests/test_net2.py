@@ -27,7 +27,7 @@ def setup_configurable_test(
 
         def setUp(self):
             """Start the simple python HTTP CGI server"""
-            http_server_cmd = ["python", "-m", "CGIhttp_server"]
+            http_server_cmd = ["python2", "-m", "CGIHTTPServer"]
             self.http_server = subprocess.Popen(http_server_cmd, shell=False)
 
         def tearDown(self):
