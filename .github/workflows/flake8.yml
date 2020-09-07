@@ -16,11 +16,6 @@ jobs:
       # The type of runner that the job will run on
       runs-on: ubuntu-latest
 
-      # Define the platforms to run on. Later determines the Docker image that'll be used
-      strategy:
-        matrix: 
-          platform: [ u20-dev ]
-
       # Steps represent a sequence of tasks that will be executed as part of the job
       steps:
       # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
@@ -29,9 +24,9 @@ jobs:
       # Sets up useful environment variables
       - name: Setup environment variables
         run: |
-          echo "::set-env name=DIMAGE::hepsoftwarefoundation/${PLATFORM}"
+          echo "::set-env name=DIMAGE::hepsoftwarefoundation/u20-dev"
         env:
-          PLATFORM: ${{ platform }}
+          PLATFORM: u20-dev
 
       # Pulls the associated Docker image
       - name: Docker pull
