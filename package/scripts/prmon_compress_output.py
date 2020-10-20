@@ -91,8 +91,7 @@ def compress_prmon_output(df, precision, interpolate):
                 downcast="infer"
             )
         return final_df
-    else:
-        return df
+    return df
 
 
 def main():
