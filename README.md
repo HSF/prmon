@@ -151,6 +151,27 @@ The script allows the user to specify variables, their units, plotting
 style (stacked vs overlaid), as well as the format of the output image.
 Use `-h` for more information.
 
+
+### Data Compression
+
+The `prmon_compress_output.py` script (Python3) can be used to compress the output file
+while keeping the most relevant information.
+The compression algorithm works as follows, for each separate series: 
+* For rapidly changing metrics: for any three points A, B, and C, if the linear
+interpolation between A and C passes by B ± *threshold* * *range(metric)*, then B is deleted.
+The percentage threshold is set by the `--precision` parameter.
+* For more steady metrics: only keep the changepoints.
+
+The time index of the final output will be the union of the algorithm outputs of the single 
+time series. Each series will have a NA value where a point was deleted at a kept index, unless
+specified by the `--interpolate` parameter.
+
+Example:
+```sh
+prmon_compress_output.py --input prmon.txt --precision 0.3 --interpolate
+```
+
+
 ## Feedback and Contributions
 
 We're very happy to get feedback on prmon as well as suggestions for future
