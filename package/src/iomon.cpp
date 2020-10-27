@@ -9,6 +9,11 @@
 
 #include "utils.h"
 
+// Define this to be 1 to activate the artificial
+// supression of i/o values so that the recovery
+// of stats from the max values is checked
+#define IOMON_TEST 0
+
 // Constructor; uses RAII pattern to be valid
 // after construction
 iomon::iomon() : io_params{}, io_stats{} {
@@ -16,6 +21,7 @@ iomon::iomon() : io_params{}, io_stats{} {
   for (const auto& param : params) {
     io_params.push_back(param.get_name());
     io_stats[param.get_name()] = 0;
+    io_max_stats[param.get_name()] = 0;
   }
 }
 
@@ -23,6 +29,7 @@ void iomon::update_stats(const std::vector<pid_t>& pids) {
   std::string param{};
   unsigned long long value{};
   for (auto& stat : io_stats) stat.second = 0;
+  // Loop over each PID and update the stats which are stored for all children
   for (const auto pid : pids) {
     std::stringstream io_fname{};
     io_fname << "/proc/" << pid << "/io" << std::ends;
@@ -34,6 +41,31 @@ void iomon::update_stats(const std::vector<pid_t>& pids) {
         auto element = io_stats.find(param);
         if (element != io_stats.end()) element->second += value;
       }
+    }
+  }
+
+#if IOMON_TEST == 1
+  long stat_counter = 0;
+#endif
+
+  for (auto& stat : io_stats) {
+#if IOMON_TEST == 1
+    // This code block randomly suppresses io stat values
+    // to test recovery from the peak measured values
+    auto t = time(NULL);
+    auto m = (t + stat_counter) % 4;
+    std::cout << stat_counter << " " << t << " " << m << std::endl;
+    if (m == 0) stat.second = 0;
+    ++stat_counter;
+#endif
+    if (stat.second < io_max_stats[stat.first]) {
+      // Uh oh - somehow the i/o stats dropped so some i/o was lost
+      std::clog << "prmon: Warning, detected drop in i/o values for "
+                << stat.first << " (" << io_max_stats[stat.first] << " became "
+                << stat.second << ")" << std::endl;
+      stat.second = io_max_stats[stat.first];
+    } else {
+      io_max_stats[stat.first] = stat.second;
     }
   }
 }

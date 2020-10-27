@@ -26,8 +26,12 @@ class iomon final : public Imonitor {
   // Which network io paramters to measure and output key names
   std::vector<std::string> io_params;
 
-  // Container for stats
+  // Container for stats, one container that holds
+  // the current stats and a backup container for
+  // maximum values, in case the process tree loses some
+  // i/o values (see Github #173)
   std::map<std::string, unsigned long long> io_stats;
+  std::map<std::string, unsigned long long> io_max_stats;
 
  public:
   iomon();
