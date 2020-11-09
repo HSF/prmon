@@ -22,11 +22,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "prmonVersion.h"
 #include "prmonutils.h"
 #include "registry.h"
 #include "wallmon.h"
-
-#include "prmonVersion.h"
 
 bool prmon::sigusr1 = false;
 
