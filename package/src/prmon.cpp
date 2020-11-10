@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "prmonVersion.h"
 #include "prmonutils.h"
 #include "registry.h"
 #include "wallmon.h"
@@ -79,6 +80,9 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   tmp_json_file << json_summary_file << "_tmp";
   std::stringstream json_snapshot_file;
   json_snapshot_file << json_summary_file << "_snapshot";
+
+  // Add prmon version file to the JSON
+  json_summary["prmon"]["Version"] = prmon_VERSION;
 
   // Collect some hardware information first (if requested)
   if (store_hw_info) {
