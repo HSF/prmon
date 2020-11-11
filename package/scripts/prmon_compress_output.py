@@ -147,7 +147,7 @@ def main():
         args.input, sep="\t", index_col="Time", engine="c", na_filter=False
     )
     compressed_df = compress_prmon_output(df, args.precision, args.interpolate)
-    compressed_df["wtime"] = df[df.index.isin(compressed_df.index)]["wtime"] 
+    compressed_df["wtime"] = df[df.index.isin(compressed_df.index)]["wtime"]
     compressed_df.to_csv(args.output, sep="\t")
     if args.delete_original:
         os.remove(args.input)
