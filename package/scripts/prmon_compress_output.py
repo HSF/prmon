@@ -23,6 +23,8 @@ CHANGING_METRICS = [
     "write_bytes",
     "rx_packets",
     "tx_packets",
+    "rx_bytes",
+    "tx_bytes",
     "gpufbmem",
     "gpumempct",
     "gpusmpct",
@@ -61,7 +63,7 @@ def reduce_changing_metric(df, metric, precision):
 def reduce_steady_metric(df, metric):
     """For more steady metrics just keep the changing points"""
     metric = df[metric]
-    return metric[metric != metric.shift(-1)]
+    return metric[metric != metric.shift(1)]
 
 
 def compress_prmon_output(df, precision, interpolate):
@@ -90,6 +92,7 @@ def compress_prmon_output(df, precision, interpolate):
             final_df[present_steady_metrics] = final_df[present_steady_metrics].ffill(
                 downcast="infer"
             )
+        final_df = final_df.round(0).astype("Int64", errors="ignore")
         return final_df
     return df
 
@@ -144,8 +147,8 @@ def main():
         args.input, sep="\t", index_col="Time", engine="c", na_filter=False
     )
     compressed_df = compress_prmon_output(df, args.precision, args.interpolate)
+    compressed_df["wtime"] = df[df.index.isin(compressed_df.index)]["wtime"] 
     compressed_df.to_csv(args.output, sep="\t")
-
     if args.delete_original:
         os.remove(args.input)
 
