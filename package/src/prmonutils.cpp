@@ -2,8 +2,6 @@
 // License Apache2 - see LICENCE file
 
 #include "prmonutils.h"
-#include "Imonitor.h"
-#include "registry.h"
 
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -13,6 +11,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+
+#include "Imonitor.h"
+#include "registry.h"
 
 namespace prmon {
 
