@@ -135,7 +135,7 @@ bool valid_monitor_disable(const std::string disable_name) {
     }
   }
   std::cerr << "prmon: " << disable_name
-            << "is an invalid monitor name (ignored)" << std::endl;
+            << " is an invalid monitor name (ignored)" << std::endl;
   return false;
 }
 
