@@ -24,7 +24,7 @@ jobs:
       # Sets up useful environment variables
       - name: Setup environment variables
         run: |
-          echo "::set-env name=DIMAGE::hepsoftwarefoundation/u20-dev"
+          echo "DIMAGE=hepsoftwarefoundation/u20-dev" >> $GITHUB_ENV
         env:
           PLATFORM: u20-dev
 

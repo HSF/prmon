@@ -29,10 +29,10 @@ jobs:
     # Sets up useful environment variables
     - name: Setup environment variables
       run: |
-        echo "::set-env name=DIMAGE::hepsoftwarefoundation/${PLATFORM/_py2/}"
+        echo "DIMAGE=hepsoftwarefoundation/${PLATFORM/_py2/}" >> $GITHUB_ENV
         if [[ "$PLATFORM" == *_py2 ]];
         then
-          echo "::set-env name=CMAKE_EXTRA::-DPYTHON_TEST=python2"
+          echo "CMAKE_EXTRA=-DPYTHON_TEST=python2" >> $GITHUB_ENV
         fi
       env:
         PLATFORM: ${{ matrix.platform }}
