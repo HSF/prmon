@@ -250,8 +250,8 @@ int main(int argc, char* argv[]) {
       {0, 0, 0, 0}};
 
   int c;
-  while ((c = getopt_long(argc, argv, "-p:f:j:i:d:sun:h", long_options, NULL)) !=
-         -1) {
+  while ((c = getopt_long(argc, argv, "-p:f:j:i:d:sun:h", long_options,
+                          NULL)) != -1) {
     switch (char(c)) {
       case 'p':
         pid = std::stoi(optarg);
