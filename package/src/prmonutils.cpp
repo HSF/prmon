@@ -12,6 +12,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "Imonitor.h"
+#include "registry.h"
+
 namespace prmon {
 
 bool kernel_proc_pid_test(const pid_t pid) {
@@ -115,6 +118,25 @@ int reap_children() {
     }
   }
   return return_code;
+}
+
+// Check if a request to disable a monitor is valid or not
+bool valid_monitor_disable(const std::string disable_name) {
+  // First check this is not an attempt to disable the wallmon
+  if (disable_name == "wallmon") {
+    std::cerr << "prmon: wallmon monitor cannot be disabled (ignored)"
+              << std::endl;
+    return false;
+  }
+  auto monitors = registry::Registry<Imonitor>::list_registered();
+  for (const auto& monitor_name : monitors) {
+    if (monitor_name == disable_name) {
+      return true;
+    }
+  }
+  std::cerr << "prmon: " << disable_name
+            << " is an invalid monitor name (ignored)" << std::endl;
+  return false;
 }
 
 }  // namespace prmon

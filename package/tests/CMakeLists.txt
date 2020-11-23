@@ -39,6 +39,7 @@ script_install(SCRIPT net_burner.py)
 script_install(SCRIPT http_block.py DESTINATION cgi-bin)
 script_install(SCRIPT test_count.py)
 script_install(SCRIPT test_exit.py)
+script_install(SCRIPT test_disable.py)
 
 # Setup the target version of Python we will use for testing
 set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")
@@ -83,3 +84,6 @@ add_test(NAME testUnits COMMAND ${PYTHON_TEST} test_cpu.py --units --time 3 --sl
 
 # Test passing the child exit code works
 add_test(NAME testExitCode COMMAND ${PYTHON_TEST} test_exit.py --exit-code 43)
+
+# Test for disabling monitor components
+add_test(NAME testDisable COMMAND ${PYTHON_TEST} test_disable.py --disable iomon countmon)

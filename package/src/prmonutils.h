@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <string>
 #include <vector>
 
 namespace prmon {
@@ -19,6 +20,9 @@ namespace prmon {
 bool kernel_proc_pid_test(const pid_t pid);
 std::vector<pid_t> pstree_pids(const pid_t mother_pid);
 std::vector<pid_t> offspring_pids(const pid_t mother_pid);
+
+// Switch on/off states for individual monitors
+bool valid_monitor_disable(const std::string disable_name);
 
 // Signal handlers
 extern bool sigusr1;

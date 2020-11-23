@@ -83,6 +83,7 @@ The `prmon` binary is invoked with the following arguments:
 ```sh
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
       [--interval 30] [--suppress-hw-info] [--units] [--netdev DEV] \
+      [--disable MON1] \
       [-- prog arg arg ...]
 ```
 
@@ -93,6 +94,9 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 * `--suppress-hw-info` flag that turns-off hardware information collection
 * `--units` add information on units for each metric to JSON file
 * `--netdev` restricts network statistics to one (or more) network devices
+* `--disable` is used to disable specific monitors (and can be specified multiple times); 
+    the default is that `prmon` monitors everything that it can
+  * Note that the `wallmon` monitor is the only monitor that cannot be disabled
 * `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
   instead of being given a PID via `--pid`
@@ -101,13 +105,15 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 incomplete arguments. If `prmon` starts a program itself (using `--`) then
 `prmon` will exit with the exit code of the child process.
 
+When invoked with `-h` or `--help` usage information is printed, as well as a
+list of all available monitoring components.
 
 ## Outputs
 
 In the `filename` output file, plain text with statistics written every
 `interval` seconds are written. The first line gives the column names.
 
-In the `json-summmary` file values for the maximum and average statistics
+In the `json-summary` file values for the maximum and average statistics
 are given in JSON format. This file is rewritten every `interval` seconds
 with the current summary values. Use the `--units` option to see exactly
 which units are used for each metric (the value of `1` for a unit means
