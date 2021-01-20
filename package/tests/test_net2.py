@@ -31,6 +31,7 @@ def setup_configurable_test(
         def tearDown(self):
             """Kill http server"""
             os.kill(self.http_server.pid, signal.SIGTERM)
+            self.http_server.wait()
 
         def test_run_test_with_params(self):
             """Test class for a specific set of parameters"""
@@ -53,7 +54,7 @@ def setup_configurable_test(
             ]
             prmon_p = subprocess.Popen(prmon_cmd, shell=False)
 
-            _ = burn_p.wait()
+            burn_p.wait()
             prmon_rc = prmon_p.wait()
 
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
@@ -62,7 +63,7 @@ def setup_configurable_test(
                 prmon_json = json.load(infile)
 
                 # Network tests
-                expected_bytes = 1025000 * requests * slack
+                expected_bytes = (blocks if blocks else 1000) * 1024 * requests * slack
                 self.assertGreaterEqual(
                     prmon_json["Max"]["rx_bytes"],
                     expected_bytes,
