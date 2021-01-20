@@ -39,7 +39,7 @@ def setup_configurable_test(threads=1, procs=1, time=10.0, interval=1, invoke=Fa
                 prmon_cmd.extend(["--pid", str(burn_p.pid)])
                 prmon_p = subprocess.Popen(prmon_cmd, shell=False)
 
-                _ = burn_p.wait()
+                burn_p.wait()
                 prmon_rc = prmon_p.wait()
 
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
