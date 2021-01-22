@@ -42,7 +42,8 @@ class netmon final : public Imonitor {
       network_if_streams;
 
   // Container for stats, initial and current
-  std::map<std::string, unsigned long long> network_stats_start, network_stats;
+  std::map<std::string, unsigned long long> network_stats, network_stats_last,
+      network_net_counters;
 
   // Find all network interfaces on the system
   std::vector<std::string> const get_all_network_devs();
@@ -65,9 +66,7 @@ class netmon final : public Imonitor {
   netmon(std::vector<std::string> netdevs);
   netmon() : netmon(std::vector<std::string>{}){};
 
-  void update_stats(const std::vector<pid_t>& pids) {
-    read_raw_network_stats(network_stats);
-  }
+  void update_stats(const std::vector<pid_t>& pids);
 
   // These are the stat getter methods which retrieve current statistics
   std::map<std::string, unsigned long long> const get_text_stats();

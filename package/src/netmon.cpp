@@ -27,8 +27,10 @@ netmon::netmon(std::vector<std::string> netdevs)
   open_interface_streams();
 
   // Ensure internal stat counters are initialised properly
-  read_raw_network_stats(network_stats_start);
-  read_raw_network_stats(network_stats);
+  read_raw_network_stats(network_stats_last);
+  for (const auto& i : network_stats_last) {
+    network_net_counters[i.first] = 0;
+  }
 }
 
 // Get all available network devices
@@ -85,14 +87,26 @@ void netmon::read_raw_network_stats(
   }
 }
 
+// Update statistics
+void netmon::update_stats(const std::vector<pid_t>& pids) {
+  read_raw_network_stats(network_stats);
+  for (const auto& i : network_stats) {
+    if (i.second >= network_stats_last[i.first]) {
+      network_net_counters[i.first] += i.second - network_stats_last[i.first];
+    } else {
+      std::clog
+          << "prmon: network statistics error, counter values dropped for "
+          << i.first << " (" << i.second << " < " << network_stats_last[i.first]
+          << ")" << std::endl;
+    }
+    network_stats_last[i.first] = i.second;
+  }
+}
+
 // Relative counter statistics for text file
 std::map<std::string, unsigned long long> const netmon::get_text_stats() {
   std::map<std::string, unsigned long long> text_stats{};
-  for (const auto& if_param : interface_params) {
-    text_stats[if_param] =
-        network_stats[if_param] - network_stats_start[if_param];
-  }
-  return text_stats;
+  return network_net_counters;
 }
 
 // Also relative counters for JSON totals
@@ -103,9 +117,8 @@ std::map<std::string, unsigned long long> const netmon::get_json_total_stats() {
 // For JSON averages, divide by elapsed time
 std::map<std::string, double> const netmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, unsigned long long> text_stats = get_text_stats();
   std::map<std::string, double> json_average_stats{};
-  for (auto& stat : text_stats) {
+  for (auto& stat : network_net_counters) {
     json_average_stats[stat.first] =
         double(stat.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
   }
