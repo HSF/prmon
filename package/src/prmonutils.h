@@ -24,6 +24,11 @@ std::vector<pid_t> offspring_pids(const pid_t mother_pid);
 // Switch on/off states for individual monitors
 bool valid_monitor_disable(const std::string disable_name);
 
+// Disable monitors from an environment variable
+void disable_monitors_from_env(std::vector<std::string> &disabled_monitors);
+void snip_string_and_test(char *env_string, unsigned start, unsigned pos,
+                          std::vector<std::string> &disabled_monitors);
+
 // Signal handlers
 extern bool sigusr1;
 void SignalCallbackHandler(int);

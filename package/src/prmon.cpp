@@ -289,6 +289,9 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  // Get additional configuration from the environment
+  prmon::disable_monitors_from_env(disabled_monitors);
+
   if (do_help) {
     std::cout
         << "prmon is a process monitor program that records runtime data\n"
