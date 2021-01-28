@@ -12,7 +12,7 @@ except ImportError:
     sys.exit(-1)
 
 
-CHANGING_METRICS = [
+MEMORY_IO_NETWORK_GPU_USAGE = [
     "vmem",
     "pss",
     "rss",
@@ -30,11 +30,11 @@ CHANGING_METRICS = [
     "gpusmpct",
 ]
 
-STEADY_METRICS = ["nprocs", "nthreads", "ngpus"]
+NPROCS_NTHREADS_NGPUS = ["nprocs", "nthreads", "ngpus"]
 
 
 def interp_drop(p1, p2, p3, eps):
-    """Computes interpolation and checks if middle point falls within threshold"""
+    """Computesinterpolation and checks if middle point falls within threshold"""
     t = p1[1] + (p3[1] - p1[1]) / (p3[0] - p1[0]) * (p2[0] - p1[0])
     return abs(t - p2[1]) < eps
 
@@ -72,10 +72,10 @@ def compress_prmon_output(df, precision, skip_interpolate):
     for fast-changing metrics, or forward-filled, for steady metrics"""
     if len(df) > 2:
         present_changing_metrics = [
-            metric for metric in CHANGING_METRICS if metric in df.columns
+            metric for metric in MEMORY_IO_NETWORK_GPU_USAGE if metric in df.columns
         ]
         present_steady_metrics = [
-            metric for metric in STEADY_METRICS if metric in df.columns
+            metric for metric in NPROCS_NTHREADS_NGPUS if metric in df.columns
         ]
         reduced_changing_metrics = [
             reduce_changing_metric(df, metric, precision)
@@ -123,7 +123,7 @@ def main():
         type=lambda x: float(x)
         if 0 < float(x) < 1
         else parser.exit(-1, "Precision must be strictly between 0 and 1"),
-        default=0.1,
+        default=0.05,
         help="precision value for interpolation threshold",
     )
 
