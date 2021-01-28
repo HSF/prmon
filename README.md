@@ -157,18 +157,20 @@ Use `-h` for more information.
 The `prmon_compress_output.py` script (Python3) can be used to compress the output file
 while keeping the most relevant information.
 The compression algorithm works as follows, for each separate series: 
-* For rapidly changing metrics: for any three points A, B, and C, if the linear
+* For processes, threads and GPU counts: only keep the changepoints.
+* For rapidly changing metrics (i.e. the other variables): for any three points A, B, and C, if the linear
 interpolation between A and C passes by B ± *threshold* * *range(metric)*, then B is deleted.
 The percentage threshold is set by the `--precision` parameter.
-* For more steady metrics: only keep the changepoints.
+
 
 The time index of the final output will be the union of the algorithm outputs of the single 
-time series. Each series will have a NA value where a point was deleted at a kept index, unless
-specified by the `--interpolate` parameter.
+time series. Each series will have NA values where a point was deleted at a kept index and, unless otherwise
+specified by the `--skip-interpolate` parameter, will be linearly interpolated to maintain a consistent number of data points
+and the result will be rounded to the nearest integer for consistency with the original input.
 
 Example:
 ```sh
-prmon_compress_output.py --input prmon.txt --precision 0.3 --interpolate
+prmon_compress_output.py --input prmon.txt --precision 0.3 --skip-interpolate
 ```
 
 
