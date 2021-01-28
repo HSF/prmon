@@ -92,7 +92,8 @@ def compress_prmon_output(df, precision, skip_interpolate):
             final_df[present_steady_metrics] = final_df[present_steady_metrics].ffill(
                 downcast="infer"
             )
-        final_df = final_df.round(0).astype("Int64", errors="ignore")
+            final_df = final_df.round(0)
+        final_df = final_df.astype("Int64", errors="ignore")
         return final_df
     return df
 
