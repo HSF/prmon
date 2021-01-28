@@ -66,7 +66,7 @@ def reduce_steady_metric(df, metric):
     return metric[metric != metric.shift(1)]
 
 
-def compress_prmon_output(df, precision, interpolate):
+def compress_prmon_output(df, precision, skip_interpolate):
     """Compress full df. Final index is the union of the compressed series indexes.
     Points without values for a series are either linearly interpolated,
     for fast-changing metrics, or forward-filled, for steady metrics"""
@@ -85,7 +85,7 @@ def compress_prmon_output(df, precision, interpolate):
             reduce_steady_metric(df, metric) for metric in present_steady_metrics
         ]
         final_df = pd.concat(reduced_changing_metrics + reduced_steady_metrics, axis=1)
-        if interpolate:
+        if not skip_interpolate:
             final_df[present_changing_metrics] = final_df[
                 present_changing_metrics
             ].interpolate(method="index")
@@ -119,18 +119,19 @@ def main():
 
     parser.add_argument(
         "--precision",
-        type=lambda x: 0 < float(x) < 1
-        or parser.exit(-1, "Precision must be strictly between 0 and 1"),
+        type=lambda x: float(x)
+        if 0 < float(x) < 1
+        else parser.exit(-1, "Precision must be strictly between 0 and 1"),
         default=0.1,
         help="precision value for interpolation threshold",
     )
 
     parser.add_argument(
-        "--interpolate",
+        "--skip-interpolate",
         default=False,
         action="store_true",
-        help="""Whether to interpolate the final obtained df,
-                or leave NAs for the different metrics""",
+        help="""Whether to skip interpolation of the final obtained df,
+                and leave NAs for the different metrics""",
     )
 
     parser.add_argument(
@@ -146,7 +147,7 @@ def main():
     df = pd.read_csv(
         args.input, sep="\t", index_col="Time", engine="c", na_filter=False
     )
-    compressed_df = compress_prmon_output(df, args.precision, args.interpolate)
+    compressed_df = compress_prmon_output(df, args.precision, args.skip_interpolate)
     compressed_df["wtime"] = df[df.index.isin(compressed_df.index)]["wtime"]
     compressed_df.to_csv(args.output, sep="\t")
     if args.delete_original:
