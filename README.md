@@ -108,6 +108,20 @@ incomplete arguments. If `prmon` starts a program itself (using `--`) then
 When invoked with `-h` or `--help` usage information is printed, as well as a
 list of all available monitoring components.
 
+### Environment Variables
+
+The `PRMON_DISABLE_MONITOR` environment variable can be used to specifiy a comma
+separated list of monitor names that will be disabled. This is useful when
+`prmon` is being invoked by some other part of a job or workflow, so the user
+does not have direct access to the command line options used. e.g.
+
+```sh
+export PRMON_DISABLE_MONITOR=nvidiamon
+other_code_that_invokes_prmon
+...
+```
+
+Disables the `nvidiamon` monitor.
 ## Outputs
 
 In the `filename` output file, plain text with statistics written every
