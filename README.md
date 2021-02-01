@@ -156,17 +156,22 @@ Use `-h` for more information.
 
 The `prmon_compress_output.py` script (Python3) can be used to compress the output file
 while keeping the most relevant information.
-The compression algorithm works as follows, for each separate series: 
-* For processes, threads and GPU counts: only keep the changepoints.
-* For rapidly changing metrics (i.e. the other variables): for any three points A, B, and C, if the linear
-interpolation between A and C passes by B ± *threshold* * *range(metric)*, then B is deleted.
-The percentage threshold is set by the `--precision` parameter.
+
+The compression algorithm works as follows:
+* For the number of processes, threads, and GPUs, only the measurements that are different with respect to the previous ones are kept.
+* For all other metrics, only the measurements that satisfy an interpolation condition are kept.
+
+This latter condition can be summarized as:
+* For any three neighboring (and time-ordered) measurements, A, B, and C, B is deleted if the linear interpolation between A and C is consistent with B ± *threshold*. Otherwise, it's retained. The *threshold* can be configured via the `--precision` parameter (default: 0.05, i.e. 5%)
 
 
 The time index of the final output will be the union of the algorithm outputs of the single 
 time series. Each series will have NA values where a point was deleted at a kept index and, unless otherwise
 specified by the `--skip-interpolate` parameter, will be linearly interpolated to maintain a consistent number of data points
 and the result will be rounded to the nearest integer for consistency with the original input.
+
+If the `--skip-interpolate` parameter is passed, deleted values will be written as empty strings in the output file, and will be interpreted
+as `NA` values when imported into Pandas.
 
 Example:
 ```sh
