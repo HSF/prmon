@@ -12,7 +12,7 @@ except ImportError:
     sys.exit(-1)
 
 
-MEMORY_IO_NETWORK_GPU_USAGE = [
+MEMORY_IO_NETWORK_GPU = [
     "vmem",
     "pss",
     "rss",
@@ -30,7 +30,7 @@ MEMORY_IO_NETWORK_GPU_USAGE = [
     "gpusmpct",
 ]
 
-NPROCS_NTHREADS_NGPUS = ["nprocs", "nthreads", "ngpus"]
+NPROCS_NTHREADS_NGPUS_CPU = ["nprocs", "nthreads", "ngpus", "utime", "stime"]
 
 
 def interp_drop(p1, p2, p3, eps):
@@ -72,10 +72,10 @@ def compress_prmon_output(df, precision, skip_interpolate):
     for fast-changing metrics, or forward-filled, for steady metrics"""
     if len(df) > 2:
         present_changing_metrics = [
-            metric for metric in MEMORY_IO_NETWORK_GPU_USAGE if metric in df.columns
+            metric for metric in MEMORY_IO_NETWORK_GPU if metric in df.columns
         ]
         present_steady_metrics = [
-            metric for metric in NPROCS_NTHREADS_NGPUS if metric in df.columns
+            metric for metric in NPROCS_NTHREADS_NGPUS_CPU if metric in df.columns
         ]
         reduced_changing_metrics = [
             reduce_changing_metric(df, metric, precision)
