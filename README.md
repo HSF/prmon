@@ -158,7 +158,7 @@ The `prmon_compress_output.py` script (Python3) can be used to compress the outp
 while keeping the most relevant information.
 
 The compression algorithm works as follows:
-* For the number of processes, threads, and GPUs, system time, and user time only the measurements that are different with respect to the previous ones are kept.
+* For the number of processes, threads, and GPUs, only the measurements that are different with respect to the previous ones are kept.
 * For all other metrics, only the measurements that satisfy an interpolation condition are kept.
 
 This latter condition can be summarized as:
