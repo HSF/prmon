@@ -76,9 +76,9 @@ specific files (like this one) and all improvements are welcome.
 ## Authorship and Copyright
 
 As members of the High-Energy Physics community, our host laboratory,
-[CERN](https://home.cern/), holds copyright on this project. 
+[CERN](https://home.cern/), holds copyright on this project.
 
-All contributions need to agree to pass copyright to CERN. 
+All contributions need to agree to pass copyright to CERN.
 
 Every significant author of prmon will be acknowledged in our
 [AUTHORS](../AUTHORS.md) file.

@@ -2,10 +2,10 @@
 
 ## Git and GitHub
 
-1. On the master branch make the last feature commits and ensure that all
+1. On the `main` branch make the last feature commits and ensure that all
    tests pass.
 2. Update the release number in `CMakeLists.txt` and commit.
-3. Update the `stable` branch to this commit in `master`.
+3. Update the `stable` branch to this commit in `main`.
 4. Make a tag, following a semantic versioning scheme `vA.B.C`.
   - Use an *annotated* tag, add brief release notes in the annotation.
 5. Push changes to GitHub.

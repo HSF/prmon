@@ -2,12 +2,12 @@
 name: flake8
 
 # Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master and stable branches
+# events but only for the main and stable branches
 on:
   push:
-    branches: [ master, stable ]
+    branches: [ main, stable ]
   pull_request:
-    branches: [ master, stable ]
+    branches: [ main, stable ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
