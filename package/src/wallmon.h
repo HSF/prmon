@@ -21,7 +21,7 @@
 
 class wallmon final : public Imonitor {
  private:
-  const prmon::parameter_list params = {{"wtime", "s", ""}};
+  const prmon::parameter_list params = {{"wtime", "s", "", true}};
 
   std::vector<std::string> walltime_param;
 

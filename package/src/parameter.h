@@ -20,14 +20,16 @@ class parameter {
  private:
   std::string name;
   std::string max_unit, avg_unit;
+  bool monotonic;
 
  public:
   inline const std::string get_name() const { return name; }
   inline const std::string get_max_unit() const { return max_unit; }
   inline const std::string get_avg_unit() const { return avg_unit; }
+  inline const bool get_monotonic() const { return monotonic; }
 
-  parameter(std::string n, std::string m, std::string a)
-      : name{n}, max_unit{m}, avg_unit{a} {}
+  parameter(std::string n, std::string m, std::string a, bool mono)
+      : name{n}, max_unit{m}, avg_unit{a}, monotonic{mono} {}
 };
 
 using parameter_list = std::vector<parameter>;

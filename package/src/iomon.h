@@ -18,10 +18,10 @@
 class iomon final : public Imonitor {
  private:
   // Setup the parameters to monitor here
-  const prmon::parameter_list params = {{"rchar", "B", "B/s"},
-                                        {"wchar", "B", "B/s"},
-                                        {"read_bytes", "B", "B/s"},
-                                        {"write_bytes", "B", "B/s"}};
+  const prmon::parameter_list params = {{"rchar", "B", "B/s", true},
+                                        {"wchar", "B", "B/s", true},
+                                        {"read_bytes", "B", "B/s", true},
+                                        {"write_bytes", "B", "B/s", true}};
 
   // Which network io paramters to measure and output key names
   std::vector<std::string> io_params;

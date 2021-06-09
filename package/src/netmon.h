@@ -25,10 +25,10 @@
 class netmon final : public Imonitor {
  private:
   // Setup the parameters to monitor here
-  const prmon::parameter_list params = {{"rx_bytes", "B", "B/s"},
-                                        {"rx_packets", "1", "1/s"},
-                                        {"tx_bytes", "B", "B/s"},
-                                        {"tx_packets", "1", "1/s"}};
+  const prmon::parameter_list params = {{"rx_bytes", "B", "B/s", true},
+                                        {"rx_packets", "1", "1/s", true},
+                                        {"tx_bytes", "B", "B/s", true},
+                                        {"tx_packets", "1", "1/s", true}};
 
   // Vector for network interface paramters to measure (will be constructed)
   std::vector<std::string> interface_params;
