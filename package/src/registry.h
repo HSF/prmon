@@ -65,7 +65,7 @@ class Registry {
 
   static std::vector<std::string> list_registered() {
     std::vector<std::string> list{};
-    for (const auto k : ctors()) {
+    for (const auto& k : ctors()) {
       list.push_back(k.first);
     }
     return list;
