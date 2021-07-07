@@ -9,6 +9,8 @@
 
 #include "utils.h"
 
+#define MONITOR_NAME "iomon"
+
 // Define this to be 1 to activate the artificial
 // supression of i/o values so that the recovery
 // of stats from the max values is checked
@@ -17,6 +19,8 @@
 // Constructor; uses RAII pattern to be valid
 // after construction
 iomon::iomon() : io_params{}, io_stats{} {
+  log_init(MONITOR_NAME);
+#undef MONITOR_NAME
   io_params.reserve(params.size());
   for (const auto& param : params) {
     io_params.push_back(param.get_name());
@@ -49,20 +53,28 @@ void iomon::update_stats(const std::vector<pid_t>& pids) {
 #endif
 
   for (auto& stat : io_stats) {
-#if IOMON_TEST == 1
     // This code block randomly suppresses io stat values
     // to test recovery from the peak measured values
-    auto t = time(NULL);
-    auto m = (t + stat_counter) % 4;
-    std::cout << stat_counter << " " << t << " " << m << std::endl;
-    if (m == 0) stat.second = 0;
-    ++stat_counter;
+#if IOMON_TEST == 1
+    if (log_level <= spdlog::level::debug) {
+      auto t = time(NULL);
+      auto m = (t + stat_counter) % 4;
+      std::stringstream strm;
+      strm << stat_counter << " " << t << " " << m << std::endl;
+      debug(strm.str());
+      if (m == 0) stat.second = 0;
+      ++stat_counter;
+    }
 #endif
     if (stat.second < io_max_stats[stat.first]) {
       // Uh oh - somehow the i/o stats dropped so some i/o was lost
-      std::clog << "prmon: Warning, detected drop in i/o values for "
-                << stat.first << " (" << io_max_stats[stat.first] << " became "
-                << stat.second << ")" << std::endl;
+      if (log_level <= spdlog::level::warn) {
+        std::stringstream strm;
+        strm << "prmon: Warning, detected drop in i/o values for " << stat.first
+             << " (" << io_max_stats[stat.first] << " became " << stat.second
+             << ")" << std::endl;
+        warning(strm.str());
+      }
       stat.second = io_max_stats[stat.first];
     } else {
       io_max_stats[stat.first] = stat.second;

@@ -11,10 +11,11 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
 
-class nvidiamon final : public Imonitor {
+class nvidiamon final : public Imonitor, public MessageBase {
  private:
   // const static std::vector<std::string> default_nvidia_params{
   //   "ngpus", "gpusmpct", "gpumempct", "gpufbmem"};

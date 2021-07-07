@@ -12,10 +12,11 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
 
-class memmon final : public Imonitor {
+class memmon final : public Imonitor, public MessageBase {
  private:
   // Default paramater list
   // const static std::vector<std::string> default_memory_params{"vmem", "pss",

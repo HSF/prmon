@@ -13,10 +13,11 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
 
-class countmon final : public Imonitor {
+class countmon final : public Imonitor, public MessageBase {
  private:
   // Setup the parameters to monitor here
   const prmon::parameter_list params = {{"nprocs", "1", "1"},

@@ -15,6 +15,7 @@
 
 #include "Imonitor.h"
 #include "registry.h"
+#include "spdlog/spdlog.h"
 
 namespace prmon {
 
@@ -105,16 +106,24 @@ int reap_children() {
     if (status && pid > 0) {
       if (WIFEXITED(status)) {
         return_code = WEXITSTATUS(status);
-        std::clog << "Child process " << pid
-                  << " had non-zero return value: " << return_code << std::endl;
+        std::stringstream strm;
+        strm << "Child process " << pid
+             << " had non-zero return value: " << return_code << std::endl;
+        spdlog::warn(strm.str());
       } else if (WIFSIGNALED(status)) {
-        std::clog << "Child process " << pid << " exited from signal "
-                  << WTERMSIG(status) << std::endl;
+        std::stringstream strm;
+        strm << "Child process " << pid << " exited from signal "
+             << WTERMSIG(status) << std::endl;
+        spdlog::warn(strm.str());
       } else if (WIFSTOPPED(status)) {
-        std::clog << "Child process " << pid << " was stopped by signal"
-                  << WSTOPSIG(status) << std::endl;
+        std::stringstream strm;
+        strm << "Child process " << pid << " was stopped by signal"
+             << WSTOPSIG(status) << std::endl;
+        spdlog::warn(strm.str());
       } else if (WIFCONTINUED(status)) {
-        std::clog << "Child process " << pid << " was continued" << std::endl;
+        std::stringstream strm;
+        strm << "Child process " << pid << " was continued" << std::endl;
+        spdlog::warn(strm.str());
       }
     }
   }
@@ -125,8 +134,7 @@ int reap_children() {
 bool valid_monitor_disable(const std::string disable_name) {
   // First check this is not an attempt to disable the wallmon
   if (disable_name == "wallmon") {
-    std::cerr << "prmon: wallmon monitor cannot be disabled (ignored)"
-              << std::endl;
+    spdlog::error("wallmon monitor cannot be disabled (ignored)");
     return false;
   }
   auto monitors = registry::Registry<Imonitor>::list_registered();
@@ -135,8 +143,7 @@ bool valid_monitor_disable(const std::string disable_name) {
       return true;
     }
   }
-  std::cerr << "prmon: " << disable_name
-            << " is an invalid monitor name (ignored)" << std::endl;
+  spdlog::error(disable_name + " is an invalid monitor name (ignored)");
   return false;
 }
 

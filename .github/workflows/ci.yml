@@ -25,6 +25,8 @@ jobs:
     steps:
     # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     # Sets up useful environment variables
     - name: Setup environment variables

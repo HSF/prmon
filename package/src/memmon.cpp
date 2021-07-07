@@ -14,6 +14,8 @@
 
 #include "utils.h"
 
+#define MONITOR_NAME "memmon"
+
 // Constructor; uses RAII pattern to be valid
 // after construction
 memmon::memmon()
@@ -23,6 +25,8 @@ memmon::memmon()
       mem_average_stats{},
       mem_total_stats{},
       iterations{0} {
+  log_init(MONITOR_NAME);
+#undef MONITOR_NAME
   mem_params.reserve(params.size());
   for (const auto& param : params) {
     mem_params.push_back(param.get_name());
@@ -93,7 +97,7 @@ void const memmon::get_hardware_info(nlohmann::json& hw_json) {
   // Read some information from /proc/meminfo
   std::ifstream memInfoFile{"/proc/meminfo"};
   if (!memInfoFile.is_open()) {
-    std::cerr << "Failed to open /proc/meminfo" << std::endl;
+    error("Failed to open /proc/meminfo");
     return;
   }
 

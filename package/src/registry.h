@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include "spdlog/spdlog.h"
+
 namespace registry {
 
 // Utility macros
@@ -42,8 +44,7 @@ class Registry {
       return std::unique_ptr<T>(
           ctors()[class_name](std::forward<Args>(pack)...));
     }
-    std::cerr << "Registry: class " << class_name << " is not registered."
-              << std::endl;
+    spdlog::error("Registry: class " + class_name + " is not registered.");
     return std::unique_ptr<T>(nullptr);
   }
 

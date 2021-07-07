@@ -12,9 +12,7 @@
 
 #include "utils.h"
 
-// This is not very nice, but we don't want to add more special runtime
-// flags, pending a proper decision on logging (#106)
-#define NVIDIA_DEBUG 0
+#define MONITOR_NAME "nvidiamon"
 
 // Constructor; uses RAII pattern to be valid after construction
 nvidiamon::nvidiamon()
@@ -23,6 +21,9 @@ nvidiamon::nvidiamon()
       nvidia_average_stats{},
       nvidia_total_stats{},
       iterations{0L} {
+  log_init(MONITOR_NAME);
+#undef MONITOR_NAME
+
   nvidia_params.reserve(params.size());
   for (const auto& param : params) {
     nvidia_params.push_back(param.get_name());
@@ -46,19 +47,20 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
   auto cmd_result = prmon::cmd_pipe_output(cmd);
   if (cmd_result.first) {
     // Failed
-    std::cerr << "Failed to execute 'nvidia-smi' to get GPU status (code "
-              << cmd_result.first << ")" << std::endl;
+    error("Failed to execute 'nvidia-smi' to get GPU status (code " +
+          std::to_string(cmd_result.first) + ")");
     return;
   }
-
-  if (NVIDIA_DEBUG) {
-    std::cout << "nvidiamon::update_stats got the following output ("
-              << cmd_result.second.size() << "): " << std::endl;
+  if (log_level <= spdlog::level::debug) {
+    std::stringstream strm;
+    strm << "nvidiamon::update_stats got the following output ("
+         << cmd_result.second.size() << "): " << std::endl;
     int i = 0;
     for (const auto& s : cmd_result.second) {
-      std::cout << i << " -> " << s << std::endl;
+      strm << i << " -> " << s << std::endl;
       ++i;
     }
+    debug(strm.str());
   }
 
   // Loop over output
@@ -74,10 +76,12 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
         cmd_name;
     auto read_ok = !(instr.fail() || instr.bad());  // eof() is ok
     if (read_ok) {
-      if (NVIDIA_DEBUG) {
-        std::cout << "Good read: " << gpu_idx << " " << pid << " " << cg_type
-                  << " " << sm << " " << mem << " " << enc << " " << dec << " "
-                  << fb_mem << " " << cmd_name << std::endl;
+      if (log_level <= spdlog::level::debug) {
+        std::stringstream strm;
+        strm << "Good read: " << gpu_idx << " " << pid << " " << cg_type << " "
+             << sm << " " << mem << " " << enc << " " << dec << " " << fb_mem
+             << " " << cmd_name << std::endl;
+        debug(strm.str());
       }
 
       // Filter on PID value, so we only add stats for our processes
@@ -92,22 +96,27 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
           }
         }
       }
-    } else if (NVIDIA_DEBUG) {
-      std::clog << "Bad read of line: " << s << std::endl;
-      std::cout << "Parsed to: " << gpu_idx << " " << pid << " " << cg_type
-                << " " << sm << " " << mem << " " << enc << " " << dec << " "
-                << fb_mem << " " << cmd_name << std::endl;
-      std::cout << "StringStream status: good()=" << instr.good();
-      std::cout << " eof()=" << instr.eof();
-      std::cout << " fail()=" << instr.fail();
-      std::cout << " bad()=" << instr.bad() << std::endl;
+    } else if (log_level <= spdlog::level::debug) {
+      std::stringstream strm;
+      strm << "Bad read of line: " << s << std::endl;
+      strm << "Parsed to: " << gpu_idx << " " << pid << " " << cg_type << " "
+           << sm << " " << mem << " " << enc << " " << dec << " " << fb_mem
+           << " " << cmd_name << std::endl;
+
+      strm << "StringStream status: good()=" << instr.good();
+      strm << " eof()=" << instr.eof();
+      strm << " fail()=" << instr.fail();
+      strm << " bad()=" << instr.bad() << std::endl;
+      debug(strm.str());
     }
   }
 
-  if (NVIDIA_DEBUG) {
-    std::cout << "Parsed: " << nvidia_stats["ngpus"] << " "
-              << nvidia_stats["gpusmpct"] << " " << nvidia_stats["gpumempct"]
-              << " " << nvidia_stats["gpufbmem"] << std::endl;
+  if (log_level <= spdlog::level::debug) {
+    std::stringstream strm;
+    strm << "Parsed: " << nvidia_stats["ngpus"] << " "
+         << nvidia_stats["gpusmpct"] << " " << nvidia_stats["gpumempct"] << " "
+         << nvidia_stats["gpufbmem"] << std::endl;
+    debug(strm.str());
   }
 
   // Update the statistics with the new snapshot values
@@ -157,12 +166,11 @@ bool nvidiamon::test_nvidia_smi() {
   }
   nvidiamon::ngpus = gpus;
   if (gpus == 0) {
-    std::clog << "Executed 'nvidia-smi -L', but no GPUs found" << std::endl;
+    warning("Executed 'nvidia-smi -L', but no GPUs found");
     return false;
   } else if (gpus > 4) {
-    std::clog << "More than 4 GPUs found, so GPU process monitoring will be "
-                 "unreliable"
-              << std::endl;
+    warning(
+        "More than 4 GPUs found, so GPU process monitoring will be unreliable");
   }
   return true;
 }
@@ -180,7 +188,7 @@ void const nvidiamon::get_hardware_info(nlohmann::json& hw_json) {
       "--format=csv,noheader,nounits"};
   auto cmd_result = prmon::cmd_pipe_output(cmd);
   if (cmd_result.first) {
-    std::cerr << "Failed to get hardware details for GPUs" << std::endl;
+    error("Failed to get hardware details for GPUs");
     return;
   }
   unsigned int sm_freq, total_mem;
@@ -201,8 +209,7 @@ void const nvidiamon::get_hardware_info(nlohmann::json& hw_json) {
       hw_json["HW"]["gpu"][gpu_number]["sm_freq"] = sm_freq;
       hw_json["HW"]["gpu"][gpu_number]["total_mem"] = total_mem * MB_to_KB;
     } else {
-      std::clog << "Unexpected line from GPU hardware query: " << s
-                << std::endl;
+      warning("Unexpected line from GPU hardware query: " + s);
     }
     ++count;
   }

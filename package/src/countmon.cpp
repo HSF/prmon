@@ -12,6 +12,8 @@
 
 #include "utils.h"
 
+#define MONITOR_NAME "countmon"
+
 // Constructor; uses RAII pattern to be valid
 // after construction
 countmon::countmon()
@@ -21,6 +23,8 @@ countmon::countmon()
       count_average_stats{},
       count_total_stats{},
       iterations{0L} {
+  log_init(MONITOR_NAME);
+#undef MONITOR_NAME
   count_params.reserve(params.size());
   for (const auto& param : params) {
     count_params.push_back(param.get_name());
