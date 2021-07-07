@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
-
-class cpumon final : public Imonitor {
+class cpumon final : public Imonitor, public MessageBase {
  private:
   // Setup the parameters to monitor here
   const prmon::parameter_list params = {{"utime", "s", ""}, {"stime", "s", ""}};

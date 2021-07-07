@@ -19,10 +19,11 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
 
-class netmon final : public Imonitor {
+class netmon final : public Imonitor, public MessageBase {
  private:
   // Setup the parameters to monitor here
   const prmon::parameter_list params = {{"rx_bytes", "B", "B/s"},

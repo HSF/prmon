@@ -16,10 +16,11 @@
 #include <vector>
 
 #include "Imonitor.h"
+#include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
 
-class wallmon final : public Imonitor {
+class wallmon final : public Imonitor, public MessageBase {
  private:
   const prmon::parameter_list params = {{"wtime", "s", ""}};
 

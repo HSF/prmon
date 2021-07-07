@@ -13,9 +13,13 @@
 
 #include "utils.h"
 
+#define MONITOR_NAME "cpumon"
+
 // Constructor; uses RAII pattern to be valid
 // after construction
 cpumon::cpumon() : cpu_params{}, cpu_stats{} {
+  log_init(MONITOR_NAME);
+#undef MONITOR_NAME
   cpu_params.reserve(params.size());
   for (const auto& param : params) {
     cpu_params.push_back(param.get_name());
@@ -74,8 +78,8 @@ void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
 
   // If the command failed print an error and move on
   if (cmd_result.first) {
-    std::cerr << "Failed to execute 'lscpu' to get CPU information (code "
-              << cmd_result.first << ")" << std::endl;
+    error("Failed to execute 'lscpu' to get CPU information (code " +
+          std::to_string(cmd_result.first) + ")");
     return;
   }
 

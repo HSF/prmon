@@ -12,6 +12,8 @@
 
 #include "utils.h"
 
+#define MONITOR_NAME "wallmon"
+
 // Constructor; uses RAII pattern to be valid
 // after construction
 wallmon::wallmon()
@@ -19,6 +21,8 @@ wallmon::wallmon()
       start_time_clock_t{0},
       current_clock_t{0},
       got_mother_starttime{false} {
+  log_init(MONITOR_NAME);
+#undef MONITOR_NAME
   walltime_param.reserve(params.size());
   for (const auto& param : params) {
     walltime_param.push_back(param.get_name());
@@ -42,10 +46,12 @@ int wallmon::get_mother_starttime(pid_t mother_pid) {
     start_time_clock_t = std::stol(stat_entries[prmon::uptime_pos]);
   } else {
     // Some error happened!
-    std::clog << "Read only " << stat_entries.size()
-              << " from mother PID stat file" << std::endl;
-    std::clog << "Stream status of " << stat_fname.str() << " is "
-              << (proc_stat ? "good" : "bad") << std::endl;
+    std::stringstream strm;
+    strm << "Read only " << stat_entries.size() << " from mother PID stat file"
+         << std::endl;
+    strm << "Stream status of " << stat_fname.str() << " is "
+         << (proc_stat ? "good" : "bad") << std::endl;
+    warning(strm.str());
     return 1;
   }
 
@@ -55,7 +61,7 @@ int wallmon::get_mother_starttime(pid_t mother_pid) {
 void wallmon::update_stats(const std::vector<pid_t>& pids) {
   if (!got_mother_starttime && pids.size() > 0) {
     if (get_mother_starttime(pids[0])) {
-      std::clog << "Error while reading mother starttime" << std::endl;
+      warning("Error while reading mother starttime");
       return;
     } else {
       got_mother_starttime = true;
@@ -66,7 +72,7 @@ void wallmon::update_stats(const std::vector<pid_t>& pids) {
   float uptime_sec{};
   proc_uptime >> uptime_sec;
   if (!proc_uptime) {
-    std::clog << "Error while reading /proc/uptime" << std::endl;
+    warning("Error while reading /proc/uptime");
     return;
   }
   current_clock_t = uptime_sec * sysconf(_SC_CLK_TCK) - start_time_clock_t;

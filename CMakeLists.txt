@@ -29,6 +29,11 @@ endif()
 set(PROFILE_GPERFTOOLS "${PROFILE_GPERFTOOLS}"
   CACHE BOOL "Build with the GPerfTools profiler library" FORCE)
 
+if(NOT BUILD_BENCHMARK_LOG)
+  set(BUILD_BENCHMARK_LOG OFF)
+endif()
+set(BUILD_BENCHMARK_LOG "${BUILD_BENCHMARK_LOG}"
+  CACHE BOOL "Build binary that benchmarks spdlog speed" FORCE)
 
 # Define a default build type when using a single-mode tool like make/ninja
 # We make this default to Release, unless profiling is enabled, in which
@@ -92,6 +97,11 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
 #--- project specific subdirectories -------------------------------------------
 add_subdirectory(package)
 
+#--- include directories -------------------------------------------
+target_include_directories(prmon PRIVATE ${PROJECT_SOURCE_DIR}/package/include)
+if (BUILD_BENCHMARK_LOG)
+  target_include_directories(benchmark-log PRIVATE ${PROJECT_SOURCE_DIR}/package/include)
+endif(BUILD_BENCHMARK_LOG)
 #--- create uninstall target ---------------------------------------------------
 include(cmake/prmonUninstall.cmake)
 

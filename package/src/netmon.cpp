@@ -8,14 +8,19 @@
 
 #include <cstring>
 #include <memory>
+#include <sstream>
 
 #include "utils.h"
+
+#define MONITOR_NAME "netmon"
 
 // Constructor; uses RAII pattern to open all monitored
 // network device streams and to take initial values
 // to the monitor relative differences
 netmon::netmon(std::vector<std::string> netdevs)
     : interface_params{}, network_if_streams{} {
+  log_init(MONITOR_NAME);
+#undef MONITOR_NAME
   interface_params.reserve(params.size());
   for (const auto& param : params) interface_params.push_back(param.get_name());
 
@@ -51,9 +56,9 @@ std::vector<std::string> const netmon::get_all_network_devs() {
     }
     closedir(d);
   } else {
-    std::cerr << "Failed to open " << netdir
-              << " to get list of network devices. "
-              << "No network data will be available" << std::endl;
+    error("Failed to open " + std::string(netdir) +
+          " to get list of network devices. " +
+          "No network data will be available");
   }
   return devices;
 }
@@ -94,10 +99,11 @@ void netmon::update_stats(const std::vector<pid_t>& pids) {
     if (i.second >= network_stats_last[i.first]) {
       network_net_counters[i.first] += i.second - network_stats_last[i.first];
     } else {
-      std::clog
-          << "prmon: network statistics error, counter values dropped for "
-          << i.first << " (" << i.second << " < " << network_stats_last[i.first]
-          << ")" << std::endl;
+      std::stringstream strm;
+      strm << "prmon: network statistics error, counter values dropped for "
+           << i.first << " (" << i.second << " < "
+           << network_stats_last[i.first] << ")" << std::endl;
+      warning(strm.str());
     }
     network_stats_last[i.first] = i.second;
   }

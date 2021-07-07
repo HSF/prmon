@@ -25,6 +25,10 @@
 #include "prmonVersion.h"
 #include "prmonutils.h"
 #include "registry.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
+#include "utils.h"
 #include "wallmon.h"
 
 bool prmon::sigusr1 = false;
@@ -54,17 +58,16 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
           monitors[class_name] = std::move(new_monitor_p);
         }
       } else {
-        std::cerr << "Registration of monitor " << class_name << " FAILED"
-                  << std::endl;
+        spdlog::error("Registration of monitor " + class_name + " FAILED");
       }
     }
   }
+
   // The wallclock monitor is always needed as it is used for average stat
   // generation - wallmon cannot be disabled, but this is prechecked in
   // prmon::valid_monitor_disable before we get here
   if (monitors.count("wallmon") != 1) {
-    std::cerr << "Failed to initialise mandatory wallclock monitoring class"
-              << std::endl;
+    spdlog::error("Failed to initialise mandatory wallclock monitoring class");
     exit(EXIT_FAILURE);
   }
 
@@ -180,16 +183,15 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
           if (rename(tmp_json_file.str().c_str(),
                      json_snapshot_file.str().c_str()) != 0) {
             perror("rename fails");
-            std::cerr << tmp_json_file.str() << " " << json_snapshot_file.str()
-                      << "\n";
+            spdlog::error(tmp_json_file.str() + " " + json_snapshot_file.str());
           }
         }
       } catch (const std::ifstream::failure& e) {
         // Serious problem reading one of the status files, usually
         // caused by a child exiting during the poll - just try again
         // next time
-        std::clog << "prmon ifstream exception: " << e.what() << " (ignored)"
-                  << std::endl;
+        spdlog::warn("prmon ifstream exception: " + std::string(e.what()) +
+                     " (ignored)");
       }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -210,9 +212,9 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   if (wallclock_monitor_p->get_wallclock_clock_t() /
           (interval * sysconf(_SC_CLK_TCK)) <
       1) {
-    std::clog << "Wallclock time of monitored process was less than the "
-                 "monitoring interval, so average statistics will be unreliable"
-              << std::endl;
+    spdlog::warn(
+        "Wallclock time of monitored process was less than the monitoring "
+        "interval, so average statistics will be unreliable");
   }
 
   return return_code;
@@ -225,6 +227,15 @@ int main(int argc, char* argv[]) {
   const unsigned int default_interval = 30;
   const bool default_store_hw_info = true;
   const bool default_store_unit_info = false;
+
+  // Set up global default logger
+  spdlog::sinks_init_list s_list = {c_sink, f_sink};
+  auto logger =
+      std::make_shared<spdlog::logger>("prmon", s_list.begin(), s_list.end());
+  logger->set_level(spdlog::level::warn);
+  logger->flush_on(spdlog::level::warn);
+  spdlog::set_default_logger(logger);
+  spdlog::info("global logger initialised!");
 
   pid_t pid = -1;
   bool got_pid = false;
@@ -284,7 +295,7 @@ int main(int argc, char* argv[]) {
         do_help = 1;
         break;
       default:
-        std::cerr << "Use '--help' for usage " << std::endl;
+        spdlog::error("Use '--help' for usage ");
         return 1;
     }
   }
@@ -349,26 +360,28 @@ int main(int argc, char* argv[]) {
   }
 
   if ((!got_pid && child_args == -1) || (got_pid && child_args > 0)) {
-    std::cerr << "One and only one PID or child program is required - ";
+    std::stringstream strm;
+    strm << "One and only one PID or child program is required - ";
     if (got_pid)
-      std::cerr << "found both";
+      strm << "found both";
     else
-      std::cerr << "found none";
-    std::cerr << std::endl;
+      strm << "found none";
+    spdlog::error(strm.str());
     return EXIT_FAILURE;
   }
 
   if (got_pid) {
     if (pid < 2) {
-      std::cerr << "Bad PID to monitor.\n";
+      spdlog::error("Bad PID to monitor.");
       return 1;
     }
     ProcessMonitor(pid, filename, jsonSummary, interval, store_hw_info,
                    store_unit_info, netdevs, disabled_monitors);
   } else {
     if (child_args == argc) {
-      std::cerr << "Found marker for child program to execute, but with no "
-                   "program argument.\n";
+      spdlog::error(
+          "Found marker for child program to execute, but with no "
+          "program argument.");
       return 1;
     }
     pid_t child = fork();
