@@ -28,7 +28,7 @@ cpumon::cpumon() : cpu_params{}, cpu_stats{} {
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
-  for (auto stat : cpu_stats) stat.second = 0;
+  for (auto& stat : cpu_stats) stat.second = 0;
 
   std::vector<std::string> stat_entries{};
   stat_entries.reserve(prmon::stat_cpu_read_limit + 1);
