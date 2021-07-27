@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -27,18 +28,38 @@ nvidiamon::nvidiamon() {
   valid = test_nvidia_smi();
 }
 
-void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
+std::pair<int, std::vector<std::string>> nvidiamon::read_gpu_stats_test(
+    const std::string read_path) {
+  std::vector<std::string> split_output{};
+  std::string output;
+  std::pair<int, std::vector<std::string>> ret{0, split_output};
+  std::ifstream inp{read_path};
+  while (std::getline(inp, output)) {
+    split_output.push_back(output);
+  }
+  inp.close();
+  ret.second = split_output;
+  return ret;
+}
+
+void nvidiamon::update_stats(const std::vector<pid_t>& pids,
+                             const std::string read_path) {
   const std::vector<std::string> cmd = {"nvidia-smi", "pmon", "-s",
                                         "um",         "-c",   "1"};
   prmon::monitored_value_map nvidia_stats_update{};
   for (const auto& value : nvidia_stats) nvidia_stats_update[value.first] = 0L;
 
-  auto cmd_result = prmon::cmd_pipe_output(cmd);
-  if (cmd_result.first) {
-    // Failed
-    error("Failed to execute 'nvidia-smi' to get GPU status (code " +
-          std::to_string(cmd_result.first) + ")");
-    return;
+  std::pair<int, std::vector<std::string>> cmd_result;
+  if (read_path.size()) {
+    cmd_result = read_gpu_stats_test(read_path);
+  } else {
+    cmd_result = prmon::cmd_pipe_output(cmd);
+    if (cmd_result.first) {
+      // Failed
+      error("Failed to execute 'nvidia-smi' to get GPU status (code " +
+            std::to_string(cmd_result.first) + ")");
+      return;
+    }
   }
   if (log_level <= spdlog::level::debug) {
     std::stringstream strm;

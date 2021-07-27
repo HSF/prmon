@@ -66,11 +66,15 @@ class netmon final : public Imonitor, public MessageBase {
   // Internal method to read "raw" network stats
   void read_raw_network_stats(prmon::monitored_value_map& values);
 
+  void read_raw_network_stats_test(prmon::monitored_value_map& values,
+                                   const std::string& read_path);
+
  public:
   netmon(std::vector<std::string> netdevs);
   netmon() : netmon(std::vector<std::string>{}){};
 
-  void update_stats(const std::vector<pid_t>& pids);
+  void update_stats(const std::vector<pid_t>& pids,
+                    const std::string read_path = "");
 
   // These are the stat getter methods which retrieve current statistics
   prmon::monitored_value_map const get_text_stats();

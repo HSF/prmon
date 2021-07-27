@@ -54,7 +54,8 @@ std::pair<int, unsigned long long> wallmon::get_mother_starttime(
   return std::pair<int, unsigned long long>{0, start_time_clock_t};
 }
 
-void wallmon::update_stats(const std::vector<pid_t>& pids) {
+void wallmon::update_stats(const std::vector<pid_t>& pids,
+                           const std::string read_path) {
   if (!got_mother_starttime && pids.size() > 0) {
     auto code_and_time = get_mother_starttime(pids[0]);
     if (code_and_time.first) {

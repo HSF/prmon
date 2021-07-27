@@ -24,7 +24,8 @@ countmon::countmon() {
   }
 }
 
-void countmon::update_stats(const std::vector<pid_t>& pids) {
+void countmon::update_stats(const std::vector<pid_t>& pids,
+                            const std::string read_path) {
   prmon::monitored_value_map count_stat_update{};
   for (const auto& stat : count_stats) {
     count_stat_update[stat.first] = 0L;
@@ -35,7 +36,7 @@ void countmon::update_stats(const std::vector<pid_t>& pids) {
   std::string tmp_str{};
   for (const auto pid : pids) {
     std::stringstream stat_fname{};
-    stat_fname << "/proc/" << pid << "/stat" << std::ends;
+    stat_fname << read_path << "/proc/" << pid << "/stat" << std::ends;
     std::ifstream proc_stat{stat_fname.str()};
     while (proc_stat &&
            stat_entries.size() < prmon::stat_count_read_limit + 1) {

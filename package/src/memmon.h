@@ -34,7 +34,8 @@ class memmon final : public Imonitor, public MessageBase {
  public:
   memmon();
 
-  void update_stats(const std::vector<pid_t>& pids);
+  void update_stats(const std::vector<pid_t>& pids,
+                    const std::string read_path = "");
 
   // These are the stat getter methods which retrieve current statistics
   std::map<std::string, unsigned long long> const get_text_stats();

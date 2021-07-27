@@ -16,6 +16,7 @@ add_executable(prmon src/prmon.cpp
 if (BUILD_BENCHMARK_LOG)
   add_executable(benchmark-log src/benchmark.cpp)
 endif(BUILD_BENCHMARK_LOG)
+
 # Some older versions of the nlohmann_json package don't define
 # this target (< 3.0.0 ?). The build on these platforms seems to
 # go ok even without this "link library" definition.

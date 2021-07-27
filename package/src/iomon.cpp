@@ -26,17 +26,17 @@ iomon::iomon() : io_stats{} {
   }
 }
 
-void iomon::update_stats(const std::vector<pid_t>& pids) {
+void iomon::update_stats(const std::vector<pid_t>& pids,
+                         const std::string read_path) {
   prmon::monitored_value_map io_stat_update{};
   for (const auto& value : io_stats) {
     io_stat_update[value.first] = 0L;
   }
-
   std::string param{};
   prmon::mon_value value{};
   for (const auto pid : pids) {
     std::stringstream io_fname{};
-    io_fname << "/proc/" << pid << "/io" << std::ends;
+    io_fname << read_path << "/proc/" << pid << "/io" << std::ends;
     std::ifstream proc_io{io_fname.str()};
     while (proc_io) {
       proc_io >> param >> value;
