@@ -17,17 +17,21 @@
 #include <string>
 #include <vector>
 
+#include "parameter.h"
+
+using monitored_value_map = std::map<std::string, mon_value>;
+using monitored_average_map = std::map<std::string, double>;
+
 class Imonitor {
  public:
   virtual ~Imonitor(){};
 
   virtual void update_stats(const std::vector<pid_t>& pids) = 0;
 
-  virtual std::map<std::string, unsigned long long> const get_text_stats() = 0;
-  virtual std::map<std::string, unsigned long long> const
-  get_json_total_stats() = 0;
-  virtual std::map<std::string, double> const get_json_average_stats(
-      unsigned long long elapsed_clock_ticks) = 0;
+  virtual monitored_value_map const get_text_stats() = 0;
+  virtual monitored_value_map const get_json_total_stats() = 0;
+  virtual monitored_average_map const get_json_average_stats(
+      mon_value elapsed_clock_ticks) = 0;
 
   virtual void const get_hardware_info(nlohmann::json& hw_json) = 0;
   virtual void const get_unit_info(nlohmann::json& unit_json) = 0;
