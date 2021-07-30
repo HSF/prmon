@@ -16,6 +16,9 @@
 #include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
+
+using monitored_list = std::map<std::string, prmon::monitored_value>;
+
 class cpumon final : public Imonitor, public MessageBase {
  private:
   // Setup the parameters to monitor here
@@ -24,10 +27,7 @@ class cpumon final : public Imonitor, public MessageBase {
   // Which network cpu paramters to measure and output key names
   // This will be filled at initialisation, taking the names
   // from the above params
-  std::vector<std::string> cpu_params;
-
-  // Container for total stats
-  std::map<std::string, unsigned long long> cpu_stats;
+  monitored_list cpu_stats;
 
  public:
   cpumon();
@@ -35,9 +35,9 @@ class cpumon final : public Imonitor, public MessageBase {
   void update_stats(const std::vector<pid_t>& pids);
 
   // These are the stat getter methods which retrieve current statistics
-  std::map<std::string, unsigned long long> const get_text_stats();
-  std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(
+  monitored_value_map const get_text_stats();
+  monitored_value_map const get_json_total_stats();
+  monitored_average_map const get_json_average_stats(
       unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once

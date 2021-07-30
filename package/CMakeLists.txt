@@ -3,6 +3,8 @@ find_package(nlohmann_json REQUIRED)
 add_executable(prmon src/prmon.cpp
            src/prmonutils.cpp
            src/utils.cpp
+           src/MessageBase.cpp
+           src/parameter.cpp
            src/netmon.cpp
            src/iomon.cpp
            src/cpumon.cpp
@@ -10,7 +12,6 @@ add_executable(prmon src/prmon.cpp
            src/wallmon.cpp
            src/memmon.cpp
            src/nvidiamon.cpp
-           src/MessageBase.cpp
            )
 if (BUILD_BENCHMARK_LOG)
   add_executable(benchmark-log src/benchmark.cpp)

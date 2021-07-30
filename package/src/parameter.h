@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #ifndef PRMON_PARAMETER_H
 #define PRMON_PARAMETER_H 1
@@ -50,10 +51,6 @@ class monitored_value {
   mon_value value;
 
  public:
-  monitored_value(std::string n, std::string m, std::string a,
-                  mon_value start = 0L)
-      : name{n}, max_unit{m}, avg_unit{a}, value{start} {}
-
   inline const std::string get_name() const { return name; }
   inline const std::string get_max_unit() const { return max_unit; }
   inline const std::string get_avg_unit() const { return avg_unit; }
@@ -61,9 +58,13 @@ class monitored_value {
   inline const mon_value get_value() const { return value; }
 
   int set_value(mon_value new_value);
+
+  monitored_value(std::string n, std::string m, std::string a, bool mono=false,
+                  mon_value start = 0L)
+      : name{n}, max_unit{m}, avg_unit{a}, monotonic{mono}, value{start} {}
 };
 
-using monitored_list = std::map<std::string, monitored_value>;
+using monitored_list = std::map<std::string, prmon::monitored_value>;
 
 }  // namespace prmon
 
