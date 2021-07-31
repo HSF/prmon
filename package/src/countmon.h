@@ -23,17 +23,10 @@ class countmon final : public Imonitor, public MessageBase {
   const prmon::parameter_list params = {{"nprocs", "1", "1"},
                                         {"nthreads", "1", "1"}};
 
-  // Which network count paramters to measure and output key names
-  std::vector<std::string> count_params;
-
-  // Container for total stats
-  std::map<std::string, unsigned long long> count_stats;
-  std::map<std::string, unsigned long long> count_peak_stats;
-  std::map<std::string, double> count_average_stats;
-  std::map<std::string, unsigned long long> count_total_stats;
-
-  // Counter for number of iterations
-  unsigned long iterations;
+  // Dynamic monitoring container for value measurements
+  // This will be filled at initialisation, taking the names
+  // from the above params
+  prmon::monitored_list count_stats;
 
  public:
   countmon();
@@ -41,9 +34,9 @@ class countmon final : public Imonitor, public MessageBase {
   void update_stats(const std::vector<pid_t>& pids);
 
   // These are the stat getter methods which retrieve current statistics
-  std::map<std::string, unsigned long long> const get_text_stats();
-  std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(
+  prmon::monitored_value_map const get_text_stats();
+  prmon::monitored_value_map const get_json_total_stats();
+  prmon::monitored_average_map const get_json_average_stats(
       unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once
