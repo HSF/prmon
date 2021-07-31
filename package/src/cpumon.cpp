@@ -26,9 +26,9 @@ cpumon::cpumon() : cpu_stats{} {
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
-  prmon::monitored_value_map stat_update{};
-  for (const auto& stat : cpu_stats) {
-    stat_update[stat.first] = 0L;
+  prmon::monitored_value_map cpu_stat_update{};
+  for (const auto& value : cpu_stats) {
+    cpu_stat_update[value.first] = 0L;
   }
 
   std::vector<std::string> stat_entries{};
@@ -43,24 +43,24 @@ void cpumon::update_stats(const std::vector<pid_t>& pids) {
       if (proc_stat) stat_entries.push_back(tmp_str);
     }
     if (stat_entries.size() > prmon::stat_cpu_read_limit) {
-      stat_update["utime"] += std::stol(stat_entries[prmon::utime_pos]) +
-                              std::stol(stat_entries[prmon::cutime_pos]);
-      stat_update["stime"] += std::stol(stat_entries[prmon::stime_pos]) +
-                              std::stol(stat_entries[prmon::cstime_pos]);
+      cpu_stat_update["utime"] += std::stol(stat_entries[prmon::utime_pos]) +
+                                  std::stol(stat_entries[prmon::cutime_pos]);
+      cpu_stat_update["stime"] += std::stol(stat_entries[prmon::stime_pos]) +
+                                  std::stol(stat_entries[prmon::cstime_pos]);
     }
     stat_entries.clear();
   }
-  for (auto& stat : cpu_stats)
-    stat.second.set_value(stat_update[stat.first] / sysconf(_SC_CLK_TCK));
+  for (auto& value : cpu_stats)
+    value.second.set_value(cpu_stat_update[value.first] / sysconf(_SC_CLK_TCK));
 }
 
 // Return the summed counters
 prmon::monitored_value_map const cpumon::get_text_stats() {
-  prmon::monitored_value_map stat_map{};
+  prmon::monitored_value_map cpu_stat_map{};
   for (const auto& value : cpu_stats) {
-    stat_map[value.first] = value.second.get_value();
+    cpu_stat_map[value.first] = value.second.get_value();
   }
-  return stat_map;
+  return cpu_stat_map;
 }
 
 // Same for JSON
