@@ -64,8 +64,7 @@ class netmon final : public Imonitor, public MessageBase {
   }
 
   // Internal method to read "raw" network stats
-  void read_raw_network_stats(
-      prmon::monitored_value_map& values);
+  void read_raw_network_stats(prmon::monitored_value_map& values);
 
  public:
   netmon(std::vector<std::string> netdevs);

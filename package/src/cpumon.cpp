@@ -21,7 +21,8 @@ cpumon::cpumon() : cpu_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
-    cpu_stats.emplace(std::make_pair(param.get_name(), prmon::monitored_value(param, true)));
+    cpu_stats.emplace(
+        std::make_pair(param.get_name(), prmon::monitored_value(param, true)));
   }
 }
 

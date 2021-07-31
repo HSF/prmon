@@ -20,7 +20,8 @@ countmon::countmon() {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
-    count_stats.emplace(std::make_pair(param.get_name(), prmon::monitored_value(param)));
+    count_stats.emplace(
+        std::make_pair(param.get_name(), prmon::monitored_value(param)));
   }
 }
 

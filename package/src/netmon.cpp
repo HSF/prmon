@@ -34,10 +34,11 @@ netmon::netmon(std::vector<std::string> netdevs)
   // Ensure internal stat counters are initialised properly
   read_raw_network_stats(network_stats_initial);
   for (const auto& param : params) {
-    net_stats.emplace(std::make_pair(param.get_name(), 
-      prmon::monitored_value(param, true, network_stats_initial[param.get_name()])));
+    net_stats.emplace(std::make_pair(
+        param.get_name(),
+        prmon::monitored_value(param, true,
+                               network_stats_initial[param.get_name()])));
   }
-
 }
 
 // Get all available network devices
@@ -88,7 +89,7 @@ void netmon::read_raw_network_stats(prmon::monitored_value_map& stats) {
     for (const auto& device : monitored_netdevs) {
       network_if_streams[if_param][device]->seekg(0);
       *network_if_streams[if_param][device] >> value_read;
-      //debug(if_param + " " *)
+      // debug(if_param + " " *)
       stats[if_param] += value_read;
     }
   }
@@ -124,7 +125,8 @@ prmon::monitored_average_map const netmon::get_json_average_stats(
   prmon::monitored_average_map json_average_stats{};
   for (auto& value : net_stats) {
     json_average_stats[value.first] =
-        double(value.second.get_value() * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
+        double(value.second.get_value() * sysconf(_SC_CLK_TCK)) /
+        elapsed_clock_ticks;
   }
   return json_average_stats;
 }

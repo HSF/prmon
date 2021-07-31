@@ -22,7 +22,8 @@ memmon::memmon() {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
-    mem_stats.emplace(std::make_pair(param.get_name(), prmon::monitored_value(param)));
+    mem_stats.emplace(
+        std::make_pair(param.get_name(), prmon::monitored_value(param)));
   }
 }
 

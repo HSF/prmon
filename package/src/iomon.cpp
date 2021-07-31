@@ -22,7 +22,8 @@ iomon::iomon() : io_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
-    io_stats.emplace(std::make_pair(param.get_name(), prmon::monitored_value(param, true)));
+    io_stats.emplace(
+        std::make_pair(param.get_name(), prmon::monitored_value(param, true)));
   }
 }
 
@@ -88,7 +89,8 @@ prmon::monitored_average_map const iomon::get_json_average_stats(
   prmon::monitored_average_map io_average_stats{};
   for (const auto& io_param : io_stats) {
     io_average_stats[io_param.first] =
-        double(io_param.second.get_value() * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
+        double(io_param.second.get_value() * sysconf(_SC_CLK_TCK)) /
+        elapsed_clock_ticks;
   }
   return io_average_stats;
 }
