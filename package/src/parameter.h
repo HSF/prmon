@@ -51,9 +51,12 @@ class monitored_value {
 
   bool monotonic;
   unsigned long iterations;
+
+  // All internal values will be stored with any offset applied
   mon_value value;
   mon_value max_value;
   mon_value summed_value;
+  mon_value offset;
 
  public:
   inline const std::string get_name() const { return param.get_name(); }
@@ -64,25 +67,30 @@ class monitored_value {
   inline const mon_value get_max_value() const { return max_value; }
   const mon_value get_summed_value() const;
   const avg_value get_average_value() const;
+  inline const mon_value get_offset() const { return offset; }
 
+  // set_value() should be called with the "raw" value and the monitor
+  // will itself apply any offset needed
   int set_value(mon_value new_value);
 
   monitored_value(std::string n, std::string m, std::string a,
-                  bool mono = false, mon_value start = 0L)
+                  bool mono = false, mon_value offset = 0L)
       : param{n, m, a},
         monotonic{mono},
         iterations{0},
-        value{start},
-        max_value{start},
-        summed_value{start} {}
+        value{offset},
+        max_value{offset},
+        summed_value{0L},
+        offset{offset} {}
 
-  monitored_value(parameter p, bool mono = false, mon_value start = 0L)
+  monitored_value(parameter p, bool mono = false, mon_value offset = 0L)
       : param{p},
         monotonic{mono},
         iterations{0},
-        value{start},
-        max_value{start},
-        summed_value{start} {}
+        value{offset},
+        max_value{offset},
+        summed_value{0L},
+        offset{offset} {}
 };
 
 using monitored_list = std::map<std::string, prmon::monitored_value>;
