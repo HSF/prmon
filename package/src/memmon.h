@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 // Memory monitoring class
@@ -26,17 +26,10 @@ class memmon final : public Imonitor, public MessageBase {
                                         {"rss", "kB", "kB"},
                                         {"swap", "kB", "kB"}};
 
-  // Which network memory parameters to measure and output key names
-  std::vector<std::string> mem_params;
-
-  // Container for total stats
-  std::map<std::string, unsigned long long> mem_stats;
-  std::map<std::string, unsigned long long> mem_peak_stats;
-  std::map<std::string, double> mem_average_stats;
-  std::map<std::string, unsigned long long> mem_total_stats;
-
-  // Counter for number of iterations
-  unsigned long iterations;
+  // Dynamic monitoring container for value measurements
+  // This will be filled at initialisation, taking the names
+  // from the above params
+  prmon::monitored_list mem_stats;
 
  public:
   memmon();

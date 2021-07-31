@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 #include "memmon.h"
@@ -18,27 +18,19 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-memmon::memmon()
-    : mem_params{},
-      mem_stats{},
-      mem_peak_stats{},
-      mem_average_stats{},
-      mem_total_stats{},
-      iterations{0} {
+memmon::memmon() {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
-  mem_params.reserve(params.size());
   for (const auto& param : params) {
-    mem_params.push_back(param.get_name());
-    mem_stats[param.get_name()] = 0;
-    mem_peak_stats[param.get_name()] = 0;
-    mem_average_stats[param.get_name()] = 0;
-    mem_total_stats[param.get_name()] = 0;
+    mem_stats.emplace(std::make_pair(param.get_name(), prmon::monitored_value(param)));
   }
 }
 
 void memmon::update_stats(const std::vector<pid_t>& pids) {
-  for (auto& stat : mem_stats) stat.second = 0;
+  prmon::monitored_value_map mem_stat_update{};
+  for (const auto& value : mem_stats) {
+    mem_stat_update[value.first] = 0L;
+  }
 
   std::string key_str{}, value_str{};
   for (const auto pid : pids) {
@@ -52,44 +44,50 @@ void memmon::update_stats(const std::vector<pid_t>& pids) {
       smap_stat.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       if (smap_stat) {
         if (key_str == "Size:") {
-          mem_stats["vmem"] += std::stol(value_str);
+          mem_stat_update["vmem"] += std::stol(value_str);
         } else if (key_str == "Pss:") {
-          mem_stats["pss"] += std::stol(value_str);
+          mem_stat_update["pss"] += std::stol(value_str);
         } else if (key_str == "Rss:") {
-          mem_stats["rss"] += std::stol(value_str);
+          mem_stat_update["rss"] += std::stol(value_str);
         } else if (key_str == "Swap:") {
-          mem_stats["swap"] += std::stol(value_str);
+          mem_stat_update["swap"] += std::stol(value_str);
         }
       }
     }
   }
 
-  // Update the statistics with the new snapshot values
-  ++iterations;
-  for (const auto& mem_param : mem_params) {
-    if (mem_stats[mem_param] > mem_peak_stats[mem_param])
-      mem_peak_stats[mem_param] = mem_stats[mem_param];
-    mem_total_stats[mem_param] += mem_stats[mem_param];
-    mem_average_stats[mem_param] =
-        double(mem_total_stats[mem_param]) / iterations;
+  for (auto& value : mem_stats) {
+    value.second.set_value(mem_stat_update[value.first]);
   }
 }
 
 // Return the summed counters
-std::map<std::string, unsigned long long> const memmon::get_text_stats() {
-  return mem_stats;
+prmon::monitored_value_map const memmon::get_text_stats() {
+  prmon::monitored_value_map mem_stat_map{};
+  for (const auto& value : mem_stats) {
+    mem_stat_map[value.first] = value.second.get_value();
+  }
+  return mem_stat_map;
 }
 
 // For JSON totals return peaks
-std::map<std::string, unsigned long long> const memmon::get_json_total_stats() {
-  return mem_peak_stats;
+prmon::monitored_value_map const memmon::get_json_total_stats() {
+  prmon::monitored_value_map mem_max_stat_map{};
+  for (const auto& value : mem_stats) {
+    mem_max_stat_map[value.first] = value.second.get_max_value();
+  }
+  return mem_max_stat_map;
 }
 
 // Average values are calculated already for us based on the iteration
 // count
-std::map<std::string, double> const memmon::get_json_average_stats(
+prmon::monitored_average_map const memmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  return mem_average_stats;
+  prmon::monitored_average_map count_avg_stat_map{};
+  for (const auto& value : mem_stats) {
+    count_avg_stat_map[value.first] = value.second.get_average_value();
+  }
+  return count_avg_stat_map;
 }
 
 // Collect related hardware information
