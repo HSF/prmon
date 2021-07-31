@@ -50,8 +50,10 @@ class monitored_value {
   const parameter param;
 
   bool monotonic;
+  unsigned long iterations;
   mon_value value;
   mon_value max_value;
+  mon_value summed_value;
 
  public:
   inline const std::string get_name() const { return param.get_name(); }
@@ -60,15 +62,27 @@ class monitored_value {
 
   inline const mon_value get_value() const { return value; }
   inline const mon_value get_max_value() const { return max_value; }
+  const mon_value get_summed_value() const;
+  const avg_value get_average_value() const;
 
   int set_value(mon_value new_value);
 
   monitored_value(std::string n, std::string m, std::string a,
                   bool mono = false, mon_value start = 0L)
-      : param{n, m, a}, monotonic{mono}, value{start} {}
+      : param{n, m, a},
+        monotonic{mono},
+        iterations{0},
+        value{start},
+        max_value{start},
+        summed_value{start} {}
 
   monitored_value(parameter p, bool mono = false, mon_value start = 0L)
-      : param{p}, monotonic{mono}, value{start} {}
+      : param{p},
+        monotonic{mono},
+        iterations{0},
+        value{start},
+        max_value{start},
+        summed_value{start} {}
 };
 
 using monitored_list = std::map<std::string, prmon::monitored_value>;
