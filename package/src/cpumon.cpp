@@ -21,15 +21,13 @@ cpumon::cpumon() : cpu_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
-    cpu_stats.emplace(std::make_pair(param.get_name(),
-    prmon::monitored_value(param.get_name(), param.get_max_unit(),
-    param.get_avg_unit())));
+    cpu_stats.emplace(std::make_pair(param.get_name(), param));
   }
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
   monitored_value_map stat_update{};
-  for (const auto &stat : cpu_stats) {
+  for (const auto& stat : cpu_stats) {
     stat_update[stat.first] = 0L;
   }
 
@@ -46,19 +44,20 @@ void cpumon::update_stats(const std::vector<pid_t>& pids) {
     }
     if (stat_entries.size() > prmon::stat_cpu_read_limit) {
       stat_update["utime"] += std::stol(stat_entries[prmon::utime_pos]) +
-                            std::stol(stat_entries[prmon::cutime_pos]);
+                              std::stol(stat_entries[prmon::cutime_pos]);
       stat_update["stime"] += std::stol(stat_entries[prmon::stime_pos]) +
-                            std::stol(stat_entries[prmon::cstime_pos]);
+                              std::stol(stat_entries[prmon::cstime_pos]);
     }
     stat_entries.clear();
   }
-  for (auto& stat : cpu_stats) stat.second.set_value(stat_update[stat.first] / sysconf(_SC_CLK_TCK));
+  for (auto& stat : cpu_stats)
+    stat.second.set_value(stat_update[stat.first] / sysconf(_SC_CLK_TCK));
 }
 
 // Return the summed counters
 monitored_value_map const cpumon::get_text_stats() {
   monitored_value_map stat_map{};
-  for (const auto &value : cpu_stats) {
+  for (const auto& value : cpu_stats) {
     stat_map[value.first] = value.second.get_value();
   }
   return stat_map;
@@ -72,7 +71,7 @@ monitored_value_map const cpumon::get_json_total_stats() {
 // For CPU time there's nothing to return for an average
 monitored_average_map const cpumon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  monitored_average_map empty_average_stats{};
+  static const monitored_average_map empty_average_stats{};
   return empty_average_stats;
 }
 

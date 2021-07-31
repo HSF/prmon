@@ -3,9 +3,9 @@
 
 // Monitored quantity class
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #ifndef PRMON_PARAMETER_H
 #define PRMON_PARAMETER_H 1
@@ -40,28 +40,30 @@ using parameter_list = std::vector<parameter>;
 class monitored_value {
   // monitored_value class gives an interface to a value that we monitor
   // in prmon
-  // It holds metadata about the value (name, units) as well as internal
-  // counters and accessors. In particular the monotonic flag will prevent
-  // the measured value from being lowered.
+  // It holds metadata about the value (name, units - using the parameter class)
+  // as well as internal counters and accessors. In particular the monotonic
+  // flag will prevent the measured value from being lowered.
  private:
-  std::string name;
-  std::string max_unit, avg_unit;
+  const parameter param;
 
   bool monotonic;
   mon_value value;
 
  public:
-  inline const std::string get_name() const { return name; }
-  inline const std::string get_max_unit() const { return max_unit; }
-  inline const std::string get_avg_unit() const { return avg_unit; }
+  inline const std::string get_name() const { return param.get_name(); }
+  inline const std::string get_max_unit() const { return param.get_max_unit(); }
+  inline const std::string get_avg_unit() const { return param.get_avg_unit(); }
 
   inline const mon_value get_value() const { return value; }
 
   int set_value(mon_value new_value);
 
-  monitored_value(std::string n, std::string m, std::string a, bool mono=false,
-                  mon_value start = 0L)
-      : name{n}, max_unit{m}, avg_unit{a}, monotonic{mono}, value{start} {}
+  monitored_value(std::string n, std::string m, std::string a,
+                  bool mono = false, mon_value start = 0L)
+      : param{n, m, a}, monotonic{mono}, value{start} {}
+
+  monitored_value(parameter p, bool mono = false, mon_value start = 0L)
+      : param{p}, monotonic{mono}, value{start} {}
 };
 
 using monitored_list = std::map<std::string, prmon::monitored_value>;
