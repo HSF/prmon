@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 // Monitored quantity class
