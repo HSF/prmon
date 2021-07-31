@@ -78,8 +78,8 @@ class monitored_value {
       : param{n, m, a},
         monotonic{mono},
         iterations{0},
-        value{offset},
-        max_value{offset},
+        value{0L},
+        max_value{0L},
         summed_value{0L},
         offset{offset} {}
 
@@ -87,8 +87,8 @@ class monitored_value {
       : param{p},
         monotonic{mono},
         iterations{0},
-        value{offset},
-        max_value{offset},
+        value{0L},
+        max_value{0L},
         summed_value{0L},
         offset{offset} {}
 };
