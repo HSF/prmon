@@ -10,11 +10,14 @@
 #ifndef PRMON_PARAMETER_H
 #define PRMON_PARAMETER_H 1
 
+namespace prmon {
 // Define here the types we use for each monitoring primitive
 using mon_value = unsigned long long;
 using avg_value = double;
 
-namespace prmon {
+using monitored_value_map = std::map<std::string, mon_value>;
+using monitored_average_map = std::map<std::string, avg_value>;
+
 // parameter class holds three strings for each monitored value:
 // - the name of the value
 // - the units of the value for maxiumums and averages
@@ -48,6 +51,7 @@ class monitored_value {
 
   bool monotonic;
   mon_value value;
+  mon_value max_value;
 
  public:
   inline const std::string get_name() const { return param.get_name(); }
@@ -55,6 +59,7 @@ class monitored_value {
   inline const std::string get_avg_unit() const { return param.get_avg_unit(); }
 
   inline const mon_value get_value() const { return value; }
+  inline const mon_value get_max_value() const { return max_value; }
 
   int set_value(mon_value new_value);
 

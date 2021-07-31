@@ -26,7 +26,7 @@ cpumon::cpumon() : cpu_stats{} {
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
-  monitored_value_map stat_update{};
+  prmon::monitored_value_map stat_update{};
   for (const auto& stat : cpu_stats) {
     stat_update[stat.first] = 0L;
   }
@@ -55,8 +55,8 @@ void cpumon::update_stats(const std::vector<pid_t>& pids) {
 }
 
 // Return the summed counters
-monitored_value_map const cpumon::get_text_stats() {
-  monitored_value_map stat_map{};
+prmon::monitored_value_map const cpumon::get_text_stats() {
+  prmon::monitored_value_map stat_map{};
   for (const auto& value : cpu_stats) {
     stat_map[value.first] = value.second.get_value();
   }
@@ -64,14 +64,14 @@ monitored_value_map const cpumon::get_text_stats() {
 }
 
 // Same for JSON
-monitored_value_map const cpumon::get_json_total_stats() {
+prmon::monitored_value_map const cpumon::get_json_total_stats() {
   return cpumon::get_text_stats();
 }
 
 // For CPU time there's nothing to return for an average
-monitored_average_map const cpumon::get_json_average_stats(
+prmon::monitored_average_map const cpumon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  static const monitored_average_map empty_average_stats{};
+  static const prmon::monitored_average_map empty_average_stats{};
   return empty_average_stats;
 }
 
