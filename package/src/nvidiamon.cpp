@@ -15,22 +15,12 @@
 #define MONITOR_NAME "nvidiamon"
 
 // Constructor; uses RAII pattern to be valid after construction
-nvidiamon::nvidiamon()
-    : nvidia_stats{},
-      nvidia_peak_stats{},
-      nvidia_average_stats{},
-      nvidia_total_stats{},
-      iterations{0L} {
+nvidiamon::nvidiamon() {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
-
-  nvidia_params.reserve(params.size());
   for (const auto& param : params) {
-    nvidia_params.push_back(param.get_name());
-    nvidia_stats[param.get_name()] = 0;
-    nvidia_peak_stats[param.get_name()] = 0;
-    nvidia_average_stats[param.get_name()] = 0;
-    nvidia_total_stats[param.get_name()] = 0;
+    nvidia_stats.emplace(
+        std::make_pair(param.get_name(), prmon::monitored_value(param)));
   }
 
   // Attempt to execute nvidia-smi
@@ -41,8 +31,8 @@ nvidiamon::nvidiamon()
 void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
   const std::vector<std::string> cmd = {"nvidia-smi", "pmon", "-s",
                                         "um",         "-c",   "1"};
-
-  for (auto& stat : nvidia_stats) stat.second = 0;
+  prmon::monitored_value_map nvidia_stats_update{};
+  for (const auto& value : nvidia_stats) nvidia_stats_update[value.first] = 0L;
 
   auto cmd_result = prmon::cmd_pipe_output(cmd);
   if (cmd_result.first) {
@@ -87,14 +77,19 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
       // Filter on PID value, so we only add stats for our processes
       for (auto const p : pids) {
         if (p == pid) {
-          nvidia_stats["gpusmpct"] += sm;
-          nvidia_stats["gpumempct"] += mem;
-          nvidia_stats["gpufbmem"] += fb_mem * MB_to_KB;
+          nvidia_stats_update["gpusmpct"] += sm;
+          nvidia_stats_update["gpumempct"] += mem;
+          nvidia_stats_update["gpufbmem"] += fb_mem * MB_to_KB;
           if (!activegpus.count(gpu_idx)) {
-            ++nvidia_stats["ngpus"];
+            ++nvidia_stats_update["ngpus"];
             activegpus[gpu_idx] = true;
           }
         }
+      }
+
+      // Now move summed stats to the persistent counters
+      for (auto& value : nvidia_stats) {
+        value.second.set_value(nvidia_stats_update[value.first]);
       }
     } else if (log_level <= spdlog::level::debug) {
       std::stringstream strm;
@@ -113,39 +108,40 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids) {
 
   if (log_level <= spdlog::level::debug) {
     std::stringstream strm;
-    strm << "Parsed: " << nvidia_stats["ngpus"] << " "
-         << nvidia_stats["gpusmpct"] << " " << nvidia_stats["gpumempct"] << " "
-         << nvidia_stats["gpufbmem"] << std::endl;
-    debug(strm.str());
-  }
-
-  // Update the statistics with the new snapshot values
-  ++iterations;
-  for (const auto& nvidia_param : nvidia_params) {
-    if (nvidia_stats[nvidia_param] > nvidia_peak_stats[nvidia_param]) {
-      nvidia_peak_stats[nvidia_param] = nvidia_stats[nvidia_param];
+    strm << "Parsed: ";
+    for (const auto& value : nvidia_stats) {
+      strm << value.first << ": " << value.second.get_value() << ";";
     }
-    nvidia_total_stats[nvidia_param] += nvidia_stats[nvidia_param];
-    nvidia_average_stats[nvidia_param] =
-        double(nvidia_total_stats[nvidia_param]) / iterations;
+    debug(strm.str());
   }
 }
 
 // Return NVIDIA stats
-std::map<std::string, unsigned long long> const nvidiamon::get_text_stats() {
-  return nvidia_stats;
+prmon::monitored_value_map const nvidiamon::get_text_stats() {
+  prmon::monitored_value_map nvidia_stat_map{};
+  for (const auto& value : nvidia_stats) {
+    nvidia_stat_map[value.first] = value.second.get_value();
+  }
+  return nvidia_stat_map;
 }
 
 // For JSON return the peaks
-std::map<std::string, unsigned long long> const
-nvidiamon::get_json_total_stats() {
-  return nvidia_peak_stats;
+prmon::monitored_value_map const nvidiamon::get_json_total_stats() {
+  prmon::monitored_value_map nvidia_stat_map{};
+  for (const auto& value : nvidia_stats) {
+    nvidia_stat_map[value.first] = value.second.get_max_value();
+  }
+  return nvidia_stat_map;
 }
 
 // And the averages
-std::map<std::string, double> const nvidiamon::get_json_average_stats(
+prmon::monitored_average_map const nvidiamon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  return nvidia_average_stats;
+  prmon::monitored_average_map nvidia_stat_map{};
+  for (const auto& value : nvidia_stats) {
+    nvidia_stat_map[value.first] = value.second.get_average_value();
+  }
+  return nvidia_stat_map;
 }
 
 bool nvidiamon::test_nvidia_smi() {
