@@ -72,6 +72,7 @@ class monitored_value {
   // set_value() should be called with the "raw" value and the monitor
   // will itself apply any offset needed
   int set_value(mon_value new_value);
+  int set_offset(mon_value new_offset);
 
   monitored_value(std::string n, std::string m, std::string a,
                   bool mono = false, mon_value offset = 0L)

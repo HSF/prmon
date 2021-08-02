@@ -38,6 +38,18 @@ int monitored_value::set_value(mon_value new_value) {
   return 0;
 }
 
+int monitored_value::set_offset(mon_value const new_offset) {
+  // It is only valid to apply this function when no iterations
+  // have been made!
+  offset = new_offset;
+  if (iterations > 0) {
+    std::cerr << "Resetting the offset of measured values is dangerous"
+              << std::endl;
+    return 1;
+  }
+  return 0;
+}
+
 prmon::mon_value const monitored_value::get_summed_value() const {
   if (!monotonic) {
     return summed_value;
