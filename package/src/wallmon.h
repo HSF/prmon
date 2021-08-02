@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 // Wall time monitoring class
@@ -24,17 +24,15 @@ class wallmon final : public Imonitor, public MessageBase {
  private:
   const prmon::parameter_list params = {{"wtime", "s", ""}};
 
-  std::vector<std::string> walltime_param;
-
-  // Container for total stat
-  std::map<std::string, unsigned long long> walltime_stats;
+  // "map" of monitored parameters (even if there's only one!)
+  prmon::monitored_list walltime_stats;
 
   unsigned long long start_time_clock_t, current_clock_t;
 
   // Only need to get the mother start time once, so use
   // a bool to say when it's done
   bool got_mother_starttime;
-  int get_mother_starttime(pid_t mother_pid);
+  std::pair<int, unsigned long long> get_mother_starttime(pid_t mother_pid);
 
  public:
   wallmon();
@@ -42,9 +40,9 @@ class wallmon final : public Imonitor, public MessageBase {
   void update_stats(const std::vector<pid_t>& pids);
 
   // These are the stat getter methods which retrieve current statistics
-  std::map<std::string, unsigned long long> const get_text_stats();
-  std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(
+  prmon::monitored_value_map const get_text_stats();
+  prmon::monitored_value_map const get_json_total_stats();
+  prmon::monitored_average_map const get_json_average_stats(
       unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once

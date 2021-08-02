@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 #include "wallmon.h"
@@ -16,24 +16,21 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-wallmon::wallmon()
-    : walltime_param{},
-      start_time_clock_t{0},
-      current_clock_t{0},
-      got_mother_starttime{false} {
+wallmon::wallmon() : got_mother_starttime{false} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
-  walltime_param.reserve(params.size());
   for (const auto& param : params) {
-    walltime_param.push_back(param.get_name());
-    walltime_stats[param.get_name()] = 0;
+    walltime_stats.emplace(
+        std::make_pair(param.get_name(), prmon::monitored_value(param, true)));
   }
 }
 
-int wallmon::get_mother_starttime(pid_t mother_pid) {
+std::pair<int, unsigned long long> wallmon::get_mother_starttime(
+    pid_t mother_pid) {
   std::vector<std::string> stat_entries{};
   stat_entries.reserve(52);
   std::string tmp_str{};
+  unsigned long long start_time_clock_t;
 
   std::stringstream stat_fname{};
   stat_fname << "/proc/" << mother_pid << "/stat" << std::ends;
@@ -52,19 +49,21 @@ int wallmon::get_mother_starttime(pid_t mother_pid) {
     strm << "Stream status of " << stat_fname.str() << " is "
          << (proc_stat ? "good" : "bad") << std::endl;
     warning(strm.str());
-    return 1;
+    return std::pair<int, unsigned long long>{1, 0L};
   }
-
-  return 0;
+  return std::pair<int, unsigned long long>{0, start_time_clock_t};
 }
 
 void wallmon::update_stats(const std::vector<pid_t>& pids) {
   if (!got_mother_starttime && pids.size() > 0) {
-    if (get_mother_starttime(pids[0])) {
+    auto code_and_time = get_mother_starttime(pids[0]);
+    if (code_and_time.first) {
       warning("Error while reading mother starttime");
       return;
     } else {
       got_mother_starttime = true;
+      walltime_stats.at("wtime").set_offset(code_and_time.second /
+                                            sysconf(_SC_CLK_TCK));
     }
   }
 
@@ -75,30 +74,35 @@ void wallmon::update_stats(const std::vector<pid_t>& pids) {
     warning("Error while reading /proc/uptime");
     return;
   }
-  current_clock_t = uptime_sec * sysconf(_SC_CLK_TCK) - start_time_clock_t;
-  walltime_stats["wtime"] = current_clock_t / sysconf(_SC_CLK_TCK);
+
+  walltime_stats.at("wtime").set_value(uptime_sec);
 }
 
-unsigned long long const wallmon::get_wallclock_clock_t() {
+prmon::mon_value const wallmon::get_wallclock_clock_t() {
   // Just ensure we never return a zero
-  return (current_clock_t ? current_clock_t : 1);
+  return (walltime_stats.at("wtime").get_value()
+              ? walltime_stats.at("wtime").get_value()
+              : 1);
 }
 
 // Return the summed counters
-std::map<std::string, unsigned long long> const wallmon::get_text_stats() {
-  return walltime_stats;
+prmon::monitored_value_map const wallmon::get_text_stats() {
+  prmon::monitored_value_map walltime_stat_map{};
+  for (const auto& value : walltime_stats) {
+    walltime_stat_map[value.first] = value.second.get_value();
+  }
+  return walltime_stat_map;
 }
 
 // Same for JSON
-std::map<std::string, unsigned long long> const
-wallmon::get_json_total_stats() {
-  return walltime_stats;
+prmon::monitored_value_map const wallmon::get_json_total_stats() {
+  return get_text_stats();
 }
 
 // For walltime there's nothing to return for an average
-std::map<std::string, double> const wallmon::get_json_average_stats(
+prmon::monitored_average_map const wallmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, double> empty_average_stats{};
+  static const prmon::monitored_average_map empty_average_stats{};
   return empty_average_stats;
 }
 
