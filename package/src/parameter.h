@@ -47,10 +47,10 @@ class monitored_value {
   // as well as internal counters and accessors. In particular the monotonic
   // flag will prevent the measured value from being lowered.
  private:
-  const parameter param;
+  const parameter m_param;
 
-  bool monotonic;
-  unsigned long iterations;
+  bool m_monotonic;
+  unsigned long m_iterations;
 
   // All internal values will be stored with any offset applied
   mon_value value;
@@ -59,9 +59,9 @@ class monitored_value {
   mon_value offset;
 
  public:
-  inline const std::string get_name() const { return param.get_name(); }
-  inline const std::string get_max_unit() const { return param.get_max_unit(); }
-  inline const std::string get_avg_unit() const { return param.get_avg_unit(); }
+  inline const std::string get_name() const { return m_param.get_name(); }
+  inline const std::string get_max_unit() const { return m_param.get_max_unit(); }
+  inline const std::string get_avg_unit() const { return m_param.get_avg_unit(); }
 
   inline const mon_value get_value() const { return value; }
   inline const mon_value get_max_value() const { return max_value; }
@@ -76,18 +76,18 @@ class monitored_value {
 
   monitored_value(std::string n, std::string m, std::string a,
                   bool mono = false, mon_value offset = 0L)
-      : param{n, m, a},
-        monotonic{mono},
-        iterations{0},
+      : m_param{n, m, a},
+        m_monotonic{mono},
+        m_iterations{0},
         value{0L},
         max_value{0L},
         summed_value{0L},
         offset{offset} {}
 
   monitored_value(parameter p, bool mono = false, mon_value offset = 0L)
-      : param{p},
-        monotonic{mono},
-        iterations{0},
+      : m_param{p},
+        m_monotonic{mono},
+        m_iterations{0},
         value{0L},
         max_value{0L},
         summed_value{0L},

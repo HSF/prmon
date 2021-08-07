@@ -10,19 +10,19 @@ int monitored_value::set_value(mon_value new_value) {
   // If we have an offset for this parameter then passing in
   // a set value less than this is illegal
   if (new_value < offset) {
-    std::cerr << "Error: attempt to set value of " << param.get_name()
+    std::cerr << "Error: attempt to set value of " << m_param.get_name()
               << " to less than this parameter's offset of " << offset
               << std::endl;
     return 1;
   }
   new_value -= offset;
 
-  if (monotonic) {
+  if (m_monotonic) {
     // Monotonic values only increase and never have useful
     // sums or average values based on iterations
     if (new_value < value) {
       std::cerr << "Error: attempt to reduce the monitored value of "
-                << param.get_name() << " (which is monotonic)" << std::endl;
+                << m_param.get_name() << " (which is monotonic)" << std::endl;
       return 1;
     }
     value = new_value;
@@ -33,7 +33,7 @@ int monitored_value::set_value(mon_value new_value) {
     value = new_value;
     if (value > max_value) max_value = value;
     summed_value += value;
-    ++iterations;
+    ++m_iterations;
   }
   return 0;
 }
@@ -42,7 +42,7 @@ int monitored_value::set_offset(mon_value const new_offset) {
   // It is only valid to apply this function when no iterations
   // have been made!
   offset = new_offset;
-  if (iterations > 0) {
+  if (m_iterations > 0) {
     std::cerr << "Resetting the offset of measured values is dangerous"
               << std::endl;
     return 1;
@@ -51,15 +51,15 @@ int monitored_value::set_offset(mon_value const new_offset) {
 }
 
 prmon::mon_value const monitored_value::get_summed_value() const {
-  if (!monotonic) {
+  if (!m_monotonic) {
     return summed_value;
   }
   return 0;
 }
 
 prmon::avg_value const monitored_value::get_average_value() const {
-  if ((!monotonic) && (iterations > 0)) {
-    return prmon::avg_value(summed_value) / iterations;
+  if ((!m_monotonic) && (m_iterations > 0)) {
+    return prmon::avg_value(summed_value) / m_iterations;
   }
   return 0;
 }
