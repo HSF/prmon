@@ -34,10 +34,10 @@ netmon::netmon(std::vector<std::string> netdevs)
   // Ensure internal stat counters are initialised properly
   read_raw_network_stats(network_stats_initial);
   for (const auto& param : params) {
-    net_stats.emplace(std::make_pair(
+    net_stats.emplace(
         param.get_name(),
         prmon::monitored_value(param, true,
-                               network_stats_initial[param.get_name()])));
+                               network_stats_initial[param.get_name()]));
   }
 }
 

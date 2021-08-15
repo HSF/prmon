@@ -20,8 +20,8 @@ wallmon::wallmon() : got_mother_starttime{false} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
-    walltime_stats.emplace(
-        std::make_pair(param.get_name(), prmon::monitored_value(param, true)));
+    walltime_stats.emplace(param.get_name(),
+                           prmon::monitored_value(param, true));
   }
 }
 

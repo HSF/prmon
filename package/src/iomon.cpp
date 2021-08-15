@@ -22,8 +22,7 @@ iomon::iomon() : io_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
-    io_stats.emplace(
-        std::make_pair(param.get_name(), prmon::monitored_value(param, true)));
+    io_stats.emplace(param.get_name(), prmon::monitored_value(param, true));
   }
 }
 

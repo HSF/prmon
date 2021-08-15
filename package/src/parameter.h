@@ -60,8 +60,12 @@ class monitored_value {
 
  public:
   inline const std::string get_name() const { return m_param.get_name(); }
-  inline const std::string get_max_unit() const { return m_param.get_max_unit(); }
-  inline const std::string get_avg_unit() const { return m_param.get_avg_unit(); }
+  inline const std::string get_max_unit() const {
+    return m_param.get_max_unit();
+  }
+  inline const std::string get_avg_unit() const {
+    return m_param.get_avg_unit();
+  }
 
   inline const mon_value get_value() const { return value; }
   inline const mon_value get_max_value() const { return max_value; }
