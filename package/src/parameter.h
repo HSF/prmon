@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "spdlog/spdlog.h"
+
 #ifndef PRMON_PARAMETER_H
 #define PRMON_PARAMETER_H 1
 
