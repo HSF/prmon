@@ -114,7 +114,7 @@ prmon::monitored_value_map const netmon::get_text_stats() {
 }
 
 // Also relative counters for JSON totals
-std::map<std::string, unsigned long long> const netmon::get_json_total_stats() {
+prmon::monitored_value_map const netmon::get_json_total_stats() {
   return get_text_stats();
 }
 
@@ -124,7 +124,7 @@ prmon::monitored_average_map const netmon::get_json_average_stats(
   prmon::monitored_average_map json_average_stats{};
   for (const auto& value : net_stats) {
     json_average_stats[value.first] =
-        double(value.second.get_value() * sysconf(_SC_CLK_TCK)) /
+        prmon::avg_value(value.second.get_value() * sysconf(_SC_CLK_TCK)) /
         elapsed_clock_ticks;
   }
   return json_average_stats;

@@ -88,7 +88,7 @@ prmon::monitored_average_map const iomon::get_json_average_stats(
   prmon::monitored_average_map io_average_stats{};
   for (const auto& io_param : io_stats) {
     io_average_stats[io_param.first] =
-        double(io_param.second.get_value() * sysconf(_SC_CLK_TCK)) /
+        prmon::avg_value(io_param.second.get_value() * sysconf(_SC_CLK_TCK)) /
         elapsed_clock_ticks;
   }
   return io_average_stats;
