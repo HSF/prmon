@@ -10,8 +10,11 @@ int monitored_value::set_value(mon_value new_value) {
   // If we have an offset for this parameter then passing in
   // a set value less than this is illegal
   if (new_value < offset) {
+    std::string s_offset = std::to_string(offset);
+    std::string s_new_value = std::to_string(new_value);
     spdlog::error("Error: attempt to set value of " + m_param.get_name() +
-                  " to less than this parameter's offset");
+                  " to " + s_new_value +
+                  ", less than this parameter's offset of " + s_offset);
     return 1;
   }
   new_value -= offset;
@@ -20,8 +23,11 @@ int monitored_value::set_value(mon_value new_value) {
     // Monotonic values only increase and never have useful
     // sums or average values based on iterations
     if (new_value < value) {
-      spdlog::error("Error: attempt to reduce the monitored value of " +
-                    m_param.get_name() + " (which is monotonic)");
+      std::string s_new_value = std::to_string(new_value);
+      std::string s_value = std::to_string(value);
+      spdlog::error(
+          "Error: attempt to reduce the monitored value of monotonic " +
+          m_param.get_name() + " from " + s_value + " to " + s_new_value);
       return 1;
     }
     value = new_value;
