@@ -9,7 +9,7 @@ target_link_libraries(io-burner PRIVATE Threads::Threads)
 
 add_executable(mem-burner mem-burner.cpp)
 
-if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_TEST_VALUES)
+if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
 
     include(FetchContent)
     FetchContent_Declare(
