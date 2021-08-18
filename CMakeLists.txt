@@ -35,6 +35,12 @@ endif()
 set(BUILD_BENCHMARK_LOG "${BUILD_BENCHMARK_LOG}"
   CACHE BOOL "Build binary that benchmarks spdlog speed" FORCE)
 
+if(NOT BUILD_TEST_VALUES)
+  set(BUILD_TEST_VALUES OFF)
+endif()
+set(BUILD_TEST_VALUES "${BUILD_TEST_VALUES}"
+  CACHE BOOL "Add the value tests (dependent on gtest)" FORCE)
+
 # Define a default build type when using a single-mode tool like make/ninja
 # We make this default to Release, unless profiling is enabled, in which
 # case do RelWithDebInfo (bcause you need the debug symbols)
