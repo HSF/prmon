@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 #include "netmon.h"
@@ -32,9 +32,12 @@ netmon::netmon(std::vector<std::string> netdevs)
   open_interface_streams();
 
   // Ensure internal stat counters are initialised properly
-  read_raw_network_stats(network_stats_last);
-  for (const auto& i : network_stats_last) {
-    network_net_counters[i.first] = 0;
+  read_raw_network_stats(network_stats_initial);
+  for (const auto& param : params) {
+    net_stats.emplace(
+        param.get_name(),
+        prmon::monitored_value(param, true,
+                               network_stats_initial[param.get_name()]));
   }
 }
 
@@ -79,10 +82,9 @@ void netmon::open_interface_streams() {
 }
 
 // Read raw stat values
-void netmon::read_raw_network_stats(
-    std::map<std::string, unsigned long long>& stats) {
+void netmon::read_raw_network_stats(prmon::monitored_value_map& stats) {
   for (const auto& if_param : interface_params) {
-    unsigned long long value_read{};
+    prmon::mon_value value_read{};
     stats[if_param] = 0;
     for (const auto& device : monitored_netdevs) {
       network_if_streams[if_param][device]->seekg(0);
@@ -94,39 +96,36 @@ void netmon::read_raw_network_stats(
 
 // Update statistics
 void netmon::update_stats(const std::vector<pid_t>& pids) {
-  read_raw_network_stats(network_stats);
-  for (const auto& i : network_stats) {
-    if (i.second >= network_stats_last[i.first]) {
-      network_net_counters[i.first] += i.second - network_stats_last[i.first];
-    } else {
-      std::stringstream strm;
-      strm << "prmon: network statistics error, counter values dropped for "
-           << i.first << " (" << i.second << " < "
-           << network_stats_last[i.first] << ")" << std::endl;
-      warning(strm.str());
-    }
-    network_stats_last[i.first] = i.second;
+  prmon::monitored_value_map network_stats_update;
+
+  read_raw_network_stats(network_stats_update);
+  for (auto& value : net_stats) {
+    value.second.set_value(network_stats_update[value.first]);
   }
 }
 
 // Relative counter statistics for text file
-std::map<std::string, unsigned long long> const netmon::get_text_stats() {
-  std::map<std::string, unsigned long long> text_stats{};
-  return network_net_counters;
+prmon::monitored_value_map const netmon::get_text_stats() {
+  prmon::monitored_value_map net_stat_map{};
+  for (const auto& value : net_stats) {
+    net_stat_map[value.first] = value.second.get_value();
+  }
+  return net_stat_map;
 }
 
 // Also relative counters for JSON totals
-std::map<std::string, unsigned long long> const netmon::get_json_total_stats() {
+prmon::monitored_value_map const netmon::get_json_total_stats() {
   return get_text_stats();
 }
 
 // For JSON averages, divide by elapsed time
-std::map<std::string, double> const netmon::get_json_average_stats(
+prmon::monitored_average_map const netmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, double> json_average_stats{};
-  for (auto& stat : network_net_counters) {
-    json_average_stats[stat.first] =
-        double(stat.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
+  prmon::monitored_average_map json_average_stats{};
+  for (const auto& value : net_stats) {
+    json_average_stats[value.first] =
+        prmon::avg_value(value.second.get_value() * sysconf(_SC_CLK_TCK)) /
+        elapsed_clock_ticks;
   }
   return json_average_stats;
 }

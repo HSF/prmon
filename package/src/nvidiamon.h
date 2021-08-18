@@ -24,17 +24,9 @@ class nvidiamon final : public Imonitor, public MessageBase {
                                         {"gpumempct", "%", "%"},
                                         {"gpufbmem", "kB", "kB"}};
 
-  // Which paramters to measure and output key names
-  std::vector<std::string> nvidia_params;
-
-  // Container for total stats
-  std::map<std::string, unsigned long long> nvidia_stats;
-  std::map<std::string, unsigned long long> nvidia_peak_stats;
-  std::map<std::string, double> nvidia_average_stats;
-  std::map<std::string, unsigned long long> nvidia_total_stats;
-
-  // Counter for number of iterations
-  unsigned long iterations;
+  // Map of classes that represent each monitored quantity
+  // Will be initialised from the above parameter list
+  prmon::monitored_list nvidia_stats;
 
   // Set a boolean to see if we have a valid nvidia setup
   bool valid;
@@ -55,9 +47,9 @@ class nvidiamon final : public Imonitor, public MessageBase {
   void update_stats(const std::vector<pid_t>& pids);
 
   // These are the stat getter methods which retrieve current statistics
-  std::map<std::string, unsigned long long> const get_text_stats();
-  std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(
+  prmon::monitored_value_map const get_text_stats();
+  prmon::monitored_value_map const get_json_total_stats();
+  prmon::monitored_average_map const get_json_average_stats(
       unsigned long long elapsed_clock_ticks);
 
   void const get_hardware_info(nlohmann::json& hw_json);

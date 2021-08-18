@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 #include "cpumon.h"
@@ -17,18 +17,19 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-cpumon::cpumon() : cpu_params{}, cpu_stats{} {
+cpumon::cpumon() : cpu_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
-  cpu_params.reserve(params.size());
   for (const auto& param : params) {
-    cpu_params.push_back(param.get_name());
-    cpu_stats[param.get_name()] = 0;
+    cpu_stats.emplace(param.get_name(), prmon::monitored_value(param, true));
   }
 }
 
 void cpumon::update_stats(const std::vector<pid_t>& pids) {
-  for (auto& stat : cpu_stats) stat.second = 0;
+  prmon::monitored_value_map cpu_stat_update{};
+  for (const auto& value : cpu_stats) {
+    cpu_stat_update[value.first] = 0L;
+  }
 
   std::vector<std::string> stat_entries{};
   stat_entries.reserve(prmon::stat_cpu_read_limit + 1);
@@ -42,30 +43,35 @@ void cpumon::update_stats(const std::vector<pid_t>& pids) {
       if (proc_stat) stat_entries.push_back(tmp_str);
     }
     if (stat_entries.size() > prmon::stat_cpu_read_limit) {
-      cpu_stats["utime"] += std::stol(stat_entries[prmon::utime_pos]) +
-                            std::stol(stat_entries[prmon::cutime_pos]);
-      cpu_stats["stime"] += std::stol(stat_entries[prmon::stime_pos]) +
-                            std::stol(stat_entries[prmon::cstime_pos]);
+      cpu_stat_update["utime"] += std::stol(stat_entries[prmon::utime_pos]) +
+                                  std::stol(stat_entries[prmon::cutime_pos]);
+      cpu_stat_update["stime"] += std::stol(stat_entries[prmon::stime_pos]) +
+                                  std::stol(stat_entries[prmon::cstime_pos]);
     }
     stat_entries.clear();
   }
-  for (auto& stat : cpu_stats) stat.second /= sysconf(_SC_CLK_TCK);
+  for (auto& value : cpu_stats)
+    value.second.set_value(cpu_stat_update[value.first] / sysconf(_SC_CLK_TCK));
 }
 
 // Return the summed counters
-std::map<std::string, unsigned long long> const cpumon::get_text_stats() {
-  return cpu_stats;
+prmon::monitored_value_map const cpumon::get_text_stats() {
+  prmon::monitored_value_map cpu_stat_map{};
+  for (const auto& value : cpu_stats) {
+    cpu_stat_map[value.first] = value.second.get_value();
+  }
+  return cpu_stat_map;
 }
 
 // Same for JSON
-std::map<std::string, unsigned long long> const cpumon::get_json_total_stats() {
-  return cpu_stats;
+prmon::monitored_value_map const cpumon::get_json_total_stats() {
+  return cpumon::get_text_stats();
 }
 
 // For CPU time there's nothing to return for an average
-std::map<std::string, double> const cpumon::get_json_average_stats(
+prmon::monitored_average_map const cpumon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, double> empty_average_stats{};
+  static const prmon::monitored_average_map empty_average_stats{};
   return empty_average_stats;
 }
 

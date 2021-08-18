@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 #include "countmon.h"
@@ -16,27 +16,19 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-countmon::countmon()
-    : count_params{},
-      count_stats{},
-      count_peak_stats{},
-      count_average_stats{},
-      count_total_stats{},
-      iterations{0L} {
+countmon::countmon() {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
-  count_params.reserve(params.size());
   for (const auto& param : params) {
-    count_params.push_back(param.get_name());
-    count_stats[param.get_name()] = 0;
-    count_peak_stats[param.get_name()] = 0;
-    count_average_stats[param.get_name()] = 0;
-    count_total_stats[param.get_name()] = 0;
+    count_stats.emplace(param.get_name(), prmon::monitored_value(param));
   }
 }
 
 void countmon::update_stats(const std::vector<pid_t>& pids) {
-  for (auto& stat : count_stats) stat.second = 0;
+  prmon::monitored_value_map count_stat_update{};
+  for (const auto& stat : count_stats) {
+    count_stat_update[stat.first] = 0L;
+  }
 
   std::vector<std::string> stat_entries{};
   stat_entries.reserve(prmon::stat_count_read_limit + 1);
@@ -51,38 +43,44 @@ void countmon::update_stats(const std::vector<pid_t>& pids) {
       if (proc_stat) stat_entries.push_back(tmp_str);
     }
     if (stat_entries.size() > prmon::stat_count_read_limit) {
-      count_stats["nprocs"] += 1L;
-      count_stats["nthreads"] += std::stol(stat_entries[prmon::num_threads]);
+      count_stat_update["nprocs"] += 1L;
+      count_stat_update["nthreads"] +=
+          std::stol(stat_entries[prmon::num_threads]);
     }
     stat_entries.clear();
   }
 
   // Update the statistics with the new snapshot values
-  ++iterations;
-  for (const auto& count_param : count_params) {
-    if (count_stats[count_param] > count_peak_stats[count_param])
-      count_peak_stats[count_param] = count_stats[count_param];
-    count_total_stats[count_param] += count_stats[count_param];
-    count_average_stats[count_param] =
-        double(count_total_stats[count_param]) / iterations;
-  }
+  for (auto& value : count_stats)
+    value.second.set_value(count_stat_update[value.first]);
 }
 
-// Return the counters
-std::map<std::string, unsigned long long> const countmon::get_text_stats() {
-  return count_stats;
+// Return the counter map
+prmon::monitored_value_map const countmon::get_text_stats() {
+  prmon::monitored_value_map count_stat_map{};
+  for (const auto& value : count_stats) {
+    count_stat_map[value.first] = value.second.get_value();
+  }
+  return count_stat_map;
 }
 
 // For JSON return the peaks
-std::map<std::string, unsigned long long> const
-countmon::get_json_total_stats() {
-  return count_peak_stats;
+prmon::monitored_value_map const countmon::get_json_total_stats() {
+  prmon::monitored_value_map count_max_stat_map{};
+  for (const auto& value : count_stats) {
+    count_max_stat_map[value.first] = value.second.get_max_value();
+  }
+  return count_max_stat_map;
 }
 
 // An the averages
-std::map<std::string, double> const countmon::get_json_average_stats(
+prmon::monitored_average_map const countmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  return count_average_stats;
+  prmon::monitored_average_map count_avg_stat_map{};
+  for (const auto& value : count_stats) {
+    count_avg_stat_map[value.first] = value.second.get_average_value();
+  }
+  return count_avg_stat_map;
 }
 
 // Collect related hardware information

@@ -20,7 +20,22 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
     FetchContent_MakeAvailable(googletest)
     enable_testing()
 
+    add_executable(test_parameter_classes test_parameter_classes.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/parameter.cpp
+    )
+    target_include_directories(test_parameter_classes PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src
+        ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    )
+    target_link_libraries(test_parameter_classes
+                            PRIVATE
+                            Threads::Threads
+                            gtest_main
+    )
+
     include(GoogleTest)
+    gtest_discover_tests(test_parameter_classes)
 
 endif()
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 // Network monitoring class
@@ -31,6 +31,14 @@ class netmon final : public Imonitor, public MessageBase {
                                         {"tx_bytes", "B", "B/s"},
                                         {"tx_packets", "1", "1/s"}};
 
+  // Dynamic monitoring container for value measurements
+  // This will be filled at initialisation, taking the names
+  // from the above params
+  prmon::monitored_list net_stats;
+
+  // Initial values, as these stats are global counters
+  prmon::monitored_value_map network_stats_initial;
+
   // Vector for network interface paramters to measure (will be constructed)
   std::vector<std::string> interface_params;
 
@@ -41,10 +49,6 @@ class netmon final : public Imonitor, public MessageBase {
   std::map<std::string,
            std::unordered_map<std::string, std::unique_ptr<std::ifstream>>>
       network_if_streams;
-
-  // Container for stats, initial and current
-  std::map<std::string, unsigned long long> network_stats, network_stats_last,
-      network_net_counters;
 
   // Find all network interfaces on the system
   std::vector<std::string> const get_all_network_devs();
@@ -60,8 +64,7 @@ class netmon final : public Imonitor, public MessageBase {
   }
 
   // Internal method to read "raw" network stats
-  void read_raw_network_stats(
-      std::map<std::string, unsigned long long>& values);
+  void read_raw_network_stats(prmon::monitored_value_map& values);
 
  public:
   netmon(std::vector<std::string> netdevs);
@@ -70,9 +73,9 @@ class netmon final : public Imonitor, public MessageBase {
   void update_stats(const std::vector<pid_t>& pids);
 
   // These are the stat getter methods which retrieve current statistics
-  std::map<std::string, unsigned long long> const get_text_stats();
-  std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(
+  prmon::monitored_value_map const get_text_stats();
+  prmon::monitored_value_map const get_json_total_stats();
+  prmon::monitored_average_map const get_json_average_stats(
       unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once

@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 CERN
+// Copyright (C) 2018-2021 CERN
 // License Apache2 - see LICENCE file
 
 // CPU monitoring class
@@ -16,18 +16,16 @@
 #include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
+
 class cpumon final : public Imonitor, public MessageBase {
  private:
   // Setup the parameters to monitor here
   const prmon::parameter_list params = {{"utime", "s", ""}, {"stime", "s", ""}};
 
-  // Which network cpu paramters to measure and output key names
+  // Dynamic monitoring container for value measurements
   // This will be filled at initialisation, taking the names
   // from the above params
-  std::vector<std::string> cpu_params;
-
-  // Container for total stats
-  std::map<std::string, unsigned long long> cpu_stats;
+  prmon::monitored_list cpu_stats;
 
  public:
   cpumon();
@@ -35,9 +33,9 @@ class cpumon final : public Imonitor, public MessageBase {
   void update_stats(const std::vector<pid_t>& pids);
 
   // These are the stat getter methods which retrieve current statistics
-  std::map<std::string, unsigned long long> const get_text_stats();
-  std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(
+  prmon::monitored_value_map const get_text_stats();
+  prmon::monitored_value_map const get_json_total_stats();
+  prmon::monitored_average_map const get_json_average_stats(
       unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once

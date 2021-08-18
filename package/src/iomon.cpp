@@ -18,22 +18,22 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-iomon::iomon() : io_params{}, io_stats{} {
+iomon::iomon() : io_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
-  io_params.reserve(params.size());
   for (const auto& param : params) {
-    io_params.push_back(param.get_name());
-    io_stats[param.get_name()] = 0;
-    io_max_stats[param.get_name()] = 0;
+    io_stats.emplace(param.get_name(), prmon::monitored_value(param, true));
   }
 }
 
 void iomon::update_stats(const std::vector<pid_t>& pids) {
+  prmon::monitored_value_map io_stat_update{};
+  for (const auto& value : io_stats) {
+    io_stat_update[value.first] = 0L;
+  }
+
   std::string param{};
-  unsigned long long value{};
-  for (auto& stat : io_stats) stat.second = 0;
-  // Loop over each PID and update the stats which are stored for all children
+  prmon::mon_value value{};
   for (const auto pid : pids) {
     std::stringstream io_fname{};
     io_fname << "/proc/" << pid << "/io" << std::ends;
@@ -42,65 +42,56 @@ void iomon::update_stats(const std::vector<pid_t>& pids) {
       proc_io >> param >> value;
       if (proc_io && param.size() > 0) {
         param.erase(param.size() - 1);  // Chop off training ":"
-        auto element = io_stats.find(param);
-        if (element != io_stats.end()) element->second += value;
+        auto element = io_stat_update.find(param);
+        if (element != io_stat_update.end()) element->second += value;
       }
     }
   }
 
 #if IOMON_TEST == 1
   long stat_counter = 0;
-#endif
 
-  for (auto& stat : io_stats) {
+  for (auto& stat : io_stat_update) {
     // This code block randomly suppresses io stat values
     // to test recovery from the peak measured values
-#if IOMON_TEST == 1
-    if (log_level <= spdlog::level::debug) {
-      auto t = time(NULL);
-      auto m = (t + stat_counter) % 4;
-      std::stringstream strm;
-      strm << stat_counter << " " << t << " " << m << std::endl;
-      debug(strm.str());
-      if (m == 0) stat.second = 0;
-      ++stat_counter;
-    }
-#endif
-    if (stat.second < io_max_stats[stat.first]) {
-      // Uh oh - somehow the i/o stats dropped so some i/o was lost
-      if (log_level <= spdlog::level::warn) {
-        std::stringstream strm;
-        strm << "prmon: Warning, detected drop in i/o values for " << stat.first
-             << " (" << io_max_stats[stat.first] << " became " << stat.second
-             << ")" << std::endl;
-        warning(strm.str());
-      }
-      stat.second = io_max_stats[stat.first];
-    } else {
-      io_max_stats[stat.first] = stat.second;
-    }
+    auto t = time(NULL);
+    auto m = (t + stat_counter) % 4;
+    std::stringstream strm;
+    strm << stat_counter << " " << t << " " << m;
+    debug(strm.str());
+    if (m == 0) stat.second = 0;
+    ++stat_counter;
   }
+#endif
+
+  for (auto& value : io_stats)
+    value.second.set_value(io_stat_update[value.first]);
 }
 
 // Return the counters
-std::map<std::string, unsigned long long> const iomon::get_text_stats() {
-  return io_stats;
+prmon::monitored_value_map const iomon::get_text_stats() {
+  prmon::monitored_value_map io_stat_map{};
+  for (const auto& value : io_stats) {
+    io_stat_map[value.first] = value.second.get_value();
+  }
+  return io_stat_map;
 }
 
 // Same for JSON
-std::map<std::string, unsigned long long> const iomon::get_json_total_stats() {
-  return io_stats;
+prmon::monitored_value_map const iomon::get_json_total_stats() {
+  return get_text_stats();
 }
 
 // For JSON averages, divide by elapsed time
-std::map<std::string, double> const iomon::get_json_average_stats(
+prmon::monitored_average_map const iomon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
-  std::map<std::string, double> json_average_stats{};
+  prmon::monitored_average_map io_average_stats{};
   for (const auto& io_param : io_stats) {
-    json_average_stats[io_param.first] =
-        double(io_param.second * sysconf(_SC_CLK_TCK)) / elapsed_clock_ticks;
+    io_average_stats[io_param.first] =
+        prmon::avg_value(io_param.second.get_value() * sysconf(_SC_CLK_TCK)) /
+        elapsed_clock_ticks;
   }
-  return json_average_stats;
+  return io_average_stats;
 }
 
 // Collect related hardware information

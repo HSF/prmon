@@ -23,15 +23,10 @@ class iomon final : public Imonitor, public MessageBase {
                                         {"read_bytes", "B", "B/s"},
                                         {"write_bytes", "B", "B/s"}};
 
-  // Which network io paramters to measure and output key names
-  std::vector<std::string> io_params;
-
-  // Container for stats, one container that holds
-  // the current stats and a backup container for
-  // maximum values, in case the process tree loses some
-  // i/o values (see Github #173)
-  std::map<std::string, unsigned long long> io_stats;
-  std::map<std::string, unsigned long long> io_max_stats;
+  // Dynamic monitoring container for value measurements
+  // This will be filled at initialisation, taking the names
+  // from the above params
+  prmon::monitored_list io_stats;
 
  public:
   iomon();
@@ -39,9 +34,9 @@ class iomon final : public Imonitor, public MessageBase {
   void update_stats(const std::vector<pid_t>& pids);
 
   // These are the stat getter methods which retrieve current statistics
-  std::map<std::string, unsigned long long> const get_text_stats();
-  std::map<std::string, unsigned long long> const get_json_total_stats();
-  std::map<std::string, double> const get_json_average_stats(
+  prmon::monitored_value_map const get_text_stats();
+  prmon::monitored_value_map const get_json_total_stats();
+  prmon::monitored_average_map const get_json_average_stats(
       unsigned long long elapsed_clock_ticks);
 
   // This is the hardware information getter that runs once
