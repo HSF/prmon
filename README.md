@@ -67,6 +67,9 @@ The tests in prmon now run in Python3. If your environment does not
 support Python3 properly it is possible to use Python2 for the tests
 by setting `-DPYTHON_TEST=python2`.
 
+To enable pulling and building gtest framework as well as tests dependent on gtest, 
+build with `-DBUILD_GTESTS=ON`.
+
 ### Creating a package with CPack
 
 A cpack based package can be created by invoking

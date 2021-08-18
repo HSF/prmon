@@ -9,6 +9,21 @@ target_link_libraries(io-burner PRIVATE Threads::Threads)
 
 add_executable(mem-burner mem-burner.cpp)
 
+if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
+
+    include(FetchContent)
+    FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+    enable_testing()
+
+    include(GoogleTest)
+
+endif()
+
 # Custom targets for handling scripted wrappers for tests
 function(script_install)
     cmake_parse_arguments(SCRIPT_INSTALL "" "SCRIPT;DESTINATION" "" ${ARGN})

@@ -18,7 +18,7 @@ if [ -z "$CMAKE" ]; then
 fi
 
 # For debugging, handy to print what we're doing
-cmd="$CMAKE -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC $CMAKE_EXTRA /mnt"
+cmd="$CMAKE -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DBUILD_GTESTS=ON $CMAKE_EXTRA /mnt"
 echo $cmd
 $cmd
 make -j 4
