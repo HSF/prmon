@@ -14,7 +14,7 @@ add_executable(prmon src/prmon.cpp
            src/nvidiamon.cpp
            )
 if (BUILD_BENCHMARK_LOG)
-  add_executable(benchmark-log src/benchmark.cpp)
+  add_executable(benchmark-log benchmarks/benchmark-log.cpp)
 endif(BUILD_BENCHMARK_LOG)
 
 # Some older versions of the nlohmann_json package don't define
