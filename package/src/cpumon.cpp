@@ -25,18 +25,18 @@ cpumon::cpumon() : cpu_stats{} {
   }
 }
 
-void cpumon::update_stats(const std::vector<pid_t>& pids) {
+void cpumon::update_stats(const std::vector<pid_t>& pids,
+                          const std::string read_path) {
   prmon::monitored_value_map cpu_stat_update{};
   for (const auto& value : cpu_stats) {
     cpu_stat_update[value.first] = 0L;
   }
-
   std::vector<std::string> stat_entries{};
   stat_entries.reserve(prmon::stat_cpu_read_limit + 1);
   std::string tmp_str{};
   for (const auto pid : pids) {
     std::stringstream stat_fname{};
-    stat_fname << "/proc/" << pid << "/stat" << std::ends;
+    stat_fname << read_path << "/proc/" << pid << "/stat" << std::ends;
     std::ifstream proc_stat{stat_fname.str()};
     while (proc_stat && stat_entries.size() < prmon::stat_cpu_read_limit + 1) {
       proc_stat >> tmp_str;

@@ -23,7 +23,8 @@ class Imonitor {
  public:
   virtual ~Imonitor(){};
 
-  virtual void update_stats(const std::vector<pid_t>& pids) = 0;
+  virtual void update_stats(const std::vector<pid_t>& pids,
+                            const std::string read_path = "") = 0;
 
   virtual prmon::monitored_value_map const get_text_stats() = 0;
   virtual prmon::monitored_value_map const get_json_total_stats() = 0;

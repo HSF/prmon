@@ -31,7 +31,8 @@ class countmon final : public Imonitor, public MessageBase {
  public:
   countmon();
 
-  void update_stats(const std::vector<pid_t>& pids);
+  void update_stats(const std::vector<pid_t>& pids,
+                    const std::string read_path = "");
 
   // These are the stat getter methods which retrieve current statistics
   prmon::monitored_value_map const get_text_stats();

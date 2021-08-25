@@ -26,16 +26,16 @@ memmon::memmon() {
   }
 }
 
-void memmon::update_stats(const std::vector<pid_t>& pids) {
+void memmon::update_stats(const std::vector<pid_t>& pids,
+                          const std::string read_path) {
   prmon::monitored_value_map mem_stat_update{};
   for (const auto& value : mem_stats) {
     mem_stat_update[value.first] = 0L;
   }
-
   std::string key_str{}, value_str{};
   for (const auto pid : pids) {
     std::stringstream smaps_fname{};
-    smaps_fname << "/proc/" << pid << "/smaps" << std::ends;
+    smaps_fname << read_path << "/proc/" << pid << "/smaps" << std::ends;
     std::ifstream smap_stat{smaps_fname.str()};
     while (smap_stat) {
       // Read off the potentially interesting "key: value", then discard

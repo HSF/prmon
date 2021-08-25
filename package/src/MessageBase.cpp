@@ -61,6 +61,15 @@ void processLevel(std::string s) {
 
 void MessageBase::log_init(const std::string& classname,
                            const spdlog::level::level_enum& level) {
+  if (spdlog::get(classname)) {
+    // Logger with the name exists
+    // This protection is for tests
+    // This should never happen during prmon run
+    logger = spdlog::get(classname);
+    log_level = spdlog::level::info;
+    set_log_level(log_level);
+    return;
+  }
   // Initialise sink list
   spdlog::sinks_init_list s_list = {c_sink, f_sink};
 
@@ -73,7 +82,6 @@ void MessageBase::log_init(const std::string& classname,
     log_level = level;
   }
   set_log_level(log_level);
-  logger->flush_on(log_level);
   spdlog::register_logger(logger);
   info(classname + " logger initialised!");
 }

@@ -19,6 +19,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
     enable_testing()
+    include(GoogleTest)
 
     add_executable(test_parameter_classes test_parameter_classes.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/parameter.cpp
@@ -34,8 +35,38 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
                             gtest_main
     )
 
-    include(GoogleTest)
     gtest_discover_tests(test_parameter_classes)
+
+    add_executable(test_values test_values.cpp 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/countmon.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/cpumon.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/memmon.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/netmon.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/nvidiamon.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/iomon.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/MessageBase.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/parameter.cpp
+    )
+    target_compile_definitions(test_values PRIVATE TESTS_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/../scripts/precooked_tests/)
+
+    target_include_directories(test_values PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    )
+    if(TARGET nlohmann_json::nlohmann_json)
+    target_link_libraries(test_values 
+                            PRIVATE 
+                            nlohmann_json::nlohmann_json
+    )
+    endif(TARGET nlohmann_json::nlohmann_json)
+    target_link_libraries(test_values
+                            PRIVATE
+                            Threads::Threads
+                            gtest_main
+    )
+    gtest_discover_tests(test_values)
 
 endif()
 

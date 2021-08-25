@@ -93,12 +93,39 @@ void netmon::read_raw_network_stats(prmon::monitored_value_map& stats) {
     }
   }
 }
+void netmon::read_raw_network_stats_test(
+    std::map<std::string, unsigned long long>& stats,
+    const std::string& read_path) {
+  static int iteration = 0;
+  ++iteration;
+  if (iteration == 1) {
+    // Reset all net_stats initialised in constructor to 0 for testing
+    net_stats.clear();
+    for (const auto& param : params) {
+      net_stats.emplace(param.get_name(),
+                        prmon::monitored_value(param, true, 0));
+    }
+  }
+  for (const auto& if_param : interface_params) {
+    unsigned long long value_read{};
+    stats[if_param] = 0;
+    std::string net_fname = read_path + if_param;
+    std::ifstream net_stream(net_fname);
+    net_stream >> value_read;
+    stats[if_param] += value_read;
+  }
+}
 
 // Update statistics
-void netmon::update_stats(const std::vector<pid_t>& pids) {
+void netmon::update_stats(const std::vector<pid_t>& pids,
+                          const std::string read_path) {
   prmon::monitored_value_map network_stats_update;
 
-  read_raw_network_stats(network_stats_update);
+  if (read_path.size()) {
+    read_raw_network_stats_test(network_stats_update, read_path);
+  } else {
+    read_raw_network_stats(network_stats_update);
+  }
   for (auto& value : net_stats) {
     value.second.set_value(network_stats_update[value.first]);
   }

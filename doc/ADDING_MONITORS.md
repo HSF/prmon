@@ -90,6 +90,13 @@ monitors to gather statistics only for processes that are part of the monitored
 job. For each relevant statistic the `set_value()` setter of the
 `monitored_value` class will be called.
 
+The `update_stats()` method should also accept an additional argument `read_path` 
+which is empty by default. This argument will serve as a prefix of the path to the 
+directory which contains precooked sources for the monitor. Precooked sources are 
+used for unit testing the monitors. It is recommended that unit tests using
+precooked sources are added and the `update_stats()` method handles reading from these sources.
+Read [precooked sources guide](./PRECOOKED_SOURCES.md) for information about adding precooked sources.
+
 ## Reporting Statistics
 
 There are three statistics reports that your monitor should provide:
