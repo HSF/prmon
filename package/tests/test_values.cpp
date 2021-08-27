@@ -107,7 +107,8 @@ TEST(NetmonTest, NetmonMonitonicityTestFixed) {
   std::vector<pid_t> fake_pids = {{mother_pid}};
 
   std::unique_ptr<Imonitor> monitor(
-      registry::Registry<Imonitor>::create("netmon"));
+      registry::Registry<Imonitor, std::vector<std::string>>::create(
+          "netmon", std::vector<std::string>()));
 
   const int iterationCount = 3;
 

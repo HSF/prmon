@@ -19,6 +19,8 @@
 namespace registry {
 
 // Utility macros
+#define REGISTRY_SPACE
+
 #define REGISTRY_CTOR(Base, Derived, params, param_names) \
   [](params) -> Base* { return new Derived(param_names); }
 
@@ -26,6 +28,13 @@ namespace registry {
   static bool _registered_##Derived =                \
       registry::Registry<Base>::register_class(      \
           #Derived, REGISTRY_CTOR(Base, Derived, , ), Description);
+
+#define REGISTER_MONITOR_1ARG(Base, Derived, Description, dtype1)                \
+  static bool _registered_##Derived =                                     \
+      registry::Registry<Base, dtype1>::register_class(                   \
+          #Derived,                                                       \
+          REGISTRY_CTOR(Base, Derived, dtype1 REGISTRY_SPACE arg1, arg1), \
+          Description);
 
 // Empty string to return if there is no description
 static std::string empty_desc = "";
