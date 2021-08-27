@@ -44,6 +44,11 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   std::unordered_map<std::string, std::unique_ptr<Imonitor>> monitors{};
 
   auto registered_monitors = registry::Registry<Imonitor>::list_registered();
+  for (const auto& class_name :
+       registry::Registry<Imonitor,
+                          std::vector<std::string>>::list_registered()) {
+    registered_monitors.push_back(class_name);
+  }
   for (const auto& class_name : registered_monitors) {
     // Check if the monitor should be enabled
     bool state = true;
@@ -51,8 +56,15 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
       if (class_name == disabled) state = false;
     }
     if (state) {
-      std::unique_ptr<Imonitor> new_monitor_p(
-          registry::Registry<Imonitor>::create(class_name));
+      std::unique_ptr<Imonitor> new_monitor_p;
+      if (class_name == "netmon") {
+        new_monitor_p = std::unique_ptr<Imonitor>(
+            registry::Registry<Imonitor, std::vector<std::string>>::create(
+                class_name, netdevs));
+      } else {
+        new_monitor_p = std::unique_ptr<Imonitor>(
+            registry::Registry<Imonitor>::create(class_name));
+      }
       if (new_monitor_p) {
         if (new_monitor_p->is_valid()) {
           monitors[class_name] = std::move(new_monitor_p);
