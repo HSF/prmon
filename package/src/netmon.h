@@ -87,7 +87,8 @@ class netmon final : public Imonitor, public MessageBase {
   void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return true; }
 };
-REGISTER_MONITOR_1ARG(Imonitor, netmon, "Monitor network activity (device level)",
-                std::vector<std::string>)
+REGISTER_MONITOR_1ARG(Imonitor, netmon,
+                      "Monitor network activity (device level)",
+                      std::vector<std::string>)
 
 #endif  // PRMON_NETMON_H
