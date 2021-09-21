@@ -63,10 +63,6 @@ command line).
 Note that in a build environment with CVMFS available the C++ compiler
 and CMake can be taken by setting up a recent LCG release.
 
-The tests in prmon now run in Python3. If your environment does not
-support Python3 properly it is possible to use Python2 for the tests
-by setting `-DPYTHON_TEST=python2`.
-
 To enable pulling and building gtest framework as well as tests dependent on gtest, 
 build with `-DBUILD_GTESTS=ON`.
 
@@ -81,9 +77,6 @@ A cpack based package can be created by invoking
 To run the tests of the project, first build it and then invoke
 
     make test
-
-As noted above these will use `python3` by default, but this can
-be changed via the `PYTHON_TEST` option to CMake.
 
 ## Running
 
@@ -155,7 +148,7 @@ default).
 
 ### Visualisation
 
-The `prmon_plot.py` script (Python3) can be used to plot the outputs of prmon from the
+The `prmon_plot.py` script can be used to plot the outputs of prmon from the
 timestamped output file (usually `prmon.txt`). Some examples include:
 
 * Memory usage as a function of wall-time:
@@ -187,7 +180,7 @@ Use `-h` for more information.
 
 ### Data Compression
 
-The `prmon_compress_output.py` script (Python3) can be used to compress the output file
+The `prmon_compress_output.py` script can be used to compress the output file
 while keeping the most relevant information.
 
 The compression algorithm works as follows:
