@@ -30,7 +30,7 @@ def setup_configurable_test(exit_code=0):
             self.assertEqual(
                 prmon_rc,
                 exit_code,
-                "Wrong return code from prmon (expected {0}".format(exit_code),
+                f"Wrong return code from prmon (expected {exit_code}",
             )
 
     return ConfigurableProcessMonitor

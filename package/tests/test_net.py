@@ -69,17 +69,13 @@ def setup_configurable_test(
                     prmon_json["Max"]["rx_bytes"],
                     expected_bytes,
                     "Too low value for rx bytes "
-                    "(expected minimum of {0}, got {1})".format(
-                        expected_bytes, prmon_json["Max"]["rx_bytes"]
-                    ),
+                    f"(expected minimum of {expected_bytes}, got {prmon_json['Max']['rx_bytes']})",
                 )
                 self.assertGreaterEqual(
                     prmon_json["Max"]["tx_bytes"],
                     expected_bytes,
                     "Too low value for tx bytes "
-                    "(expected minimum of {0}, got {1})".format(
-                        expected_bytes, prmon_json["Max"]["tx_bytes"]
-                    ),
+                    "(expected minimum of {expected_bytes}, got {prmon_json['Max']['tx_bytes']})",
                 )
 
     return ConfigurableProcessMonitor

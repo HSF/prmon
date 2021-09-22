@@ -27,14 +27,14 @@ def setup_configurable_test(
             self.assertLess(
                 value,
                 max_value,
-                "Too high a value for {0} "
-                "(expected maximum of {1}, got {2})".format(name, max_value, value),
+                f"Too high a value for {name} "
+                f"(expected maximum of {max_value}, got {value})",
             )
             self.assertGreater(
                 value,
                 min_value,
-                "Too low a value for {0} "
-                "(expected maximum of {1}, got {2})".format(name, min_value, value),
+                f"Too low a value for {name} "
+                f"(expected maximum of {min_value}, got {value})",
             )
 
         def test_run_test_with_params(self):

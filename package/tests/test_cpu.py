@@ -67,15 +67,13 @@ def setup_configurable_test(
                     total_cpu,
                     expect_cpu,
                     "Too high value for CPU time "
-                    "(expected maximum of {0}, got {1})".format(expect_cpu, total_cpu),
+                    f"(expected maximum of {expect_cpu}, got {total_cpu})",
                 )
                 self.assertGreaterEqual(
                     total_cpu,
                     expect_cpu * slack,
                     "Too low value for CPU time "
-                    "(expected minimum of {0}, got {1}".format(
-                        expect_cpu * slack, total_cpu
-                    ),
+                    f"(expected minimum of {expect_cpu*slack}, got {total_cpu}",
                 )
                 # Wall time tests
                 total_wall = prmon_json["Max"]["wtime"]
@@ -83,15 +81,13 @@ def setup_configurable_test(
                     total_wall,
                     time,
                     "Too high value for wall time "
-                    "(expected maximum of {0}, got {1})".format(time, total_wall),
+                    f"(expected maximum of {time}, got {total_wall})",
                 )
                 self.assertGreaterEqual(
                     total_wall,
                     time * slack,
                     "Too low value for wall time "
-                    "(expected minimum of {0}, got {1}".format(
-                        time * slack, total_wall
-                    ),
+                    f"(expected minimum of {time * slack}, got {total_wall}",
                 )
 
                 # Unit test
@@ -103,15 +99,13 @@ def setup_configurable_test(
                         self.assertEqual(
                             len(missing),
                             0,
-                            "Wrong number of unit values for '{0}'".format(group)
-                            + " - missing parameters are {0}".format(missing),
+                            f"Wrong number of unit values for '{group}' - missing parameters are {missing}",
                         )
                         extras = unit_params - value_params
                         self.assertEqual(
                             len(extras),
                             0,
-                            "Wrong number of unit values for '{0}'".format(group)
-                            + " - extra parameters are {0}".format(extras),
+                            f"Wrong number of unit values for '{group}' - extra parameters are {extras}",
                         )
 
     return ConfigurableProcessMonitor
