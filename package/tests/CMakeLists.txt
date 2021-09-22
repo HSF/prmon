@@ -106,14 +106,6 @@ script_install(SCRIPT test_disable.py)
 set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")
 message(STATUS "Setting Python test binary to '${PYTHON_TEST}' (use -DPYTHON_TEST to change)")
 
-# Python2 has a different version of the network test
-# as the modules are significantly different from Python3
-if(${PYTHON_TEST} MATCHES "python2")
-    script_install(SCRIPT test_net2.py)
-    script_install(SCRIPT net_burner2.py)
-    script_install(SCRIPT http_block2.py DESTINATION cgi-bin)
-endif()
-
 # CPU Tests
 add_test(NAME testCPUsingle COMMAND ${PYTHON_TEST} test_cpu.py --threads 1 --procs 1) 
 add_test(NAME testCPUmultithread COMMAND ${PYTHON_TEST} test_cpu.py --threads 2 --procs 1) 
@@ -126,12 +118,7 @@ add_test(NAME basicIOmultithread COMMAND ${PYTHON_TEST} test_io.py --usleep 100 
 add_test(NAME basicIOmultiproc COMMAND ${PYTHON_TEST} test_io.py --usleep 100 --io 10  --procs 2)
 
 # Net Tests
-# These have to be different for python2 and python3
-if(${PYTHON_TEST} MATCHES "python3")
-    add_test(NAME basicNET COMMAND ${PYTHON_TEST} test_net.py)
-elseif(${PYTHON_TEST} MATCHES "python2")
-    add_test(NAME basicNET COMMAND ${PYTHON_TEST} test_net2.py)
-endif()
+add_test(NAME basicNET COMMAND ${PYTHON_TEST} test_net.py)
 
 # Memory Tests
 add_test(NAME singleMem COMMAND ${PYTHON_TEST} test_mem.py --procs 1)

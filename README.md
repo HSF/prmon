@@ -63,10 +63,6 @@ command line).
 Note that in a build environment with CVMFS available the C++ compiler
 and CMake can be taken by setting up a recent LCG release.
 
-The tests in prmon now run in Python3. If your environment does not
-support Python3 properly it is possible to use Python2 for the tests
-by setting `-DPYTHON_TEST=python2`.
-
 To enable pulling and building gtest framework as well as tests dependent on gtest, 
 build with `-DBUILD_GTESTS=ON`.
 
@@ -82,8 +78,7 @@ To run the tests of the project, first build it and then invoke
 
     make test
 
-As noted above these will use `python3` by default, but this can
-be changed via the `PYTHON_TEST` option to CMake.
+Running the tests requires Python version 3.6 or higher.
 
 ## Running
 
@@ -135,6 +130,7 @@ other_code_that_invokes_prmon
 ```
 
 Disables the `nvidiamon` monitor.
+
 ## Outputs
 
 In the `filename` output file, plain text with statistics written every

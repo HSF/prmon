@@ -29,7 +29,7 @@ namespace registry {
       registry::Registry<Base>::register_class(      \
           #Derived, REGISTRY_CTOR(Base, Derived, , ), Description);
 
-#define REGISTER_MONITOR_1ARG(Base, Derived, Description, dtype1)                \
+#define REGISTER_MONITOR_1ARG(Base, Derived, Description, dtype1)         \
   static bool _registered_##Derived =                                     \
       registry::Registry<Base, dtype1>::register_class(                   \
           #Derived,                                                       \
