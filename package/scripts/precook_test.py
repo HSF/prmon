@@ -1,3 +1,6 @@
+#! /usr/bin/env python3
+"""Generate pre-cooked pseudo /proc output for use with tests"""
+
 import os
 import time
 import random
@@ -201,17 +204,9 @@ def createTestRand(dir_name, iter):
 def main():
     parser = argparse.ArgumentParser(description="Precooked test generator")
 
-    parser.add_argument(
-        "--dir",
-        type=str,
-        help="Name of the directory to be generated",
-    )
+    parser.add_argument("--dir", type=str, help="Name of the directory to be generated")
 
-    parser.add_argument(
-        "--iter",
-        type=int,
-        help="Number of iterations to be generated",
-    )
+    parser.add_argument("--iter", type=int, help="Number of iterations to be generated")
 
     args = parser.parse_args()
 

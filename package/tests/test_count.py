@@ -56,13 +56,13 @@ def setup_configurable_test(threads=1, procs=1, time=10.0, interval=1, invoke=Fa
                     total_proc,
                     expect_proc,
                     msg="Inconsistent value for number of processes "
-                    "(expected {0}, got {1})".format(expect_proc, total_proc),
+                    f"(expected {expect_proc}, got {total_proc})",
                 )
                 self.assertAlmostEqual(
                     total_thread,
                     expect_thread,
                     msg="Inconsistent value for number of total threads "
-                    "(expected {0}, got {1}".format(expect_thread, total_thread),
+                    f"(expected {expect_thread}, got {total_thread}",
                 )
 
     return ConfigurableProcessMonitor

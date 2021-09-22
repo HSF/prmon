@@ -8,7 +8,7 @@ import sys
 try:
     import pandas as pd
 except ImportError:
-    print("{0: <8}:: This script needs pandas.".format("ERROR"))
+    print("ERROR:: This script needs pandas.")
     sys.exit(-1)
 
 

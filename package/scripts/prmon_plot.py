@@ -15,11 +15,9 @@ try:
 
     plt.style.use("seaborn-whitegrid")
 except ImportError:
-    print("{0: <8}:: This script needs numpy, pandas and matplotlib.".format("ERROR"))
-    print(
-        "{0: <8}:: Looks like at least one of these modules is missing.".format("ERROR")
-    )
-    print("{0: <8}:: Please install them first and then retry.".format("ERROR"))
+    print("ERROR:: This script needs numpy, pandas and matplotlib.")
+    print("ERROR:: Looks like at least one of these modules is missing.")
+    print("ERROR:: Please install them first and then retry.")
     sys.exit(-1)
 
 # Define the labels/units for beautification
@@ -197,7 +195,7 @@ def main():
 
     # Check the input file exists
     if not os.path.exists(args.input):
-        print("{0: <8}:: Input file {1} does not exists".format("ERROR", args.input))
+        print(f"ERROR:: Input file {args.input} does not exists")
         sys.exit(-1)
 
     # Load the data
@@ -206,16 +204,12 @@ def main():
 
     # Check the variables are in data
     if args.xvar not in list(data):
-        print(
-            "{0: <8}:: Variable {1} is not available in data".format("ERROR", args.xvar)
-        )
+        print(f"ERROR:: Variable {args.xvar} is not available in data")
         sys.exit(-1)
     ylist = args.yvar.split(",")
     for carg in ylist:
         if carg not in list(data):
-            print(
-                "{0: <8}:: Variable {1} is not available in data".format("ERROR", carg)
-            )
+            print(f"ERROR:: Variable {carg} is not available in data")
             sys.exit(-1)
 
     # Check the consistency of variables and units
@@ -225,35 +219,23 @@ def main():
         old_xunit = args.xunit
         args.xunit = ALLOWEDUNITS[first_x_variable][0].upper()
         print(
-            "{0: <8}:: Changing xunit from {1} to {2} for consistency".format(
-                "WARNING", old_xunit, args.xunit
-            )
+            f"WARNING:: Changing xunit from {old_xunit} to {args.xunit} for consistency"
         )
     first_y_variable = args.yvar.split(",")[0]
     if args.yunit.lower() not in ALLOWEDUNITS[first_y_variable]:
         old_yunit = args.yunit
         args.yunit = ALLOWEDUNITS[first_y_variable][0].upper()
         print(
-            "{0: <8}:: Changing yunit from {1} to {2} for consistency".format(
-                "WARNING", old_yunit, args.yunit
-            )
+            f"WARNING:: Changing yunit from {old_yunit} to {args.yunit} for consistency"
         )
 
     # Check if the user is trying to plot variables with inconsistent units
     # If so simply print a message to warn them
     if len({ALLOWEDUNITS[i][0] for i in args.xvar.split(",")}) > 1:
-        print(
-            "{0: <8}:: Elements in xvar have inconsistent units, beware!".format(
-                "WARNING"
-            )
-        )
+        print("WARNING:: Elements in xvar have inconsistent units, beware!")
 
     if len({ALLOWEDUNITS[i][0] for i in args.yvar.split(",")}) > 1:
-        print(
-            "{0: <8}:: Elements in yvar have inconsistent units, beware!".format(
-                "WARNING"
-            )
-        )
+        print("WARNING:: Elements in yvar have inconsistent units, beware!")
 
     # Labels and output information
     xlabel = args.xvar
@@ -314,7 +296,7 @@ def main():
     plt.tight_layout()
     fig.savefig(output)
 
-    print("{0: <8}:: Saved output into {1}".format("INFO", output))
+    print(f"INFO:: Saved output into {output}")
     sys.exit(0)
 
 

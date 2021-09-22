@@ -52,17 +52,15 @@ def setup_configurable_test(
                     prmon_json["Max"]["wchar"],
                     expected_bytes,
                     "Too low value for IO bytes written "
-                    "(expected minimum of {0}, got {1})".format(
-                        expected_bytes, prmon_json["Max"]["wchar"]
-                    ),
+                    f"(expected minimum of {expected_bytes}, "
+                    f"got {prmon_json['Max']['wchar']})",
                 )
                 self.assertGreaterEqual(
                     prmon_json["Max"]["rchar"],
                     expected_bytes,
                     "Too low value for IO bytes read "
-                    "(expected minimum of {0}, got {1})".format(
-                        expected_bytes, prmon_json["Max"]["rchar"]
-                    ),
+                    f"(expected minimum of {expected_bytes}, "
+                    f"got {prmon_json['Max']['rchar']})",
                 )
 
     return ConfigurableProcessMonitor
