@@ -137,7 +137,7 @@ bool valid_monitor_disable(const std::string disable_name) {
     spdlog::error("wallmon monitor cannot be disabled (ignored)");
     return false;
   }
-  auto monitors = registry::Registry<Imonitor>::list_registered();
+  auto monitors = prmon::get_all_registered();
   for (const auto &monitor_name : monitors) {
     if (monitor_name == disable_name) {
       return true;
@@ -172,6 +172,16 @@ void snip_string_and_test(char *env_string, unsigned start, unsigned pos,
   std::string monitor_name(env_string + start, pos - start);
   if (valid_monitor_disable(monitor_name))
     disabled_monitors.push_back(monitor_name);
+}
+
+const std::vector<std::string> get_all_registered() {
+  auto registered_monitors = registry::Registry<Imonitor>::list_registered();
+  for (const auto &monitor :
+       registry::Registry<Imonitor,
+                          std::vector<std::string>>::list_registered()) {
+    registered_monitors.emplace_back(monitor);
+  }
+  return registered_monitors;
 }
 
 }  // namespace prmon

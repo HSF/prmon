@@ -74,7 +74,7 @@ prmon::monitored_value_map const countmon::get_json_total_stats() {
   return count_max_stat_map;
 }
 
-// An the averages
+// And the averages
 prmon::monitored_average_map const countmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
   prmon::monitored_average_map count_avg_stat_map{};
@@ -83,6 +83,9 @@ prmon::monitored_average_map const countmon::get_json_average_stats(
   }
   return count_avg_stat_map;
 }
+
+// Return the parameter list
+prmon::parameter_list const countmon::get_parameter_list() { return params; }
 
 // Collect related hardware information
 void const countmon::get_hardware_info(nlohmann::json& hw_json) { return; }

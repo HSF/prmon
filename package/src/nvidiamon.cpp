@@ -191,6 +191,9 @@ bool nvidiamon::test_nvidia_smi() {
   return true;
 }
 
+// Return the parameter list
+prmon::parameter_list const nvidiamon::get_parameter_list() { return params; }
+
 // Collect related hardware information
 void const nvidiamon::get_hardware_info(nlohmann::json& hw_json) {
   // Record the number of GPUs

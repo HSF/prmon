@@ -46,6 +46,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/iomon.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/MessageBase.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/prmonutils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/parameter.cpp
     )
     target_compile_definitions(test_values PRIVATE TESTS_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/../scripts/precooked_tests/)
@@ -67,6 +68,40 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
                             gtest_main
     )
     gtest_discover_tests(test_values)
+
+    add_executable(test_fields test_fields.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/countmon.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/cpumon.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/memmon.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/netmon.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/nvidiamon.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/iomon.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/MessageBase.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parameter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/prmonutils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils.cpp
+    )
+    target_compile_definitions(test_fields PRIVATE PRMON_SOURCE_DIR=${CMAKE_BINARY_DIR})
+
+    target_include_directories(test_fields PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src
+        ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    )
+    if(TARGET nlohmann_json::nlohmann_json)
+    target_link_libraries(test_fields
+                            PRIVATE
+                            nlohmann_json::nlohmann_json
+    )
+    endif(TARGET nlohmann_json::nlohmann_json)
+    target_link_libraries(test_fields
+                            PRIVATE
+                            Threads::Threads
+                            gtest_main
+    )
+    add_test(NAME testFieldsAll COMMAND test_fields)
+    add_test(NAME testFieldsSomeDisabled COMMAND test_fields --disable netmon --disable cpumon)
 
 endif()
 

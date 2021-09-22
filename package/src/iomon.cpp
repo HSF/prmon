@@ -94,6 +94,8 @@ prmon::monitored_average_map const iomon::get_json_average_stats(
   return io_average_stats;
 }
 
+// Return the parameter list
+prmon::parameter_list const iomon::get_parameter_list() { return params; }
 // Collect related hardware information
 void const iomon::get_hardware_info(nlohmann::json& hw_json) { return; }
 

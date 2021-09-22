@@ -42,6 +42,7 @@ class memmon final : public Imonitor, public MessageBase {
   std::map<std::string, unsigned long long> const get_json_total_stats();
   std::map<std::string, double> const get_json_average_stats(
       unsigned long long elapsed_clock_ticks);
+  prmon::parameter_list const get_parameter_list();
 
   // This is the hardware information getter that runs once
   void const get_hardware_info(nlohmann::json& hw_json);
