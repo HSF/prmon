@@ -99,13 +99,15 @@ def setup_configurable_test(
                         self.assertEqual(
                             len(missing),
                             0,
-                            f"Wrong number of unit values for '{group}' - missing parameters are {missing}",
+                            f"Wrong number of unit values for '{group}' - "
+                            f"missing parameters are {missing}",
                         )
                         extras = unit_params - value_params
                         self.assertEqual(
                             len(extras),
                             0,
-                            f"Wrong number of unit values for '{group}' - extra parameters are {extras}",
+                            f"Wrong number of unit values for '{group}' - "
+                            f"extra parameters are {extras}",
                         )
 
     return ConfigurableProcessMonitor

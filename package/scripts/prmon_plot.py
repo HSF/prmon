@@ -226,7 +226,7 @@ def main():
         old_yunit = args.yunit
         args.yunit = ALLOWEDUNITS[first_y_variable][0].upper()
         print(
-            "WARNING:: Changing yunit from {old_yunit} to {args.yunit} for consistency"
+            f"WARNING:: Changing yunit from {old_yunit} to {args.yunit} for consistency"
         )
 
     # Check if the user is trying to plot variables with inconsistent units
