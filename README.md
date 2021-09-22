@@ -78,6 +78,8 @@ To run the tests of the project, first build it and then invoke
 
     make test
 
+Running the tests requires Python version 3.6 or higher.
+
 ## Running
 
 The `prmon` binary is invoked with the following arguments:
@@ -128,6 +130,7 @@ other_code_that_invokes_prmon
 ```
 
 Disables the `nvidiamon` monitor.
+
 ## Outputs
 
 In the `filename` output file, plain text with statistics written every
@@ -148,7 +151,7 @@ default).
 
 ### Visualisation
 
-The `prmon_plot.py` script can be used to plot the outputs of prmon from the
+The `prmon_plot.py` script (Python3) can be used to plot the outputs of prmon from the
 timestamped output file (usually `prmon.txt`). Some examples include:
 
 * Memory usage as a function of wall-time:
@@ -180,7 +183,7 @@ Use `-h` for more information.
 
 ### Data Compression
 
-The `prmon_compress_output.py` script can be used to compress the output file
+The `prmon_compress_output.py` script (Python3) can be used to compress the output file
 while keeping the most relevant information.
 
 The compression algorithm works as follows:
