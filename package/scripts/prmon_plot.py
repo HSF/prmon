@@ -209,7 +209,7 @@ def main():
     ylist = args.yvar.split(",")
     for carg in ylist:
         if carg not in list(data):
-            print("ERROR:: Variable {carg} is not available in data")
+            print(f"ERROR:: Variable {carg} is not available in data")
             sys.exit(-1)
 
     # Check the consistency of variables and units
@@ -296,7 +296,7 @@ def main():
     plt.tight_layout()
     fig.savefig(output)
 
-    print("INFO:: Saved output into {output}")
+    print(f"INFO:: Saved output into {output}")
     sys.exit(0)
 
 
