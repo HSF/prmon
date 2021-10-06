@@ -50,8 +50,8 @@ class wallmon final : public Imonitor, public MessageBase {
   void const get_hardware_info(nlohmann::json& hw_json);
   void const get_unit_info(nlohmann::json& unit_json);
 
-  // Class specific method to retrieve wallclock time in clock ticks
-  unsigned long long const get_wallclock_clock_t();
+  // Class specific method to retrieve wallclock time (in seconds)
+  unsigned long long const get_wallclock_t();
 
   bool const is_valid() { return true; }
 };
