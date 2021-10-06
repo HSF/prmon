@@ -174,13 +174,18 @@ void snip_string_and_test(char *env_string, unsigned start, unsigned pos,
     disabled_monitors.push_back(monitor_name);
 }
 
+// Return all registered monitors, regardless of template type
+// In practice this means combining monitors with no constructor
+// arguments with those (=netmon) which take a list of strings
 const std::vector<std::string> get_all_registered() {
+  // Standard monitors
   auto registered_monitors = registry::Registry<Imonitor>::list_registered();
-  for (const auto &monitor :
-       registry::Registry<Imonitor,
-                          std::vector<std::string>>::list_registered()) {
-    registered_monitors.emplace_back(monitor);
-  }
+  // Special monitors
+  auto special_monitors =
+      registry::Registry<Imonitor, std::vector<std::string>>::list_registered();
+  // Merge
+  registered_monitors.insert(registered_monitors.end(),
+                             special_monitors.begin(), special_monitors.end());
   return registered_monitors;
 }
 
