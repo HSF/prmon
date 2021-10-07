@@ -107,6 +107,9 @@ prmon::monitored_average_map const wallmon::get_json_average_stats(
   return empty_average_stats;
 }
 
+// Return the parameter list
+prmon::parameter_list const wallmon::get_parameter_list() { return params; }
+
 // Collect related hardware information
 void const wallmon::get_hardware_info(nlohmann::json& hw_json) { return; }
 

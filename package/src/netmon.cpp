@@ -157,6 +157,9 @@ prmon::monitored_average_map const netmon::get_json_average_stats(
   return json_average_stats;
 }
 
+// Return the parameter list
+prmon::parameter_list const netmon::get_parameter_list() { return params; }
+
 // Collect related hardware information
 void const netmon::get_hardware_info(nlohmann::json& hw_json) { return; }
 

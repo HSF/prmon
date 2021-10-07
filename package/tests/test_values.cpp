@@ -21,6 +21,8 @@ const int mother_pid = 1729;
 
 const std::string base_path = TO_STRING(TESTS_SOURCE_DIR);
 
+bool prmon::sigusr1 = false;
+
 TEST(IomonTest, IomonMonitonicityTestFixed) {
   std::string cur_path = base_path + "drop";
   std::vector<pid_t> fake_pids = {{mother_pid}};

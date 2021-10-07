@@ -43,12 +43,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   // This is the vector of all monitoring components
   std::unordered_map<std::string, std::unique_ptr<Imonitor>> monitors{};
 
-  auto registered_monitors = registry::Registry<Imonitor>::list_registered();
-  for (const auto& class_name :
-       registry::Registry<Imonitor,
-                          std::vector<std::string>>::list_registered()) {
-    registered_monitors.push_back(class_name);
-  }
+  auto registered_monitors = prmon::get_all_registered();
   for (const auto& class_name : registered_monitors) {
     // Check if the monitor should be enabled
     bool state = true;
@@ -359,7 +354,7 @@ int main(int argc, char* argv[]) {
         << "One of --pid or a child program must be given (but not both)\n"
         << std::endl;
     std::cout << "Monitors available:" << std::endl;
-    auto monitors = registry::Registry<Imonitor>::list_registered();
+    auto monitors = prmon::get_all_registered();
     for (const auto& name : monitors) {
       std::cout << " - " << name << " : "
                 << registry::Registry<Imonitor>::get_description(name)

@@ -90,6 +90,9 @@ prmon::monitored_average_map const memmon::get_json_average_stats(
   return count_avg_stat_map;
 }
 
+// Return the parameter list
+prmon::parameter_list const memmon::get_parameter_list() { return params; }
+
 // Collect related hardware information
 void const memmon::get_hardware_info(nlohmann::json& hw_json) {
   // Read some information from /proc/meminfo

@@ -137,7 +137,7 @@ bool valid_monitor_disable(const std::string disable_name) {
     spdlog::error("wallmon monitor cannot be disabled (ignored)");
     return false;
   }
-  auto monitors = registry::Registry<Imonitor>::list_registered();
+  auto monitors = prmon::get_all_registered();
   for (const auto &monitor_name : monitors) {
     if (monitor_name == disable_name) {
       return true;
@@ -172,6 +172,21 @@ void snip_string_and_test(char *env_string, unsigned start, unsigned pos,
   std::string monitor_name(env_string + start, pos - start);
   if (valid_monitor_disable(monitor_name))
     disabled_monitors.push_back(monitor_name);
+}
+
+// Return all registered monitors, regardless of template type
+// In practice this means combining monitors with no constructor
+// arguments with those (=netmon) which take a list of strings
+const std::vector<std::string> get_all_registered() {
+  // Standard monitors
+  auto registered_monitors = registry::Registry<Imonitor>::list_registered();
+  // Special monitors
+  auto special_monitors =
+      registry::Registry<Imonitor, std::vector<std::string>>::list_registered();
+  // Merge
+  registered_monitors.insert(registered_monitors.end(),
+                             special_monitors.begin(), special_monitors.end());
+  return registered_monitors;
 }
 
 }  // namespace prmon

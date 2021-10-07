@@ -30,6 +30,7 @@ class Imonitor {
   virtual prmon::monitored_value_map const get_json_total_stats() = 0;
   virtual prmon::monitored_average_map const get_json_average_stats(
       prmon::mon_value elapsed_clock_ticks) = 0;
+  virtual prmon::parameter_list const get_parameter_list() = 0;
 
   virtual void const get_hardware_info(nlohmann::json& hw_json) = 0;
   virtual void const get_unit_info(nlohmann::json& unit_json) = 0;

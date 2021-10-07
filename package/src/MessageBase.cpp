@@ -4,6 +4,7 @@
 #include <map>
 
 #include "Imonitor.h"
+#include "prmonutils.h"
 #include "registry.h"
 #include "spdlog/spdlog.h"
 
@@ -32,7 +33,7 @@ void processLevel(std::string s) {
 
     // Check validity of monitor name
     bool valid_monitor = false;
-    auto monitors = registry::Registry<Imonitor>::list_registered();
+    auto monitors = prmon::get_all_registered();
     for (const auto& monitor : monitors) {
       if (monitor == monitor_name) {
         valid_monitor = true;

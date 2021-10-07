@@ -75,6 +75,9 @@ prmon::monitored_average_map const cpumon::get_json_average_stats(
   return empty_average_stats;
 }
 
+// Return the parameter list
+prmon::parameter_list const cpumon::get_parameter_list() { return params; }
+
 // Collect related hardware information
 void const cpumon::get_hardware_info(nlohmann::json& hw_json) {
   // Define the command and run it

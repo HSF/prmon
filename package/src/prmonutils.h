@@ -36,6 +36,9 @@ void SignalCallbackHandler(int);
 // Child process reaper
 int reap_children();
 
+// Utility function to return list of all registered monitors
+const std::vector<std::string> get_all_registered();
+
 // Precision specifier for average output, to truncate to an integer
 // for anything >avg_precision and round the fraction to
 // essentially 1/avg_precision (thus 1000 = 3 decimal places) for
