@@ -79,7 +79,7 @@ void wallmon::update_stats(const std::vector<pid_t>& pids,
   walltime_stats.at("wtime").set_value(uptime_sec);
 }
 
-prmon::mon_value const wallmon::get_wallclock_clock_t() {
+prmon::mon_value const wallmon::get_wallclock_t() {
   // Just ensure we never return a zero
   return (walltime_stats.at("wtime").get_value()
               ? walltime_stats.at("wtime").get_value()

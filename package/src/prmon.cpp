@@ -157,7 +157,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
           }
         }
         for (const auto& monitor : monitors) {
-          auto wallclock_time = wallclock_monitor_p->get_wallclock_clock_t();
+          auto wallclock_time = wallclock_monitor_p->get_wallclock_t();
           for (const auto& stat :
                monitor.second->get_json_average_stats(wallclock_time)) {
             // We will limit the decimal place accuracy here as it doesn't
@@ -221,9 +221,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   file.close();
 
   // Check that we ran for a reasonable number of iterations
-  if (wallclock_monitor_p->get_wallclock_clock_t() /
-          (interval * sysconf(_SC_CLK_TCK)) <
-      1) {
+  if (wallclock_monitor_p->get_wallclock_t() < prmon::mon_value(interval)) {
     spdlog::warn(
         "Wallclock time of monitored process was less than the monitoring "
         "interval, so average statistics will be unreliable");
