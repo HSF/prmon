@@ -30,7 +30,7 @@ std::pair<int, unsigned long long> wallmon::get_mother_starttime(
   std::vector<std::string> stat_entries{};
   stat_entries.reserve(52);
   std::string tmp_str{};
-  unsigned long long start_time_clock_t;
+  unsigned long long start_time_clock;
 
   std::stringstream stat_fname{};
   stat_fname << "/proc/" << mother_pid << "/stat" << std::ends;
@@ -40,7 +40,7 @@ std::pair<int, unsigned long long> wallmon::get_mother_starttime(
     if (proc_stat) stat_entries.push_back(tmp_str);
   }
   if (stat_entries.size() > prmon::uptime_pos) {
-    start_time_clock_t = std::stol(stat_entries[prmon::uptime_pos]);
+    start_time_clock = std::stol(stat_entries[prmon::uptime_pos]);
   } else {
     // Some error happened!
     std::stringstream strm;
@@ -51,7 +51,7 @@ std::pair<int, unsigned long long> wallmon::get_mother_starttime(
     warning(strm.str());
     return std::pair<int, unsigned long long>{1, 0L};
   }
-  return std::pair<int, unsigned long long>{0, start_time_clock_t};
+  return std::pair<int, unsigned long long>{0, start_time_clock};
 }
 
 void wallmon::update_stats(const std::vector<pid_t>& pids,

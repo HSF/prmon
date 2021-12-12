@@ -27,8 +27,6 @@ class wallmon final : public Imonitor, public MessageBase {
   // "map" of monitored parameters (even if there's only one!)
   prmon::monitored_list walltime_stats;
 
-  unsigned long long start_time_clock_t, current_clock_t;
-
   // Only need to get the mother start time once, so use
   // a bool to say when it's done
   bool got_mother_starttime;
