@@ -8,6 +8,11 @@ add_executable(io-burner io-burner.cpp)
 target_link_libraries(io-burner PRIVATE Threads::Threads)
 
 add_executable(mem-burner mem-burner.cpp)
+# Clang has some builtin optimisations around malloc() that
+# mess up this test, so disable them here
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  set_target_properties(mem-burner PROPERTIES COMPILE_FLAGS "-fno-builtin")
+endif()
 
 if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
 
