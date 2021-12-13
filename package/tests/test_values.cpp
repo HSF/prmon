@@ -14,7 +14,7 @@
 #include "../src/registry.h"
 #include "gtest/gtest.h"
 
-const std::vector<pid_t> mother_pid {1729};
+const std::vector<pid_t> mother_pid{1729};
 
 #define TO_STRING2(X) #X
 #define TO_STRING(X) TO_STRING2(X)
