@@ -14,7 +14,7 @@
 #include "../src/registry.h"
 #include "gtest/gtest.h"
 
-const int mother_pid = 1729;
+const std::vector<pid_t> mother_pid{1729};
 
 #define TO_STRING2(X) #X
 #define TO_STRING(X) TO_STRING2(X)
@@ -25,7 +25,7 @@ bool prmon::sigusr1 = false;
 
 TEST(IomonTest, IomonMonitonicityTestFixed) {
   std::string cur_path = base_path + "drop";
-  std::vector<pid_t> fake_pids = {{mother_pid}};
+  std::vector<pid_t> fake_pids = mother_pid;
 
   std::unique_ptr<Imonitor> monitor(
       registry::Registry<Imonitor>::create("iomon"));
@@ -52,7 +52,7 @@ TEST(IomonTest, IomonMonitonicityTestFixed) {
 
 TEST(CpumonTest, CpumonMonitonicityTestFixed) {
   std::string cur_path = base_path + "drop";
-  std::vector<pid_t> fake_pids = {{mother_pid}};
+  std::vector<pid_t> fake_pids = mother_pid;
 
   std::unique_ptr<Imonitor> monitor(
       registry::Registry<Imonitor>::create("cpumon"));
@@ -79,7 +79,7 @@ TEST(CpumonTest, CpumonMonitonicityTestFixed) {
 
 TEST(MemmonTest, MemmonValueTestFixed) {
   std::string cur_path = base_path + "drop";
-  std::vector<pid_t> fake_pids = {{mother_pid}};
+  std::vector<pid_t> fake_pids = mother_pid;
 
   std::unique_ptr<Imonitor> monitor(
       registry::Registry<Imonitor>::create("memmon"));
@@ -106,7 +106,7 @@ TEST(MemmonTest, MemmonValueTestFixed) {
 
 TEST(NetmonTest, NetmonMonitonicityTestFixed) {
   std::string cur_path = base_path + "drop";
-  std::vector<pid_t> fake_pids = {{mother_pid}};
+  std::vector<pid_t> fake_pids = mother_pid;
 
   std::unique_ptr<Imonitor> monitor(
       registry::Registry<Imonitor, std::vector<std::string>>::create(
@@ -134,7 +134,7 @@ TEST(NetmonTest, NetmonMonitonicityTestFixed) {
 
 TEST(NvidiamonTest, NvidiamonValueTestFixed) {
   std::string cur_path = base_path + "drop";
-  std::vector<pid_t> fake_pids = {{mother_pid}};
+  std::vector<pid_t> fake_pids = mother_pid;
 
   std::unique_ptr<Imonitor> monitor(
       registry::Registry<Imonitor>::create("nvidiamon"));

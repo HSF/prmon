@@ -23,8 +23,6 @@
 #include "../src/registry.h"
 #include "gtest/gtest.h"
 
-const int mother_pid = 1729;
-
 #define TO_STRING2(X) #X
 #define TO_STRING(X) TO_STRING2(X)
 
