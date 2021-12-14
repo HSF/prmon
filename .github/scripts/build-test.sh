@@ -7,7 +7,7 @@
 # container; CMAKE_EXTRA can be used to pass special options
 # to cmake for particular platforms
 cd /tmp
-echo "Starting container run for platform $PLATFORM, compiler suite $COMPILER"
+echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
 if [ -z "$CXX" ]; then
 	if [ "$COMPILER" == "clang" ]; then
 		CXX=$(type -p clang++)
@@ -17,7 +17,7 @@ if [ -z "$CXX" ]; then
 fi
 if [ -z "$CC" ]; then
 	if [ "$COMPILER" == "clang" ]; then
-		CXX=$(type -p clang)
+		CC=$(type -p clang)
 	fi
 	CC=$(type -p gcc)
 fi
