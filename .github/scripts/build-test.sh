@@ -9,29 +9,29 @@
 cd /tmp
 echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
 if [ -z "$CXX" ]; then
-	if [ "$COMPILER" == "clang" ]; then
-		CXX=$(type -p clang++)
-	else
-		# gcc suite is the fall through
-    	CXX=$(type -p g++)
-	fi
+    if [ "$COMPILER" == "clang" ]; then
+        CXX=$(type -p clang++)
+    else
+        # gcc suite is the fall through
+        CXX=$(type -p g++)
+    fi
 else
-	echo "CXX was set externally to $CXX"
+    echo "CXX was set externally to $CXX"
 fi
 
 if [ -z "$CC" ]; then
-	if [ "$COMPILER" == "clang" ]; then
-		CC=$(type -p clang)
-	else
-		# gcc suite is the fall through
-		CC=$(type -p gcc)
-	fi
+    if [ "$COMPILER" == "clang" ]; then
+        CC=$(type -p clang)
+    else
+        # gcc suite is the fall through
+        CC=$(type -p gcc)
+    fi
 else
-	echo "CC was set externally to $CC"
+    echo "CC was set externally to $CC"
 fi
 
 if [ -z "$CMAKE" ]; then
-	CMAKE=$(type -p cmake)
+    CMAKE=$(type -p cmake)
 fi
 
 # For debugging, handy to print what we're doing
