@@ -11,15 +11,18 @@ echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
 if [ -z "$CXX" ]; then
 	if [ "$COMPILER" == "clang" ]; then
 		CXX=$(type -p clang++)
+	else
+		# gcc suite is the fall through
+    	CXX=$(type -p g++)
 	fi
-	# gcc suite is the fall through
-    CXX=$(type -p g++)
 fi
 if [ -z "$CC" ]; then
 	if [ "$COMPILER" == "clang" ]; then
 		CC=$(type -p clang)
+	else
+		# gcc suite is the fall through
+		CC=$(type -p gcc)
 	fi
-	CC=$(type -p gcc)
 fi
 if [ -z "$CMAKE" ]; then
 	CMAKE=$(type -p cmake)
