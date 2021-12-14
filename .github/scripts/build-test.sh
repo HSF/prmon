@@ -9,14 +9,14 @@
 cd /tmp
 echo "Starting container run for platform $PLATFORM, compiler suite $COMPILER"
 if [ -z "$CXX" ]; then
-	if [ $COMPILER == "clang" ]; then
+	if [ "$COMPILER" == "clang" ]; then
 		CXX=$(type -p clang++)
 	fi
 	# gcc suite is the fall through
     CXX=$(type -p g++)
 fi
 if [ -z "$CC" ]; then
-	if [ $COMPILER == "clang" ]; then
+	if [ "$COMPILER" == "clang" ]; then
 		CXX=$(type -p clang)
 	fi
 	CC=$(type -p gcc)
