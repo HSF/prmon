@@ -20,6 +20,11 @@ jobs:
     strategy:
       matrix:
         platform: [ c7-dev, c8-dev, u20-dev ]
+        compiler: [ gcc ]
+        include:
+          # On C8 we also test clang
+          - platform: c8-dev
+            compiler: clang
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -34,6 +39,7 @@ jobs:
         echo "DIMAGE=hepsoftwarefoundation/$PLATFORM" >> $GITHUB_ENV
       env:
         PLATFORM: ${{ matrix.platform }}
+        COMPILER: ${{ matrix.compiler }}
 
     # Pulls the associated Docker image
     - name: Docker pull
@@ -42,15 +48,16 @@ jobs:
     # Builds the code and runs the test
     - name: Build and test
       run: |
+        echo "Running on $PLATFORM, compiler $COMPILER"
         if [[ "$DIMAGE" == *c7-dev ]];
         then
           docker run -e CMAKE=cmake3 -e CMAKE_EXTRA=$CMAKE_EXTRA -v $(pwd):/mnt $DIMAGE scl enable devtoolset-8 /mnt/.github/scripts/build-test.sh;
         elif [[ "$DIMAGE" == *c8-dev ]];
         then
-          docker run -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
+          docker run -e PLATFORM -e COMPILER= -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         elif [[ "$DIMAGE" == *u20-dev ]];
         then
-          docker run -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
+          docker run -e PLATFORM -e CXX=g++-9 -e CC=gcc-9 -e COMPILER -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         else
           echo "Unkown Docker Image: $DIMAGE"
         fi
