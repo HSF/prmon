@@ -15,7 +15,10 @@ if [ -z "$CXX" ]; then
 		# gcc suite is the fall through
     	CXX=$(type -p g++)
 	fi
+else
+	echo "CXX was set externally to $CXX"
 fi
+
 if [ -z "$CC" ]; then
 	if [ "$COMPILER" == "clang" ]; then
 		CC=$(type -p clang)
@@ -23,7 +26,10 @@ if [ -z "$CC" ]; then
 		# gcc suite is the fall through
 		CC=$(type -p gcc)
 	fi
+else
+	echo "CC was set externally to $CC"
 fi
+
 if [ -z "$CMAKE" ]; then
 	CMAKE=$(type -p cmake)
 fi
