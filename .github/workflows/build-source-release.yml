@@ -20,12 +20,12 @@ jobs:
       id: archive
       run: |
         VERSION=${{ github.event.release.tag_name }}
-        PKGNAME="prmon-source-$VERSION"
-        mkdir -p /tmp/$PKGNAME
-        mv * /tmp/$PKGNAME
-        mv /tmp/$PKGNAME .
-        TARBALL=$PKGNAME.tar.xz
-        tar cJf $TARBALL $PKGNAME
+        SRCNAME="prmon-$VERSION"
+        mkdir -p /tmp/$SRCNAME
+        mv * /tmp/$SRCNAME
+        mv /tmp/$SRCNAME .
+        TARBALL=$VERSION.tar.xz
+        tar cJf $TARBALL $SRCNAME
         echo "::set-output name=tarball::$TARBALL"
     - name: upload tarball
       uses: actions/upload-release-asset@v1
