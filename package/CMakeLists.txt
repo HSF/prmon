@@ -1,5 +1,3 @@
-find_package(nlohmann_json REQUIRED)
-
 add_executable(prmon src/prmon.cpp
            src/prmonutils.cpp
            src/utils.cpp
@@ -13,6 +11,9 @@ add_executable(prmon src/prmon.cpp
            src/memmon.cpp
            src/nvidiamon.cpp
            )
+
+target_link_libraries(prmon PRIVATE spdlog::spdlog_header_only)
+
 if (BUILD_BENCHMARK_LOG)
   add_executable(benchmark-log benchmarks/benchmark-log.cpp)
 endif(BUILD_BENCHMARK_LOG)
