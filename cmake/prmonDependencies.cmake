@@ -1,5 +1,22 @@
 #--- nlohmann-json -------------------------------------------------------------
-find_package(nlohmann_json REQUIRED)
+option(USE_NLOHMANN_JSON_SUBMODULE "Always use the internal copy of nlohmann_json" FALSE)
+mark_as_advanced(USE_NLOHMANN_JSON_SUBMODULE)
+if(NOT USE_NLOHMANN_JSON_SUBMODULE)
+  find_package(nlohmann_json)
+endif()
+if (nlohmann_json_FOUND)
+  # Setup the imported target alias if an older un-aliased version is found
+  if(TARGET nlohmann_json AND NOT TARGET nlohmann_json::nlohmann_json)
+    add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
+  endif()
+else()
+  set_property(CACHE USE_NLOHMANN_JSON_SUBMODULE PROPERTY VALUE TRUE)
+  message(STATUS "nlohmann_json not found, using included submodule.")
+  if (NOT EXISTS ${PROJECT_SOURCE_DIR}/submodules/nlohmann_json/CMakeLists.txt)
+    message(FATAL_ERROR "nlohmann_json submodule is not available.")
+  endif()
+  add_subdirectory(submodules/nlohmann_json EXCLUDE_FROM_ALL)
+endif()
 
 #--- spdlog --------------------------------------------------------------------
 option(USE_SPDLOG_SUBMODULE "Always use the internal copy of spdlog" FALSE)

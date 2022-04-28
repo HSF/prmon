@@ -12,18 +12,14 @@ add_executable(prmon src/prmon.cpp
            src/nvidiamon.cpp
            )
 
-target_link_libraries(prmon PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(prmon PRIVATE
+           nlohmann_json::nlohmann_json
+           spdlog::spdlog_header_only
+           )
 
 if (BUILD_BENCHMARK_LOG)
   add_executable(benchmark-log benchmarks/benchmark-log.cpp)
 endif(BUILD_BENCHMARK_LOG)
-
-# Some older versions of the nlohmann_json package don't define
-# this target (< 3.0.0 ?). The build on these platforms seems to
-# go ok even without this "link library" definition.
-if(TARGET nlohmann_json::nlohmann_json)
-  target_link_libraries(prmon PRIVATE nlohmann_json::nlohmann_json)
-endif(TARGET nlohmann_json::nlohmann_json)
 
 # Set flags based on more unusual build flags
 if(BUILD_STATIC)

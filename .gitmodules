@@ -1,3 +1,6 @@
 [submodule "submodules/spdlog"]
 	path = submodules/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "submodules/nlohmann_json"]
+	path = submodules/nlohmann_json
+	url = https://github.com/nlohmann/json.git
