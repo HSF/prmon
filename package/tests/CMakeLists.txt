@@ -38,6 +38,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
                             PRIVATE
                             Threads::Threads
                             gtest_main
+                            spdlog::spdlog_header_only
     )
 
     gtest_discover_tests(test_parameter_classes)
@@ -71,6 +72,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
                             PRIVATE
                             Threads::Threads
                             gtest_main
+                            spdlog::spdlog_header_only
     )
     gtest_discover_tests(test_values)
 
@@ -93,6 +95,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/../include
         ${CMAKE_CURRENT_SOURCE_DIR}/../src
         ${CMAKE_CURRENT_SOURCE_DIR}/../..
+        spdlog::spdlog_header_only
     )
     if(TARGET nlohmann_json::nlohmann_json)
     target_link_libraries(test_fields
@@ -104,6 +107,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
                             PRIVATE
                             Threads::Threads
                             gtest_main
+                            spdlog::spdlog_header_only
     )
     add_test(NAME testFieldsAll COMMAND test_fields)
     add_test(NAME testFieldsSomeDisabled COMMAND test_fields --disable netmon --disable cpumon)
