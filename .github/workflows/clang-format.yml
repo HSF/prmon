@@ -19,7 +19,7 @@ jobs:
     # Applies clang-format to all C/C++ files w/ the specified style
     - name: Apply clang-format
       id: formatting
-      uses: HSF/clang-format-action@v0.2
+      uses: HSF/clang-format-action@v0.4
       with:
         style: 'Google'
 
