@@ -100,7 +100,11 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
               ${CMAKE_CURRENT_SOURCE_DIR}/NOTICE
               DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
+#--- project dependencies ------------------------------------------------------
+include(cmake/prmonDependencies.cmake)
+
 #--- project specific subdirectories -------------------------------------------
+
 add_subdirectory(package)
 
 #--- include directories -------------------------------------------

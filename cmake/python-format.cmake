@@ -3,8 +3,8 @@
 # Requires black/flake8 to be available in the environment
 
 
-# Get all Python files
-file(GLOB_RECURSE ALL_PYTHON_FILES *.py)
+# Get all our Python files (submodules are excluded!)
+file(GLOB_RECURSE ALL_PYTHON_FILES ${PROJECT_SOURCE_DIR}/package/*.py)
 
 # Black is rather simple because there are no options...
 add_custom_target(

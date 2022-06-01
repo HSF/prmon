@@ -36,10 +36,17 @@ As prmon has dependencies on submodules, clone the project as
 ### Building the project
 
 Building prmon requires a C++ compiler that fully supports C++11,
-CMake version 3.3 or
-higher and the [Niels Lohmann JSON libraries](https://github.com/nlohmann/json).
+and CMake version 3.3 or higher.  It also has dependencies on:
 
-Building is usually as simple as
+  - [Niels Lohmann JSON libraries](https://github.com/nlohmann/json)
+    - `nlohmann-json-dev` in Ubuntu 18, `nlohmann-json3-dev` in Ubuntu 20
+  - [spdlog: Fast C++ logging library](https://github.com/gabime/spdlog)
+    - `libspdlog-dev` in Ubuntu
+
+and can use either external system-supplied versions or internal copies
+provided by submodules.
+
+Building is usually as simple as:
 
     mkdir build
     cd build
@@ -47,10 +54,26 @@ Building is usually as simple as
     make -j<number of cores on your machine>
     make install
 
-If your installation of JSON is in a non-standard location then
-setting `nlohmann_json_DIR` may be required as a hint to CMake.
-(e.g. this is necessary on Ubuntu18 when using the standard `nlohmann-json-dev`
-package: `-Dnlohmann_json_DIR=/usr/lib/cmake`.)
+Unless otherwise specified, the default behavior for dependencies is to first
+try to find an external version and fall back to the internal submodule copy
+if not found.  To explicitly force the use of either add any of the following
+configure options:
+  - `-DUSE_EXTERNAL_NLOHMANN_JSON={TRUE,FALSE,`**`AUTO`**`}`
+    - `ON`, `TRUE`: Force an external version and fail if not found.
+    - `OFF`, `FALSE`: Require the internal copy be used.
+    - **`AUTO`**: Search for an external version and fall back to the
+       internal copy if not found.
+  - `-Dnlohmann_json_DIR=/path/to/config`
+    - The path to the directory containing `nlohmann_jsonConfig.cmake`.
+      Necessary if nlohmann_json is not installed into CMake's search path.
+  - `-DUSE_EXTERNAL_SPDLOG={TRUE,FALSE,`**`AUTO`**`}`
+    - `ON`, `TRUE`: Force an external version and fail if not found.
+    - `OFF`, `FALSE`: Require the internal copy be used.
+    - **`AUTO`**: Search for an external version and fall back to the
+       internal copy if not found.
+  - `-Dspdlog_DIR=/path/to/config`
+    - The path to the directory containing `spdlogConfig.cmake`.
+      Necessary if spdlog is not installed into CMake's search path.
 
 The option `-DCMAKE_BUILD_TYPE` can switch between all of the standard
 build types. The default is `Release`; use `RelWithDebInfo` if you want
