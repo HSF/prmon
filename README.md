@@ -15,7 +15,7 @@ The PRocess MONitor is a small stand alone program that can monitor
 the resource consumption of a process and its children. This is
 useful in the context of the WLCG/HSF working group to evaluate
 the costs and performance of HEP workflows in WLCG. In a previous
-incarnation (MemoryMonitor) it has been used by ATLAS for sometime to
+incarnation (MemoryMonitor) it has been used by ATLAS for some time to
 gather data on resource consumption by production jobs. One of its
 most useful features is to use smaps to correctly calculate the
 *Proportional Set Size* in the group of processes monitored, which
@@ -79,14 +79,14 @@ The option `-DCMAKE_BUILD_TYPE` can switch between all of the standard
 build types. The default is `Release`; use `RelWithDebInfo` if you want
 debug symbols.
 
-To build a statically linked version of `prmon` set the `BUILD_STATIC`
+To build a statically linked version of `prmon`, set the `BUILD_STATIC`
 CMake variable to `ON` (e.g., adding `-DBUILD_STATIC=ON` to the
 command line).
 
 Note that in a build environment with CVMFS available the C++ compiler
 and CMake can be taken by setting up a recent LCG release.
 
-To enable pulling and building gtest framework as well as tests dependent on gtest, 
+To enable pulling and building the gtest framework as well as tests dependent on gtest,
 build with `-DBUILD_GTESTS=ON`.
 
 ### Creating a package with CPack
@@ -115,7 +115,7 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 ```
 
 * `--pid` the 'mother' PID to monitor (all children in the same process tree are monitored as well)
-* `--filename` output file for timestamped monitored values
+* `--filename` output file for time-stamped monitored values
 * `--json-summmary` output file for summary data written in JSON format
 * `--interval` time, in seconds, between monitoring snapshots
 * `--suppress-hw-info` flag that turns-off hardware information collection
@@ -141,7 +141,7 @@ list of all available monitoring components.
 
 ### Environment Variables
 
-The `PRMON_DISABLE_MONITOR` environment variable can be used to specifiy a comma
+The `PRMON_DISABLE_MONITOR` environment variable can be used to specify a comma
 separated list of monitor names that will be disabled. This is useful when
 `prmon` is being invoked by some other part of a job or workflow, so the user
 does not have direct access to the command line options used. e.g.
@@ -240,7 +240,7 @@ Guide](doc/CONTRIBUTING.md).
 
 ### Profiling
 
-To build prmon with profiling set one of the CMake variables
+To build prmon with profiling, set one of the CMake variables
 `PROFILE_GPROF` or `PROFILE_GPERFTOOLS` to `ON`. This enables
 GNU prof profiling or gperftools profiling, respectively.
 If your gperftools are in a non-standard place, pass a hint
