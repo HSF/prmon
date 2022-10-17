@@ -1,0 +1,20 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+cff-version: 1.2.0
+title: PRMon
+date-released: "2018-06-08"
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Graeme Andrew
+    family-names: Stewart
+    email: graeme.andrew.stewart@cern.ch
+    affiliation: CERN
+    orcid: 'https://orcid.org/0000-0003-0182-7088'
+  - given-names: Alaettin Serhan
+    family-names: Mete
+    email: alaettin.serhan.mete@cern.ch
+    affiliation: Argonne National Laboratory
+    orcid: 'https://orcid.org/0000-0002-5508-530X'
