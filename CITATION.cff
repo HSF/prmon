@@ -1,7 +1,7 @@
 # This CITATION.cff file was generated with cffinit.
 # Visit https://bit.ly/cffinit to generate yours today!
 cff-version: 1.2.0
-title: PRMon
+title: prmon
 date-released: "2018-06-08"
 message: >-
   If you use this software, please cite it using the

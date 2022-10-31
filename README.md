@@ -249,4 +249,4 @@ to CMake using `Gperftools_ROOT_DIR`.
 
 # Copyright
 
-Copyright (c) 2018-2020 CERN.
+Copyright (c) 2018-2022 CERN.
