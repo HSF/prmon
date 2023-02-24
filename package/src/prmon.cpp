@@ -356,9 +356,13 @@ int main(int argc, char* argv[]) {
     std::cout << "Monitors available:" << std::endl;
     auto monitors = prmon::get_all_registered();
     for (const auto& name : monitors) {
-      std::cout << " - " << name << " : "
-                << registry::Registry<Imonitor>::get_description(name)
-                << std::endl;
+      std::cout
+          << " - " << name << " : "
+          << (name == "netmon"
+                  ? registry::Registry<Imonitor, std::vector<std::string>>::
+                        get_description(name)
+                  : registry::Registry<Imonitor>::get_description(name))
+          << std::endl;
     }
     std::cout << std::endl;
     std::cout << "More information: https://github.com/HSF/prmon\n"
