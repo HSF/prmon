@@ -38,7 +38,7 @@ std::vector<pid_t> pstree_pids(const pid_t mother_pid) {
   // method
   std::vector<pid_t> cpids;
   char smaps_buffer[64];
-  snprintf(smaps_buffer, 64, "pstree -A -p %ld | tr \\- \\\\n",
+  snprintf(smaps_buffer, 64, "pstree -l -A -p %ld | tr \\- \\\\n",
            (long)mother_pid);
   FILE *pipe = popen(smaps_buffer, "r");
   if (pipe == 0) return cpids;
