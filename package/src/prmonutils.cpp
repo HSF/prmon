@@ -33,9 +33,11 @@ std::vector<pid_t> pstree_pids(const pid_t mother_pid) {
   // This is the old style method to get the list
   // of PIDs, which uses pstree
   //
-  // At least this was what was needed on SLC6 (kernel 2.6)
-  // so at some point all useful machines will support the new
-  // method
+  // This method was absolutely needed on old kernels (SLC6, kernel 2.6
+  // vintage). However, we also received reports that SUSE Enterprise
+  // Linux 15 SP3 (from HPE) did not have the child PID feature,
+  // so we need to keep this old method forever as a fallback in this
+  // situation.
   std::vector<pid_t> cpids;
   char smaps_buffer[64];
   snprintf(smaps_buffer, 64, "pstree -l -A -p %ld | tr \\- \\\\n",
@@ -69,7 +71,7 @@ std::vector<pid_t> pstree_pids(const pid_t mother_pid) {
 }
 
 std::vector<pid_t> offspring_pids(const pid_t mother_pid) {
-  // Get child process IDs in the new way, using /proc
+  // Get child process IDs in the modern way, using /proc
   std::vector<pid_t> pid_list{};
   std::deque<pid_t> unprocessed_pids{};
 
