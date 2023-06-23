@@ -36,7 +36,7 @@ As prmon has dependencies on submodules, clone the project as
 ### Building the project
 
 Building prmon requires a C++ compiler that fully supports C++11,
-and CMake version 3.3 or higher.  It also has dependencies on:
+and CMake version 3.24 or higher.  It also has dependencies on:
 
   - [Niels Lohmann JSON libraries](https://github.com/nlohmann/json)
     - `nlohmann-json-dev` in Ubuntu 18, `nlohmann-json3-dev` in Ubuntu 20
@@ -249,4 +249,4 @@ to CMake using `Gperftools_ROOT_DIR`.
 
 # Copyright
 
-Copyright (c) 2018-2022 CERN.
+Copyright (c) 2018-2023 CERN.

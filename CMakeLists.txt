@@ -1,7 +1,9 @@
 # - Define the minimum CMake version
 # HSF recommends 3.3 to support C/C++ compile features for C/C++11 across all
 # platforms
-cmake_minimum_required(VERSION 3.3)
+# Updated to 3.24 to ensure correct handling of extracting GTest from tarball
+# (See CMake policy CMP0135)
+cmake_minimum_required(VERSION 3.24)
 # - Call project() to setup system
 # From CMake 3, we can set the project version easily in one go
 project(prmon VERSION 3.0.2)
