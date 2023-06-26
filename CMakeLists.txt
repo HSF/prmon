@@ -6,6 +6,11 @@ cmake_minimum_required(VERSION 3.3)
 # From CMake 3, we can set the project version easily in one go
 project(prmon VERSION 3.0.2)
 
+# For newer CMakes we ensure correct handling of extracting GTest from tarball
+if (POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif (POLICY CMP0135)
+
 #--- Define basic build settings -----------------------------------------------
 # - Use GNU-style hierarchy for installing build products
 include(GNUInstallDirs)

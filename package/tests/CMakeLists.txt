@@ -14,7 +14,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
   set_target_properties(mem-burner PROPERTIES COMPILE_FLAGS "-fno-builtin")
 endif()
 
-if (${CMAKE_VERSION} VERSION_GREATER "3.14.0" AND BUILD_GTESTS)
+if (BUILD_GTESTS)
 
     include(FetchContent)
     FetchContent_Declare(
