@@ -121,6 +121,63 @@ def get_multiplier(label, unit):
     return MULTIPLIERS[ALLOWEDUNITS[label][0].upper()] / MULTIPLIERS[unit]
 
 
+# Function for checking the input file exists
+
+def check_input_file(file):
+    if not os.path.exists(file):
+        print(f"ERROR:: Input file {file} does not exist")
+        sys.exit(-1)
+
+
+# Function for loading the data
+
+def load_data(file):
+    data = pd.read_csv(file, sep="\t")
+    data["Time"] = pd.to_datetime(data["Time"], unit="s")
+    return data
+
+
+# Function for checking whether the variables are in the data
+
+def check_variables(data, var, ylist):
+    if var not in list(data):
+        print(f"ERROR:: Variable {var} is not available in one of the data sets")
+        sys.exit(-1)
+    for carg in ylist:
+        if carg not in list(data):
+            print(f"ERROR:: Variable {carg} is not available in one of the data sets")
+
+
+# This function does something
+
+def create_list(ylist, data, args, xmult, ymult, xlabel):
+    ydlist = []
+    for carg in range(len(ylist)):
+        if args.diff:
+            num = np.array(data[carg].diff()) * ymult
+            denom = np.array(data[xlabel].diff()) * xmult
+            ratio = np.where(denom != 0, num / denom, np.nan)
+            ydlist.append(ratio)
+        else:
+            ydlist.append(np.array(data[carg]) * ymult)
+    return ydlist
+
+
+# Graph plotting functions
+
+def draw_stacked_graph(xdata, ydlist, ylist):
+    ydata = np.vstack(ydlist)
+    plt.stackplot(
+        xdata, ydata, lw=2, labels=[LEGENDNAMES[val] for val in ylist], alpha=0.6
+    )
+
+def draw_line_graph(xdata, ydlist, ylist):
+    for cidx, cdata in enumerate(ydlist):
+        plt.plot(xdata, cdata, lw=2, label=LEGENDNAMES[ylist[cidx]])
+
+
+# Main function
+
 def main():
     """prmon plotting main function"""
 
@@ -134,7 +191,7 @@ def main():
         "--input",
         type=str,
         default="prmon.txt",
-        help="PrMon TXT output that will be used as input",
+        help="First PrMon TXT output that will be used as input",
     )
     parser.add_argument(
         "--output",
@@ -193,24 +250,14 @@ def main():
     parser.set_defaults(diff=False)
     args = parser.parse_args()
 
-    # Check the input file exists
-    if not os.path.exists(args.input):
-        print(f"ERROR:: Input file {args.input} does not exists")
-        sys.exit(-1)
-
-    # Load the data
-    data = pd.read_csv(args.input, sep="\t")
-    data["Time"] = pd.to_datetime(data["Time"], unit="s")
-
-    # Check the variables are in data
-    if args.xvar not in list(data):
-        print(f"ERROR:: Variable {args.xvar} is not available in data")
-        sys.exit(-1)
+    inputs = args.input.split(",")
     ylist = args.yvar.split(",")
-    for carg in ylist:
-        if carg not in list(data):
-            print(f"ERROR:: Variable {carg} is not available in data")
-            sys.exit(-1)
+    data = []
+
+    for i in range(len(inputs)):
+        check_input_file(inputs[i])
+        data.append(load_data(inputs[i]))
+        check_variables(data[i], args.xvar, ylist)
 
     # Check the consistency of variables and units
     # If they don't match, reset the units to defaults
@@ -231,6 +278,7 @@ def main():
 
     # Check if the user is trying to plot variables with inconsistent units
     # If so simply print a message to warn them
+    # TEST THIS LATER
     if len({ALLOWEDUNITS[i][0] for i in args.xvar.split(",")}) > 1:
         print("WARNING:: Elements in xvar have inconsistent units, beware!")
 
@@ -257,24 +305,25 @@ def main():
 
     # Here comes the figure and data extraction
     fig, ax1 = plt.subplots()
-    xdata = np.array(data[xlabel]) * xmultiplier
+
+    xdata = []
     ydlist = []
-    for carg in ylist:
-        if args.diff:
-            num = np.array(data[carg].diff()) * ymultiplier
-            denom = np.array(data[xlabel].diff()) * xmultiplier
-            ratio = np.where(denom != 0, num / denom, np.nan)
-            ydlist.append(ratio)
-        else:
-            ydlist.append(np.array(data[carg]) * ymultiplier)
+
+    for i in range(len(data)):
+        xdata.append(np.array(data[i][xlabel] * xmultiplier))
+        ydlist.append(create_list(ylist, data, args, xmultiplier, ymultiplier, xlabel))
+
+    # Plots the graphs
+
     if args.stacked:
-        ydata = np.vstack(ydlist)
-        plt.stackplot(
-            xdata, ydata, lw=2, labels=[LEGENDNAMES[val] for val in ylist], alpha=0.6
-        )
+        for i in range(xdata):
+            draw_stacked_graph(xdata[i], ydlist[i], ylist)
     else:
-        for cidx, cdata in enumerate(ydlist):
-            plt.plot(xdata, cdata, lw=2, label=LEGENDNAMES[ylist[cidx]])
+        for i in range(xdata):
+            draw_line_graph(xdata[i], ydlist[i], ylist)
+
+    # Creates the key
+
     plt.legend(loc=0)
     if "Time" in xlabel:
         formatter = mpl.dates.DateFormatter("%H:%M:%S")
@@ -290,6 +339,7 @@ def main():
     else:
         fylabel = get_axis_label(ylist[0])
         fyunit = args.yunit
+
     plt.title("Plot of {} vs {}".format(fxlabel, fylabel), y=1.05)
     plt.xlabel((fxlabel + " [" + fxunit + "]") if fxunit != "1" else fxlabel)
     plt.ylabel((fylabel + " [" + fyunit + "]") if fyunit != "1" else fylabel)
@@ -298,7 +348,6 @@ def main():
 
     print(f"INFO:: Saved output into {output}")
     sys.exit(0)
-
 
 if "__main__" in __name__:
     main()
