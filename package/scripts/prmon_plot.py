@@ -167,7 +167,7 @@ def draw_stacked_graph(xdata, ydlist, ylist):
     )
 
 
-def draw_line_graph(xdata, ydlist, ylist, sty, inputs):
+def draw_line_graph(xdata, ydlist, ylist, sty, inputs, count):
     # This is a list of the matplotlib default colours
     colours = plt.rcParams['axes.prop_cycle'].by_key()['color']
     for cidx, cdata in enumerate(ydlist):
@@ -175,7 +175,7 @@ def draw_line_graph(xdata, ydlist, ylist, sty, inputs):
             lbl = LEGENDNAMES[ylist[cidx]]
             plt.plot(xdata, cdata, lw=2, label=lbl, color=colours[cidx], linestyle=sty)
         else:
-            lbl = f"{LEGENDNAMES[ylist[cidx]]} ({inputs[cidx]})"
+            lbl = f"{LEGENDNAMES[ylist[cidx]]} ({inputs[count]})"
             plt.plot(xdata, cdata, lw=2, label=lbl, color=colours[cidx], linestyle=sty)
 
 
@@ -326,7 +326,7 @@ def main():
             sys.exit(-1)
     else:
         for i in range(len(xdata)):
-            draw_line_graph(xdata[i], ydlist[i], ylist, line_styles[i % 7], inputs)
+            draw_line_graph(xdata[i], ydlist[i], ylist, line_styles[i % 7], inputs, i)
 
     # Create the key
     plt.legend(loc=0)
