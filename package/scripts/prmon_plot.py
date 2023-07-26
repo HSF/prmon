@@ -146,7 +146,7 @@ def check_variables(data, var, ylist):
 
 
 # This function creates the final data set of y-values
-def create_list(ylist, data, args, xmult, ymult, xlabel):
+def make_list(ylist, data, args, xmult, ymult, xlabel):
     ydlist = []
     for carg in ylist:
         if args.diff:
@@ -158,6 +158,7 @@ def create_list(ylist, data, args, xmult, ymult, xlabel):
             ydlist.append(np.array(data[carg]) * ymult)
     return ydlist
 
+
 # Graph plotting functions
 def draw_stacked_graph(xdata, ydlist, ylist):
     ydata = np.vstack(ydlist)
@@ -165,15 +166,17 @@ def draw_stacked_graph(xdata, ydlist, ylist):
         xdata, ydata, lw=2, labels=[LEGENDNAMES[val] for val in ylist], alpha=0.6
     )
 
-def draw_line_graph(xdata, ydlist, ylist, style, inputs):
-    colours = plt.rcParams['axes.prop_cycle'].by_key()['color']     # This is a list of the matplotlib default colours
-    count = 0
+
+def draw_line_graph(xdata, ydlist, ylist, sty, inputs):
+    # This is a list of the matplotlib default colours
+    colours = plt.rcParams['axes.prop_cycle'].by_key()['color']
     for cidx, cdata in enumerate(ydlist):
         if len(inputs) == 1:
-            plt.plot(xdata, cdata, lw=2, label=LEGENDNAMES[ylist[cidx]], color=colours[count], linestyle=style)
+            lbl = LEGENDNAMES[ylist[cidx]]
+            plt.plot(xdata, cdata, lw=2, label=lbl, color=colours[cidx], linestyle=sty)
         else:
-            plt.plot(xdata, cdata, lw=2, label=f"{LEGENDNAMES[ylist[cidx]]} ({inputs[cidx]})", color=colours[count], linestyle=style)
-        count += 1
+            lbl = f"{LEGENDNAMES[ylist[cidx]]} ({inputs[cidx]})"
+            plt.plot(xdata, cdata, lw=2, label=lbl, color=colours[cidx], linestyle=sty)
 
 
 def main():
@@ -189,7 +192,8 @@ def main():
         "--input",
         type=str,
         default="prmon.txt",
-        help="First PrMon TXT output that will be used as input",
+        help="PrMon TXT output(s) that will be used as input(s)"
+        " (comma separated list is accepted)",
     )
     parser.add_argument(
         "--output",
@@ -215,7 +219,7 @@ def main():
         type=str,
         default=default_yvar,
         help="name(s) of the variable(s) to be plotted in the y-axis"
-        " (comma seperated list is accepted)",
+        " (comma separated list is accepted)",
     )
     parser.add_argument(
         "--yunit",
@@ -308,7 +312,7 @@ def main():
 
     for i in range(len(data)):
         xdata.append(np.array(data[i][xlabel] * xmultiplier))
-        ydlist.append(create_list(ylist, data[i], args, xmultiplier, ymultiplier, xlabel))
+        ydlist.append(make_list(ylist, data[i], args, xmultiplier, ymultiplier, xlabel))
 
     # Plot the graphs
     line_styles = list(mpl.lines.lineStyles.keys())
@@ -340,7 +344,7 @@ def main():
     else:
         fylabel = get_axis_label(ylist[0])
         fyunit = args.yunit
-    
+
     plt.title("Plot of {} vs {}".format(fxlabel, fylabel), y=1.05)
     plt.xlabel((fxlabel + " [" + fxunit + "]") if fxunit != "1" else fxlabel)
     plt.ylabel((fylabel + " [" + fyunit + "]") if fyunit != "1" else fylabel)
@@ -349,6 +353,7 @@ def main():
 
     print(f"INFO:: Saved output into {output}")
     sys.exit(0)
+
 
 if "__main__" in __name__:
     main()
