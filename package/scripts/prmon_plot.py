@@ -148,11 +148,11 @@ def check_variables(data, var, ylist):
             print(f"ERROR:: Variable {carg} is not available in one of the data sets")
 
 
-# This function does something
+# This function creates the final data set of y-values
 
 def create_list(ylist, data, args, xmult, ymult, xlabel):
     ydlist = []
-    for carg in range(len(ylist)):
+    for carg in ylist:
         if args.diff:
             num = np.array(data[carg].diff()) * ymult
             denom = np.array(data[xlabel].diff()) * xmult
@@ -162,7 +162,6 @@ def create_list(ylist, data, args, xmult, ymult, xlabel):
             ydlist.append(np.array(data[carg]) * ymult)
     return ydlist
 
-
 # Graph plotting functions
 
 def draw_stacked_graph(xdata, ydlist, ylist):
@@ -171,9 +170,12 @@ def draw_stacked_graph(xdata, ydlist, ylist):
         xdata, ydata, lw=2, labels=[LEGENDNAMES[val] for val in ylist], alpha=0.6
     )
 
-def draw_line_graph(xdata, ydlist, ylist):
+def draw_line_graph(xdata, ydlist, ylist, style):
+    colours = plt.rcParams['axes.prop_cycle'].by_key()['color']     # This is a list of the matplotlib default colours
+    count = 0
     for cidx, cdata in enumerate(ydlist):
-        plt.plot(xdata, cdata, lw=2, label=LEGENDNAMES[ylist[cidx]])
+        plt.plot(xdata, cdata, lw=2, label=LEGENDNAMES[ylist[cidx]], color=colours[count], linestyle=style)
+        count += 1
 
 
 # Main function
@@ -311,16 +313,22 @@ def main():
 
     for i in range(len(data)):
         xdata.append(np.array(data[i][xlabel] * xmultiplier))
-        ydlist.append(create_list(ylist, data, args, xmultiplier, ymultiplier, xlabel))
+        ydlist.append(create_list(ylist, data[i], args, xmultiplier, ymultiplier, xlabel))
 
     # Plots the graphs
 
+    line_styles = list(mpl.lines.lineStyles.keys())
+
     if args.stacked:
-        for i in range(xdata):
-            draw_stacked_graph(xdata[i], ydlist[i], ylist)
+        if len(ylist) == 1:
+            for i in range(len(xdata)):
+                draw_stacked_graph(xdata[i], ydlist[i], ylist)
+        else:
+            print("ERROR:: Stacked graphs are not supported for more than one data set")
+            sys.exit(-1)
     else:
-        for i in range(xdata):
-            draw_line_graph(xdata[i], ydlist[i], ylist)
+        for i in range(len(xdata)):
+            draw_line_graph(xdata[i], ydlist[i], ylist, line_styles[i % 7])
 
     # Creates the key
 
