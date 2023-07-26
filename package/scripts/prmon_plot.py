@@ -122,7 +122,6 @@ def get_multiplier(label, unit):
 
 
 # Function for checking the input file exists
-
 def check_input_file(file):
     if not os.path.exists(file):
         print(f"ERROR:: Input file {file} does not exist")
@@ -130,7 +129,6 @@ def check_input_file(file):
 
 
 # Function for loading the data
-
 def load_data(file):
     data = pd.read_csv(file, sep="\t")
     data["Time"] = pd.to_datetime(data["Time"], unit="s")
@@ -138,7 +136,6 @@ def load_data(file):
 
 
 # Function for checking whether the variables are in the data
-
 def check_variables(data, var, ylist):
     if var not in list(data):
         print(f"ERROR:: Variable {var} is not available in one of the data sets")
@@ -149,7 +146,6 @@ def check_variables(data, var, ylist):
 
 
 # This function creates the final data set of y-values
-
 def create_list(ylist, data, args, xmult, ymult, xlabel):
     ydlist = []
     for carg in ylist:
@@ -163,22 +159,22 @@ def create_list(ylist, data, args, xmult, ymult, xlabel):
     return ydlist
 
 # Graph plotting functions
-
 def draw_stacked_graph(xdata, ydlist, ylist):
     ydata = np.vstack(ydlist)
     plt.stackplot(
         xdata, ydata, lw=2, labels=[LEGENDNAMES[val] for val in ylist], alpha=0.6
     )
 
-def draw_line_graph(xdata, ydlist, ylist, style):
+def draw_line_graph(xdata, ydlist, ylist, style, inputs):
     colours = plt.rcParams['axes.prop_cycle'].by_key()['color']     # This is a list of the matplotlib default colours
     count = 0
     for cidx, cdata in enumerate(ydlist):
-        plt.plot(xdata, cdata, lw=2, label=LEGENDNAMES[ylist[cidx]], color=colours[count], linestyle=style)
+        if len(inputs) == 1:
+            plt.plot(xdata, cdata, lw=2, label=LEGENDNAMES[ylist[cidx]], color=colours[count], linestyle=style)
+        else:
+            plt.plot(xdata, cdata, lw=2, label=f"{LEGENDNAMES[ylist[cidx]]} ({inputs[cidx]})", color=colours[count], linestyle=style)
         count += 1
 
-
-# Main function
 
 def main():
     """prmon plotting main function"""
@@ -280,7 +276,6 @@ def main():
 
     # Check if the user is trying to plot variables with inconsistent units
     # If so simply print a message to warn them
-    # TEST THIS LATER
     if len({ALLOWEDUNITS[i][0] for i in args.xvar.split(",")}) > 1:
         print("WARNING:: Elements in xvar have inconsistent units, beware!")
 
@@ -315,12 +310,11 @@ def main():
         xdata.append(np.array(data[i][xlabel] * xmultiplier))
         ydlist.append(create_list(ylist, data[i], args, xmultiplier, ymultiplier, xlabel))
 
-    # Plots the graphs
-
+    # Plot the graphs
     line_styles = list(mpl.lines.lineStyles.keys())
 
     if args.stacked:
-        if len(ylist) == 1:
+        if len(inputs) == 1:
             for i in range(len(xdata)):
                 draw_stacked_graph(xdata[i], ydlist[i], ylist)
         else:
@@ -328,10 +322,9 @@ def main():
             sys.exit(-1)
     else:
         for i in range(len(xdata)):
-            draw_line_graph(xdata[i], ydlist[i], ylist, line_styles[i % 7])
+            draw_line_graph(xdata[i], ydlist[i], ylist, line_styles[i % 7], inputs)
 
-    # Creates the key
-
+    # Create the key
     plt.legend(loc=0)
     if "Time" in xlabel:
         formatter = mpl.dates.DateFormatter("%H:%M:%S")
@@ -347,7 +340,7 @@ def main():
     else:
         fylabel = get_axis_label(ylist[0])
         fyunit = args.yunit
-
+    
     plt.title("Plot of {} vs {}".format(fxlabel, fylabel), y=1.05)
     plt.xlabel((fxlabel + " [" + fxunit + "]") if fxunit != "1" else fxlabel)
     plt.ylabel((fylabel + " [" + fyunit + "]") if fyunit != "1" else fylabel)
