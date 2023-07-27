@@ -256,6 +256,10 @@ def main():
     ylist = args.yvar.split(",")
     data = []
 
+    if len(inputs) > 7:
+        print("ERROR:: Inputting more than seven sets of data is not currently supported")
+        sys.exit(-1)
+
     for i in range(len(inputs)):
         check_input_file(inputs[i])
         data.append(load_data(inputs[i]))
