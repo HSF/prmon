@@ -169,7 +169,7 @@ def draw_stacked_graph(xdata, ydlist, ylist):
 
 def draw_line_graph(xdata, ydlist, ylist, sty, inputs, count):
     # This is a list of the matplotlib default colours
-    colours = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    colours = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     for cidx, cdata in enumerate(ydlist):
         if len(inputs) == 1:
             lbl = LEGENDNAMES[ylist[cidx]]
@@ -257,7 +257,9 @@ def main():
     data = []
 
     if len(inputs) > 7:
-        print("ERROR:: Inputting more than seven sets of data is not currently supported")
+        print(
+            "ERROR:: Inputting more than seven sets of data is not currently supported"
+        )
         sys.exit(-1)
 
     for i in range(len(inputs)):
