@@ -256,12 +256,6 @@ def main():
     ylist = args.yvar.split(",")
     data = []
 
-    if len(inputs) > 7:
-        print(
-            "ERROR:: Inputting more than seven sets of data is not currently supported"
-        )
-        sys.exit(-1)
-
     for i in range(len(inputs)):
         check_input_file(inputs[i])
         data.append(load_data(inputs[i]))
@@ -332,7 +326,7 @@ def main():
             sys.exit(-1)
     else:
         for i in range(len(xdata)):
-            draw_line_graph(xdata[i], ydlist[i], ylist, line_styles[i % 7], inputs, i)
+            draw_line_graph(xdata[i], ydlist[i], ylist, line_styles[i%7], inputs, i)
 
     # Create the key
     plt.legend(loc=0)
