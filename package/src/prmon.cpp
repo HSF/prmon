@@ -387,7 +387,8 @@ int main(int argc, char* argv[]) {
 
   // Set up the global logger
   c_sink = std::make_shared<spdlog::sinks::stdout_color_sink_st>();
-  f_sink = std::make_shared<spdlog::sinks::basic_file_sink_st>(logFileName, true);
+  f_sink =
+      std::make_shared<spdlog::sinks::basic_file_sink_st>(logFileName, true);
   spdlog::sinks_init_list s_list = {c_sink, f_sink};
   auto logger =
       std::make_shared<spdlog::logger>("prmon", s_list.begin(), s_list.end());
