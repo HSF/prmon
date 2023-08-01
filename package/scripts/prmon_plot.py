@@ -326,7 +326,9 @@ def main():
             sys.exit(-1)
     else:
         for i in range(len(xdata)):
-            draw_line_graph(xdata[i], ydlist[i], ylist, line_styles[i % len(line_styles)], inputs, i)
+            draw_line_graph(
+                xdata[i], ydlist[i], ylist, line_styles[i % len(line_styles)], inputs, i
+            )
 
     # Create the key
     plt.legend(loc=0)
