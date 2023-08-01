@@ -109,7 +109,8 @@ The `prmon` binary is invoked with the following arguments:
 
 ```sh
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
-      [--interval 30] [--suppress-hw-info] [--units] [--netdev DEV] \
+      [--log-filename prmon.log] [--interval 30] \
+      [--suppress-hw-info] [--units] [--netdev DEV] \
       [--disable MON1] [--level LEV] [--level MON:LEV]\
       [-- prog arg arg ...]
 ```
@@ -117,6 +118,7 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 * `--pid` the 'mother' PID to monitor (all children in the same process tree are monitored as well)
 * `--filename` output file for time-stamped monitored values
 * `--json-summmary` output file for summary data written in JSON format
+* `--log-filename` output file for log messages
 * `--interval` time, in seconds, between monitoring snapshots
 * `--suppress-hw-info` flag that turns-off hardware information collection
 * `--units` add information on units for each metric to JSON file
@@ -164,6 +166,9 @@ are given in JSON format. This file is rewritten every `interval` seconds
 with the current summary values. Use the `--units` option to see exactly
 which units are used for each metric (the value of `1` for a unit means
 it is a pure number).
+
+In the `log-filename` output file, log messages (e.g., errors, warnings etc.)
+are written.
 
 Monitoring of CPU, I/O and memory is reliably accurate, at least to within
 the sampling time. Monitoring of network I/O is **not reliable** unless the

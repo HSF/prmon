@@ -31,6 +31,9 @@
 #include "utils.h"
 #include "wallmon.h"
 
+std::shared_ptr<spdlog::sinks::stdout_color_sink_st> c_sink;
+std::shared_ptr<spdlog::sinks::basic_file_sink_st> f_sink;
+
 bool prmon::sigusr1 = false;
 
 int ProcessMonitor(const pid_t mpid, const std::string filename,
@@ -229,22 +232,16 @@ int main(int argc, char* argv[]) {
   // Set defaults
   const char* default_filename = "prmon.txt";
   const char* default_json_summary = "prmon.json";
+  const char* default_log_filename = "prmon.log";
   const unsigned int default_interval = 30;
   const bool default_store_hw_info = true;
   const bool default_store_unit_info = false;
-
-  // Set up global default logger
-  spdlog::sinks_init_list s_list = {c_sink, f_sink};
-  auto logger =
-      std::make_shared<spdlog::logger>("prmon", s_list.begin(), s_list.end());
-  logger->set_level(spdlog::level::warn);
-  logger->flush_on(spdlog::level::warn);
-  spdlog::set_default_logger(logger);
 
   pid_t pid = -1;
   bool got_pid = false;
   std::string filename{default_filename};
   std::string jsonSummary{default_json_summary};
+  std::string logFileName{default_log_filename};
   std::vector<std::string> netdevs{};
   std::vector<std::string> disabled_monitors{};
   unsigned int interval{default_interval};
@@ -256,6 +253,7 @@ int main(int argc, char* argv[]) {
       {"pid", required_argument, NULL, 'p'},
       {"filename", required_argument, NULL, 'f'},
       {"json-summary", required_argument, NULL, 'j'},
+      {"log-filename", required_argument, NULL, 'o'},
       {"interval", required_argument, NULL, 'i'},
       {"disable", required_argument, NULL, 'd'},
       {"suppress-hw-info", no_argument, NULL, 's'},
@@ -266,7 +264,7 @@ int main(int argc, char* argv[]) {
       {0, 0, 0, 0}};
 
   int c;
-  while ((c = getopt_long(argc, argv, "-p:f:j:i:d:sun:h:l:", long_options,
+  while ((c = getopt_long(argc, argv, "-p:f:j:o:i:d:sun:h:l:", long_options,
                           NULL)) != -1) {
     switch (char(c)) {
       case 'p':
@@ -278,6 +276,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'j':
         jsonSummary = optarg;
+        break;
+      case 'o':
+        logFileName = optarg;
         break;
       case 'i':
         interval = std::stoi(optarg);
@@ -303,7 +304,7 @@ int main(int argc, char* argv[]) {
         processLevel(std::string(optarg));
         break;
       default:
-        spdlog::error("Use '--help' for usage ");
+        std::cerr << "Use '--help' for usage " << std::endl;
         return 1;
     }
   }
@@ -325,6 +326,8 @@ int main(int argc, char* argv[]) {
         << default_filename << ")\n"
         << "[--json-summary, -j FILE] Filename for JSON summary (default "
         << default_json_summary << ")\n"
+        << "[--log-filename, -o FILE] Filename for logging (default "
+        << default_log_filename << ")\n"
         << "[--interval, -i TIME]     Seconds between samples (default "
         << default_interval << ")\n"
         << "[--suppress-hw-info, -s]  Disable hardware information (default "
@@ -382,8 +385,12 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  // Now that we know given level option is valid, update the level of the
-  // global logger
+  // Set up the global logger
+  c_sink = std::make_shared<spdlog::sinks::stdout_color_sink_st>();
+  f_sink = std::make_shared<spdlog::sinks::basic_file_sink_st>(logFileName, true);
+  spdlog::sinks_init_list s_list = {c_sink, f_sink};
+  auto logger =
+      std::make_shared<spdlog::logger>("prmon", s_list.begin(), s_list.end());
   logger->set_level(global_logging_level);
   logger->flush_on(global_logging_level);
   spdlog::set_default_logger(logger);
