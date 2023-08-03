@@ -18,7 +18,7 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-memmon::memmon() {
+memmon::memmon() : input_filename{"smaps"} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
@@ -35,7 +35,8 @@ void memmon::update_stats(const std::vector<pid_t>& pids,
   std::string key_str{}, value_str{};
   for (const auto pid : pids) {
     std::stringstream smaps_fname{};
-    smaps_fname << read_path << "/proc/" << pid << "/smaps" << std::ends;
+    smaps_fname << read_path << "/proc/" << pid << "/" << input_filename.c_str()
+                << std::ends;
     std::ifstream smap_stat{smaps_fname.str()};
     while (smap_stat) {
       // Read off the potentially interesting "key: value", then discard

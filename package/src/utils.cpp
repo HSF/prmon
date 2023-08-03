@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -103,4 +104,9 @@ const void prmon::fill_units(nlohmann::json& unit_json,
       unit_json["Units"]["Avg"][param.get_name()] = param.get_avg_unit();
   }
   return;
+}
+
+const bool prmon::smaps_rollup_exists() {
+  struct stat buffer;
+  return (stat("/proc/self/smaps_rollup", &buffer) == 0);
 }

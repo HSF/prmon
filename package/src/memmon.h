@@ -26,6 +26,9 @@ class memmon final : public Imonitor, public MessageBase {
                                         {"rss", "kB", "kB"},
                                         {"swap", "kB", "kB"}};
 
+  // The input smaps file to be used
+  std::string input_filename;
+
   // Dynamic monitoring container for value measurements
   // This will be filled at initialisation, taking the names
   // from the above params
@@ -48,6 +51,9 @@ class memmon final : public Imonitor, public MessageBase {
   void const get_hardware_info(nlohmann::json& hw_json);
   void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return true; }
+
+  // Toggle on fast memmory monitoring
+  inline void const do_fastmon() { input_filename = "smaps_rollup"; };
 };
 REGISTER_MONITOR(Imonitor, memmon, "Monitor memory usage")
 

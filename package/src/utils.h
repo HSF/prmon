@@ -53,6 +53,9 @@ const std::pair<int, std::vector<std::string>> cmd_pipe_output(
 //  monitor)
 const void fill_units(nlohmann::json& unit_json, const parameter_list& params);
 
+// Utility function to check if smaps_rollup is available on this machine
+const bool smaps_rollup_exists();
+
 }  // namespace prmon
 
 #endif  // PRMON_UTILS_H
