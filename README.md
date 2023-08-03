@@ -111,7 +111,8 @@ The `prmon` binary is invoked with the following arguments:
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
       [--log-filename prmon.log] [--interval 30] \
       [--suppress-hw-info] [--units] [--netdev DEV] \
-      [--disable MON1] [--level LEV] [--level MON:LEV]\
+      [--disable MON1] [--level LEV] [--level MON:LEV] \
+      [--fast-memmon] \
       [-- prog arg arg ...]
 ```
 
@@ -130,6 +131,7 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
   * `--level LEV` sets the level for all monitors to LEV
   * `--level MON:LEV` sets the level for monitor MON to LEV
   * The valid levels are `trace`, `debug`, `info`, `warn`, `error`, `critical`
+* `--fast-memmon` toggles on fast memory monitoring using `smaps_rollup`
 * `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
   instead of being given a PID via `--pid`

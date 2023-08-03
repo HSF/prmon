@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "memmon.h"
 #include "prmonVersion.h"
 #include "prmonutils.h"
 #include "registry.h"
@@ -40,7 +41,8 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
                    const std::string json_summary_file, const time_t interval,
                    const bool store_hw_info, const bool store_unit_info,
                    const std::vector<std::string> netdevs,
-                   const std::vector<std::string> disabled_monitors) {
+                   const std::vector<std::string> disabled_monitors,
+                   const bool do_fast_memmon) {
   signal(SIGUSR1, prmon::SignalCallbackHandler);
 
   // This is the vector of all monitoring components
@@ -79,6 +81,18 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   if (monitors.count("wallmon") != 1) {
     spdlog::error("Failed to initialise mandatory wallclock monitoring class");
     exit(EXIT_FAILURE);
+  }
+
+  // Configure the memory monitor for fast monitoring if possible/asked for
+  if (do_fast_memmon && monitors.count("memmon")) {
+    if (!prmon::smaps_rollup_exists()) {
+      spdlog::warn(
+          "Fast memory monitoring is requested but the kernel doesn't support "
+          "smaps_rollup, using the standard mode.");
+    } else {
+      auto mem_monitor_p = static_cast<memmon*>(monitors["memmon"].get());
+      mem_monitor_p->do_fastmon();
+    }
   }
 
   int iteration = 0;
@@ -248,6 +262,7 @@ int main(int argc, char* argv[]) {
   bool store_hw_info{default_store_hw_info};
   bool store_unit_info{default_store_unit_info};
   int do_help{0};
+  bool do_fast_memmon{false};
 
   static struct option long_options[] = {
       {"pid", required_argument, NULL, 'p'},
@@ -261,10 +276,11 @@ int main(int argc, char* argv[]) {
       {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
       {"level", required_argument, NULL, 'l'},
+      {"fast-memmon", no_argument, NULL, 'm'},
       {0, 0, 0, 0}};
 
   int c;
-  while ((c = getopt_long(argc, argv, "-p:f:j:o:i:d:sun:h:l:", long_options,
+  while ((c = getopt_long(argc, argv, "-p:f:j:o:i:d:sun:h:l:m", long_options,
                           NULL)) != -1) {
     switch (char(c)) {
       case 'p':
@@ -302,6 +318,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'l':
         processLevel(std::string(optarg));
+        break;
+      case 'm':
+        do_fast_memmon = true;
         break;
       default:
         std::cerr << "Use '--help' for usage " << std::endl;
@@ -349,6 +368,8 @@ int main(int argc, char* argv[]) {
         << "                          Valid level names are trace, debug, "
            "info,\n"
         << "                          warn, error and critical\n"
+        << "[--fast-memmon, -m]       Do fast memory monitoring using "
+           "smaps_rollup\n"
         << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
         << "                          execute the given program + args and\n"
         << "                          monitor this (must come after other \n"
@@ -413,7 +434,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
     ProcessMonitor(pid, filename, jsonSummary, interval, store_hw_info,
-                   store_unit_info, netdevs, disabled_monitors);
+                   store_unit_info, netdevs, disabled_monitors, do_fast_memmon);
   } else {
     if (child_args == argc) {
       spdlog::error(
@@ -427,7 +448,7 @@ int main(int argc, char* argv[]) {
     } else if (child > 0) {
       return ProcessMonitor(child, filename, jsonSummary, interval,
                             store_hw_info, store_unit_info, netdevs,
-                            disabled_monitors);
+                            disabled_monitors, do_fast_memmon);
     }
   }
 
