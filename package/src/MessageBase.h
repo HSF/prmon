@@ -9,10 +9,8 @@
 
 // Global sinks
 
-static const std::shared_ptr<spdlog::sinks::stdout_color_sink_st> c_sink{
-    std::make_shared<spdlog::sinks::stdout_color_sink_st>()};
-static const std::shared_ptr<spdlog::sinks::basic_file_sink_st> f_sink{
-    std::make_shared<spdlog::sinks::basic_file_sink_st>("prmon.log", true)};
+extern std::shared_ptr<spdlog::sinks::stdout_color_sink_st> c_sink;
+extern std::shared_ptr<spdlog::sinks::basic_file_sink_st> f_sink;
 
 // Map from monitor to logging level
 

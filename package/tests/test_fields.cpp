@@ -29,6 +29,11 @@
 const std::string base_path = TO_STRING(PRMON_SOURCE_DIR);
 const std::string prmon_path = base_path + "/package/prmon";
 
+std::shared_ptr<spdlog::sinks::stdout_color_sink_st> c_sink{
+    std::make_shared<spdlog::sinks::stdout_color_sink_st>()};
+std::shared_ptr<spdlog::sinks::basic_file_sink_st> f_sink{
+    std::make_shared<spdlog::sinks::basic_file_sink_st>("prmon.log", true)};
+
 bool prmon::sigusr1 = false;
 
 int run_prmon(const std::vector<std::string>& disabled_monitors) {

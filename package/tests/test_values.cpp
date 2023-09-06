@@ -21,6 +21,11 @@ const std::vector<pid_t> mother_pid{1729};
 
 const std::string base_path = TO_STRING(TESTS_SOURCE_DIR);
 
+std::shared_ptr<spdlog::sinks::stdout_color_sink_st> c_sink{
+    std::make_shared<spdlog::sinks::stdout_color_sink_st>()};
+std::shared_ptr<spdlog::sinks::basic_file_sink_st> f_sink{
+    std::make_shared<spdlog::sinks::basic_file_sink_st>("prmon.log", true)};
+
 bool prmon::sigusr1 = false;
 
 TEST(IomonTest, IomonMonitonicityTestFixed) {
