@@ -348,8 +348,8 @@ def main():
         fyunit = args.yunit
 
     plt.title("Plot of {} vs {}".format(fxlabel, fylabel), y=1.05)
-    plt.xlabel((fxlabel + " [" + fxunit + "]") if fxunit != "1" else fxlabel)
-    plt.ylabel((fylabel + " [" + fyunit + "]") if fyunit != "1" else fylabel)
+    plt.xlabel((fxlabel + " / " + fxunit) if fxunit != "1" else fxlabel)
+    plt.ylabel((fylabel + " / " + fyunit) if fyunit != "1" else fylabel)
     plt.tight_layout()
     fig.savefig(output)
 
