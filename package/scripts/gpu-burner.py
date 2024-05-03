@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 #
 # This is a slightly adapted "hello, world" script from
 # pycuda, that can be used for stressing a CUDA GPU for
