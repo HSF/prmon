@@ -74,9 +74,9 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids,
   }
 
   // Loop over output
-  unsigned int gpu_idx{}, sm{}, mem{}, fb_mem{}, ccpm{};
+  unsigned int gpu_idx{}, sm{}, mem{}, fb_mem{};
   pid_t pid{};
-  std::string enc{}, dec{}, jpg{}, ofa{}, cg_type{}, cmd_name{};
+  std::string enc{}, dec{}, jpg{}, ofa{}, cg_type{}, ccpm{}, cmd_name{};
   std::unordered_map<unsigned int, bool>
       activegpus{};  // Avoid double counting active GPUs
   for (const auto& s : cmd_result.second) {
