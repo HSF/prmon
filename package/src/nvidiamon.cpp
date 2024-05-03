@@ -76,20 +76,20 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids,
   // Loop over output
   unsigned int gpu_idx{}, sm{}, mem{}, fb_mem{};
   pid_t pid{};
-  std::string enc{}, dec{}, cg_type{}, cmd_name{};
+  std::string enc{}, dec{}, jpg{}, ofa{}, cg_type{}, ccpm{}, cmd_name{};
   std::unordered_map<unsigned int, bool>
       activegpus{};  // Avoid double counting active GPUs
   for (const auto& s : cmd_result.second) {
     if (s[0] == '#') continue;
     std::istringstream instr(s);
-    instr >> gpu_idx >> pid >> cg_type >> sm >> mem >> enc >> dec >> fb_mem >>
-        cmd_name;
+    instr >> gpu_idx >> pid >> cg_type >> sm >> mem >> enc >> dec >> jpg >> ofa >> fb_mem >>
+          ccpm  >> cmd_name;
     auto read_ok = !(instr.fail() || instr.bad());  // eof() is ok
     if (read_ok) {
       if (log_level <= spdlog::level::debug) {
         std::stringstream strm;
         strm << "Good read: " << gpu_idx << " " << pid << " " << cg_type << " "
-             << sm << " " << mem << " " << enc << " " << dec << " " << fb_mem
+             << sm << " " << mem << " " << enc << " " << dec << " " << jpg << " " << ofa << " " << fb_mem << " " << ccpm
              << " " << cmd_name << std::endl;
         debug(strm.str());
       }
@@ -115,7 +115,7 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids,
       std::stringstream strm;
       strm << "Bad read of line: " << s << std::endl;
       strm << "Parsed to: " << gpu_idx << " " << pid << " " << cg_type << " "
-           << sm << " " << mem << " " << enc << " " << dec << " " << fb_mem
+           << sm << " " << mem << " " << enc << " " << dec << " " << jpg << " " << ofa << " " << fb_mem << " " << ccpm
            << " " << cmd_name << std::endl;
 
       strm << "StringStream status: good()=" << instr.good();
