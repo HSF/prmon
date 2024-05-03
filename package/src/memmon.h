@@ -53,7 +53,7 @@ class memmon final : public Imonitor, public MessageBase {
   bool const is_valid() { return true; }
 
   // Toggle on fast memmory monitoring
-  inline void const do_fastmon() { input_filename = "smaps_rollup"; };
+  void const do_fastmon();
 };
 REGISTER_MONITOR(Imonitor, memmon, "Monitor memory usage")
 
