@@ -95,21 +95,23 @@ def make_net(proc_net, fixed_value, rand=False):
 
 def make_nvidia(proc_nvidia, fixed_value, rand=False):
     # idx
+    print(proc_nvidia, fixed_value, rand)
     smi_fname = os.path.join(proc_nvidia, "smi")
-    memory_lim = 100
+    pct_lim = 100
+    memory_lim = 10000
     with open(smi_fname, "w") as f:
         params = [
             0,  # idx
             pid,  # pid
             "G",  # type
-            random.randint(0, memory_lim) if rand else fixed_value,  # sm
-            random.randint(0, memory_lim) if rand else fixed_value,  # mem
+            random.randint(0, pct_lim) if rand else fixed_value,  # sm
+            random.randint(0, pct_lim) if rand else fixed_value,  # mem
             # The following are not monitored metrics
             "-",  # enc
             "-",  # dec
             "-",  # jpg
             "-",  # ofa
-            random.randint(0, memory_lim*100) if rand else fixed_value,  # fb
+            random.randint(0, memory_lim) if rand else fixed_value,  # fb
             0, # ccpm
             "python3",  # command
         ]
