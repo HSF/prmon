@@ -15,11 +15,11 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 endif()
 
 if (BUILD_GTESTS)
-
     include(FetchContent)
     FetchContent_Declare(
     googletest
-    URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    URL_HASH SHA256=1f357c27ca988c3f7c6b4bf68a9395005ac6761f034046e9dde0896e3aba00e4
     )
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
