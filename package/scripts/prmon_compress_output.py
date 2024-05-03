@@ -122,9 +122,11 @@ def main():
 
     parser.add_argument(
         "--precision",
-        type=lambda x: float(x)
-        if 0 < float(x) < 1
-        else parser.exit(-1, "Precision must be strictly between 0 and 1"),
+        type=lambda x: (
+            float(x)
+            if 0 < float(x) < 1
+            else parser.exit(-1, "Precision must be strictly between 0 and 1")
+        ),
         default=0.05,
         help="precision value for interpolation threshold",
     )

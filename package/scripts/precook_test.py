@@ -112,7 +112,7 @@ def make_nvidia(proc_nvidia, fixed_value, rand=False):
             "-",  # jpg
             "-",  # ofa
             random.randint(0, memory_lim) if rand else fixed_value,  # fb
-            0, # ccpm
+            0,  # ccpm
             "python3",  # command
         ]
         for param in params:
