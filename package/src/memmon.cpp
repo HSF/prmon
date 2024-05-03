@@ -177,4 +177,4 @@ void const memmon::do_fastmon() {
       it++;
     }
   }
-};
+}
