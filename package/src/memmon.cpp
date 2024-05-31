@@ -170,7 +170,7 @@ void const memmon::do_fastmon() {
   for (auto it = mem_stats.cbegin(); it != mem_stats.cend();) {
     // Delete unavailable metrics
     if (available_metrics.count(it->first) == 0) {
-      spdlog::warn("Metric " + it->first +
+      spdlog::info("Metric " + it->first +
                    " is not available in fast monitoring");
       it = mem_stats.erase(it);
     } else {

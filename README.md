@@ -143,6 +143,21 @@ incomplete arguments. If `prmon` starts a program itself (using `--`) then
 When invoked with `-h` or `--help` usage information is printed, as well as a
 list of all available monitoring components.
 
+### Fast Memory Monitoring
+
+When invoked with `--fast-memmon` `prmon` uses the `smaps_rollup` files
+that contain pre-summed memory information for each monitored process.
+This is a faster approach compared to the default behavior,
+where `prmon` aggregates the results itself by going over each of the monitored
+processes' mappings one by one.
+
+If the current kernel doesn't support `smaps_rollup` then the default
+approach is used. Users should also note that fast memory monitoring
+might not contain all metrics that the default approach supports, e.g.,
+`vmem`. In that case, the missing metric will be omitted in the output.
+If any of these issues are encountered, a relevant message is printed
+to notify the user.
+
 ### Environment Variables
 
 The `PRMON_DISABLE_MONITOR` environment variable can be used to specify a comma
