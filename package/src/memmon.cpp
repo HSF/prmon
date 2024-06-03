@@ -10,6 +10,7 @@
 #include <iostream>
 #include <limits>
 #include <regex>
+#include <set>
 #include <sstream>
 
 #include "utils.h"
@@ -18,7 +19,7 @@
 
 // Constructor; uses RAII pattern to be valid
 // after construction
-memmon::memmon() {
+memmon::memmon() : input_filename{"smaps"} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
@@ -35,7 +36,8 @@ void memmon::update_stats(const std::vector<pid_t>& pids,
   std::string key_str{}, value_str{};
   for (const auto pid : pids) {
     std::stringstream smaps_fname{};
-    smaps_fname << read_path << "/proc/" << pid << "/smaps" << std::ends;
+    smaps_fname << read_path << "/proc/" << pid << "/" << input_filename.c_str()
+                << std::ends;
     std::ifstream smap_stat{smaps_fname.str()};
     while (smap_stat) {
       // Read off the potentially interesting "key: value", then discard
@@ -134,4 +136,45 @@ void const memmon::get_hardware_info(nlohmann::json& hw_json) {
 void const memmon::get_unit_info(nlohmann::json& unit_json) {
   prmon::fill_units(unit_json, params);
   return;
+}
+
+// Toggle on fast memmory monitoring
+void const memmon::do_fastmon() {
+  // Fast monitoring reads the data from a special file
+  // This file is called smaps_rollup instead of smaps
+  input_filename = "smaps_rollup";
+
+  // First discover all available metrics by peeking into self smaps_rollup file
+  std::set<std::string> available_metrics;
+  std::stringstream smaps_fname{"/proc/self/smaps_rollup"};
+  std::ifstream smap_stat{smaps_fname.str()};
+  std::string key_str{}, value_str{};
+  while (smap_stat) {
+    smap_stat >> key_str >> value_str;
+    smap_stat.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    if (smap_stat) {
+      if (key_str == "Size:") {
+        available_metrics.insert("vmem");
+      } else if (key_str == "Pss:") {
+        available_metrics.insert("pss");
+      } else if (key_str == "Rss:") {
+        available_metrics.insert("rss");
+      } else if (key_str == "Swap:") {
+        available_metrics.insert("swap");
+      }
+    }
+  }
+
+  // Delete unavailable metrics from the monitored stats
+  // In C++17/20 there are more elegant ways to do this
+  for (auto it = mem_stats.cbegin(); it != mem_stats.cend();) {
+    // Delete unavailable metrics
+    if (available_metrics.count(it->first) == 0) {
+      spdlog::info("Metric " + it->first +
+                   " is not available in fast monitoring");
+      it = mem_stats.erase(it);
+    } else {
+      it++;
+    }
+  }
 }

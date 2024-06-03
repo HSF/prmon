@@ -111,7 +111,8 @@ The `prmon` binary is invoked with the following arguments:
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
       [--log-filename prmon.log] [--interval 30] \
       [--suppress-hw-info] [--units] [--netdev DEV] \
-      [--disable MON1] [--level LEV] [--level MON:LEV]\
+      [--disable MON1] [--level LEV] [--level MON:LEV] \
+      [--fast-memmon] \
       [-- prog arg arg ...]
 ```
 
@@ -130,6 +131,7 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
   * `--level LEV` sets the level for all monitors to LEV
   * `--level MON:LEV` sets the level for monitor MON to LEV
   * The valid levels are `trace`, `debug`, `info`, `warn`, `error`, `critical`
+* `--fast-memmon` toggles on fast memory monitoring using `smaps_rollup`
 * `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
   instead of being given a PID via `--pid`
@@ -140,6 +142,21 @@ incomplete arguments. If `prmon` starts a program itself (using `--`) then
 
 When invoked with `-h` or `--help` usage information is printed, as well as a
 list of all available monitoring components.
+
+### Fast Memory Monitoring
+
+When invoked with `--fast-memmon` `prmon` uses the `smaps_rollup` files
+that contain pre-summed memory information for each monitored process.
+This is a faster approach compared to the default behavior,
+where `prmon` aggregates the results itself by going over each of the monitored
+processes' mappings one by one.
+
+If the current kernel doesn't support `smaps_rollup` then the default
+approach is used. Users should also note that fast memory monitoring
+might not contain all metrics that the default approach supports, e.g.,
+`vmem`. In that case, the missing metric will be omitted in the output.
+If any of these issues are encountered, a relevant message is printed
+to notify the user.
 
 ### Environment Variables
 
