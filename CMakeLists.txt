@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.3)
 # - Call project() to setup system
 # From CMake 3, we can set the project version easily in one go
-project(prmon VERSION 3.1.0)
+project(prmon VERSION 3.1.1)
 
 # For newer CMakes we ensure correct handling of extracting GTest from tarball
 if (POLICY CMP0135)
