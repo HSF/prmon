@@ -13,7 +13,8 @@ try:
     mpl.use("Agg")
     import matplotlib.pyplot as plt
 
-    plt.style.use("seaborn-whitegrid")
+    if "seaborn-v0_8-whitegrid" in plt.style.available:
+        plt.style.use("seaborn-v0_8-whitegrid")
 except ImportError:
     print("ERROR:: This script needs numpy, pandas and matplotlib.")
     print("ERROR:: Looks like at least one of these modules is missing.")
