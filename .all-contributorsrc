@@ -17,6 +17,17 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "amete",
+      "name": "Alaettin Serhan Mete",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7428938?v=4",
+      "profile": "https://amete.github.io",
+      "contributions": [
+        "infra",
+        "test",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

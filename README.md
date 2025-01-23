@@ -1,6 +1,6 @@
 # Process Monitor (prmon)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Build Status][build-img]][build-link]  [![License][license-img]][license-url] [![Codefactor][codefactor-img]][codefactor-url] [![HSF Project][hsf-project-img]][hsf-project-url]
@@ -289,6 +289,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://graeme-a-stewart.github.io"><img src="https://avatars.githubusercontent.com/u/8511620?v=4?s=100" width="100px;" alt="Graeme A Stewart"/><br /><sub><b>Graeme A Stewart</b></sub></a><br /><a href="#infra-graeme-a-stewart" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/HSF/prmon/commits?author=graeme-a-stewart" title="Tests">⚠️</a> <a href="https://github.com/HSF/prmon/commits?author=graeme-a-stewart" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://amete.github.io"><img src="https://avatars.githubusercontent.com/u/7428938?v=4?s=100" width="100px;" alt="Alaettin Serhan Mete"/><br /><sub><b>Alaettin Serhan Mete</b></sub></a><br /><a href="#infra-amete" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/HSF/prmon/commits?author=amete" title="Tests">⚠️</a> <a href="https://github.com/HSF/prmon/commits?author=amete" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
