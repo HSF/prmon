@@ -74,6 +74,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "miguelgila",
+      "name": "Miguel Gila",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7137318?v=4",
+      "profile": "http://www.cscs.ch",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
