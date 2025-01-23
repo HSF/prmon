@@ -1,6 +1,6 @@
 # Process Monitor (prmon)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Build Status][build-img]][build-link]  [![License][license-img]][license-url] [![Codefactor][codefactor-img]][codefactor-url] [![HSF Project][hsf-project-img]][hsf-project-url]
@@ -293,6 +293,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/quantum-shift"><img src="https://avatars.githubusercontent.com/u/61076821?v=4?s=100" width="100px;" alt="Anubhab Das"/><br /><sub><b>Anubhab Das</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=quantum-shift" title="Tests">⚠️</a> <a href="https://github.com/HSF/prmon/commits?author=quantum-shift" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/chuckatkins"><img src="https://avatars.githubusercontent.com/u/320135?v=4?s=100" width="100px;" alt="Chuck Atkins"/><br /><sub><b>Chuck Atkins</b></sub></a><br /><a href="#infra-chuckatkins" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Cossack42"><img src="https://avatars.githubusercontent.com/u/93450240?v=4?s=100" width="100px;" alt="Ismail Ryabchuk"/><br /><sub><b>Ismail Ryabchuk</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=Cossack42" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/chrisburr"><img src="https://avatars.githubusercontent.com/u/5220533?v=4?s=100" width="100px;" alt="Chris Burr"/><br /><sub><b>Chris Burr</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=chrisburr" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
