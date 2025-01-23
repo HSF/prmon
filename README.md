@@ -55,7 +55,7 @@ Building is usually as simple as:
 
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=<installdir> <path to sources>
+    cmake -DCMAKE_INSTALL_PREFIX=<installdir> -S .. -B .
     make -j<number of cores on your machine>
     make install
 
@@ -276,7 +276,7 @@ to CMake using `Gperftools_ROOT_DIR`.
 
 # Copyright
 
-Copyright (c) 2018-2024 CERN.
+Copyright (c) 2018-2025 CERN.
 
 ## Contributors ✨
 

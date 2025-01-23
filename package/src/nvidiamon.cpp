@@ -1,4 +1,4 @@
-// Copyright (C) CERN, 2020
+// Copyright (C) 2020-2025 CERN
 
 #include "nvidiamon.h"
 

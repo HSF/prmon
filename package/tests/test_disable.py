@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2020 CERN
+# Copyright (C) 2020-2025 CERN
 # License Apache2 - see LICENCE file
 
 """prmon test harness to check monitors can be disabled correctly"""
