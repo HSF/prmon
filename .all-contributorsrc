@@ -1,0 +1,28 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "graeme-a-stewart",
+      "name": "Graeme A Stewart",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8511620?v=4",
+      "profile": "https://graeme-a-stewart.github.io",
+      "contributions": [
+        "infra",
+        "test",
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "prmon",
+  "projectOwner": "HSF"
+}
