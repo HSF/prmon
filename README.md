@@ -1,6 +1,6 @@
 # Process Monitor (prmon)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Build Status][build-img]][build-link]  [![License][license-img]][license-url] [![Codefactor][codefactor-img]][codefactor-url] [![HSF Project][hsf-project-img]][hsf-project-url]
@@ -295,6 +295,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Cossack42"><img src="https://avatars.githubusercontent.com/u/93450240?v=4?s=100" width="100px;" alt="Ismail Ryabchuk"/><br /><sub><b>Ismail Ryabchuk</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=Cossack42" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/chrisburr"><img src="https://avatars.githubusercontent.com/u/5220533?v=4?s=100" width="100px;" alt="Chris Burr"/><br /><sub><b>Chris Burr</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=chrisburr" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/rmaganza"><img src="https://avatars.githubusercontent.com/u/18355062?v=4?s=100" width="100px;" alt="Riccardo Maganza"/><br /><sub><b>Riccardo Maganza</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=rmaganza" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.cscs.ch"><img src="https://avatars.githubusercontent.com/u/7137318?v=4?s=100" width="100px;" alt="Miguel Gila"/><br /><sub><b>Miguel Gila</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=miguelgila" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
