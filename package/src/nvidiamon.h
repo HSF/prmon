@@ -1,4 +1,4 @@
-// Copyright (C) CERN, 2020
+// Copyright (C) 2020-2025 CERN
 //
 // Process and thread number monitoring class
 //
