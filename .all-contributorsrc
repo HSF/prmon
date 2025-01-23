@@ -38,6 +38,15 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "chuckatkins",
+      "name": "Chuck Atkins",
+      "avatar_url": "https://avatars.githubusercontent.com/u/320135?v=4",
+      "profile": "https://github.com/chuckatkins",
+      "contributions": [
+        "infra"
+      ]
     }
   ],
   "contributorsPerLine": 7,
