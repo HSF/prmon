@@ -28,6 +28,16 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "quantum-shift",
+      "name": "Anubhab Das",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61076821?v=4",
+      "profile": "https://github.com/quantum-shift",
+      "contributions": [
+        "test",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
