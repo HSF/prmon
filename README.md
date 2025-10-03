@@ -3,7 +3,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-[![Build Status][build-img]][build-link]  [![License][license-img]][license-url] [![Codefactor][codefactor-img]][codefactor-url] [![HSF Project][hsf-project-img]][hsf-project-url]
+[![Build Status][build-img]][build-link]  [![License][license-img]][license-url] [![Codefactor][codefactor-img]][codefactor-url] [![HSF Project][hsf-project-img][hsf-project-url]]
 
 [build-img]: https://github.com/HSF/prmon/workflows/CI/badge.svg?branch=main
 [build-link]: https://github.com/HSF/prmon/actions?query=workflow%3ACI+branch%3Amain
@@ -12,7 +12,7 @@
 [codefactor-img]: https://www.codefactor.io/repository/github/HSF/prmon/badge
 [codefactor-url]: https://www.codefactor.io/repository/github/HSF/prmon
 [hsf-project-img]: https://raw.githubusercontent.com/HSF/hsf.github.io/refs/heads/main/images/HSF-logo/HSF-Affiliated.svg
-<!-- [hsf-project-url]: https://hepsoftwarefoundation.org/projects/affiliated.html -->
+[hsf-project-url]: https://hepsoftwarefoundation.org/projects/affiliated.html
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2554202.svg)](https://doi.org/10.5281/zenodo.2554202)
 
