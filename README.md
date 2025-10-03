@@ -11,7 +11,7 @@
 [license-url]: https://github.com/hsf/prmon/blob/main/LICENSE
 [codefactor-img]: https://www.codefactor.io/repository/github/HSF/prmon/badge
 [codefactor-url]: https://www.codefactor.io/repository/github/HSF/prmon
-[hsf-project-img]: https://raw.githubusercontent.com/HSF/prmon/refs/heads/main/doc/HSF-Bronze_Project-CD7F32.svg
+[hsf-project-img]: https://raw.githubusercontent.com/HSF/hsf.github.io/refs/heads/main/images/HSF-logo/HSF-Affiliated.svg
 [hsf-project-url]: https://hepsoftwarefoundation.org/projects/affiliated.html
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2554202.svg)](https://doi.org/10.5281/zenodo.2554202)
