@@ -163,8 +163,8 @@ TEST(NvidiamonTest, NvidiamonValueTestFixed) {
       ASSERT_EQ(store_stats["gpumempct"], 100);
     } else {
       ASSERT_EQ(store_stats["gpufbmem"], 20 * MB_to_KB);
-      ASSERT_EQ(store_stats["gpusmpct"], 20);
-      ASSERT_EQ(store_stats["gpumempct"], 20);
+      ASSERT_EQ(store_stats["gpusmpct"], 0);
+      ASSERT_EQ(store_stats["gpumempct"], 0);
     }
   }
 }

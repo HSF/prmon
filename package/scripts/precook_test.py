@@ -93,9 +93,10 @@ def make_net(proc_net, fixed_value, rand=False):
             print(random.randint(0, net_lim) if rand else fixed_value, file=f)
 
 
-def make_nvidia(proc_nvidia, fixed_value, rand=False):
+def make_nvidia(proc_nvidia, fixed_value_sm_mem, fixed_value_fb,
+                rand_sm_mem=False, rand_fb=False):
     # idx
-    print(proc_nvidia, fixed_value, rand)
+    print(proc_nvidia, fixed_value_sm_mem, fixed_value_fb, rand_sm_mem, rand_fb)
     smi_fname = os.path.join(proc_nvidia, "smi")
     pct_lim = 100
     memory_lim = 10000
@@ -104,14 +105,14 @@ def make_nvidia(proc_nvidia, fixed_value, rand=False):
             0,  # idx
             pid,  # pid
             "G",  # type
-            random.randint(0, pct_lim) if rand else fixed_value,  # sm
-            random.randint(0, pct_lim) if rand else fixed_value,  # mem
+            random.randint(0, pct_lim) if rand_sm_mem else fixed_value_sm_mem,  # sm
+            random.randint(0, pct_lim) if rand_sm_mem else fixed_value_sm_mem,  # mem
             # The following are not monitored metrics
             "-",  # enc
             "-",  # dec
             "-",  # jpg
             "-",  # ofa
-            random.randint(0, memory_lim) if rand else fixed_value,  # fb
+            random.randint(0, memory_lim) if rand_fb else fixed_value_fb,  # fb
             0,  # ccpm
             "python3",  # command
         ]
@@ -158,19 +159,19 @@ def createTestMonotonic():
             make_io(proc_pid, 500)
             make_smaps(proc_pid, 5000)
             make_net(net_dir, 500000)
-            make_nvidia(nvidia_dir, 50)
+            make_nvidia(nvidia_dir, 50, 50)
         elif i == 2:
             make_stat(pid, proc_pid, 10000000)
             make_io(proc_pid, 1000)
             make_smaps(proc_pid, 10000)
             make_net(net_dir, 1000000)
-            make_nvidia(nvidia_dir, 100)
+            make_nvidia(nvidia_dir, 100, 100)
         else:
             make_stat(pid, proc_pid, 2000000)
             make_io(proc_pid, 200)
             make_smaps(proc_pid, 2000)
             make_net(net_dir, 200000)
-            make_nvidia(nvidia_dir, 20)
+            make_nvidia(nvidia_dir, "-", 20)
         gc.collect()
         time.sleep(interval)
         i += 1

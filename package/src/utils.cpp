@@ -110,3 +110,8 @@ const bool prmon::smaps_rollup_exists() {
   struct stat buffer;
   return (stat("/proc/self/smaps_rollup", &buffer) == 0);
 }
+
+unsigned int prmon::parse_uint_field(const std::string& s) {
+  if (s == "-" || s.empty()) return 0;
+  return std::stoul(s);
+}
