@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.10)
 # - Call project() to setup system
 # From CMake 3, we can set the project version easily in one go
-project(prmon VERSION 3.1.1)
+project(prmon VERSION 3.1.1 LANGUAGES CXX)
 
 # For newer CMakes use normalized install destination paths
 if(POLICY CMP0177)
