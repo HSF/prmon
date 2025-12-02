@@ -56,6 +56,8 @@ const void fill_units(nlohmann::json& unit_json, const parameter_list& params);
 // Utility function to check if smaps_rollup is available on this machine
 const bool smaps_rollup_exists();
 
+// Utility function to parse a string to uint
+unsigned int parse_uint_field(const std::string& s);
 }  // namespace prmon
 
 #endif  // PRMON_UTILS_H
