@@ -41,12 +41,12 @@ function(hsf_get_platform _output_var)
   set(HSF_ARCH ${CMAKE_SYSTEM_PROCESSOR})
 
   # - Translate compiler info to HSF format
-  string(TOLOWER ${CMAKE_C_COMPILER_ID} HSF_COMPILER_ID)
+  string(TOLOWER ${CMAKE_CXX_COMPILER_ID} HSF_COMPILER_ID)
   if(NOT HSF_COMPILER_ID)
     set(HSF_COMPILER_ID "unknown")
   endif()
 
-  set(HSF_COMPILER_VERSION ${CMAKE_C_COMPILER_VERSION})
+  set(HSF_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION})
   if(NOT HSF_COMPILER_VERSION)
     set(HSF_COMPILER_VERSION "0")
   endif()
