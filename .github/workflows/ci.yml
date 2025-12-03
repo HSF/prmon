@@ -63,7 +63,7 @@ jobs:
         elif [[ "$DIMAGE" == *u20-dev ]];
         then
           docker run -e PLATFORM -e COMPILER -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
-        elif [[ "$DIMAGE" == almalinux*]];
+        elif [[ "$DIMAGE" == almalinux* ]];
         then
           docker run -e PLATFORM -e COMPILER -e CXX=g++ -e CC=gcc -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         else
