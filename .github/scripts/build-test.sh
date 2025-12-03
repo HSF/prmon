@@ -7,7 +7,7 @@
 # container; CMAKE_EXTRA can be used to pass special options
 # to cmake for particular platforms
 cd /tmp
-echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER on $ARCH"
+echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER on $RUNNER"
 
 # In vanilla containers we need to install the necessary development packages
 if [[ "$PLATFORM" == almalinux* ]]; then

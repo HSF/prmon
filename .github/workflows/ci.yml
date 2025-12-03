@@ -13,6 +13,9 @@ on:
 jobs:
   # Main building and testing
   build-test:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.runner }}
+
     # Define the platforms to run on. Later determines the Docker image to be used
     strategy:
       matrix:
@@ -23,9 +26,6 @@ jobs:
           # On Alma 9 we also test clang
           - platform: almalinux:9
             compiler: clang
-
-    # The type of runner that the job will run on
-    runs-on: ubuntu-24.04-arm
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -40,11 +40,11 @@ jobs:
         echo "DIMAGE=$PLATFORM" >> $GITHUB_ENV
         echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
         echo "COMPILER=$COMPILER" >> $GITHUB_ENV
-        echo "ARCH=$RUNNER" >> $GITHUB_ENV
+        echo "RUNNER=$RUNNER" >> $GITHUB_ENV
       env:
         PLATFORM: ${{ matrix.platform }}
         COMPILER: ${{ matrix.compiler }}
-        ARCH: ${{ matrix.runner }}
+        RUNNER: ${{ matrix.runner }}
 
     # Pulls the associated Docker image
     - name: Docker pull
@@ -53,7 +53,7 @@ jobs:
     # Builds the code and runs the test
     - name: Build and test
       run: |
-        echo "Starting run for $PLATFORM, compiler suite $COMPILER"
+        echo "Starting run for $PLATFORM, compiler suite $COMPILER on $RUNNER"
         if [[ $DIMAGE =~ (c8-dev|almalinux|ubuntu) ]]
         then
           docker run -e PLATFORM -e COMPILER -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
