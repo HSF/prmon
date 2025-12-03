@@ -10,9 +10,15 @@ cd /tmp
 echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
 
 if [[ "$PLATFORM" == almalinux* ]]; then
-    echo "Installing additional development packages"
-    dnf install -y gcc-c++ cmake boost boost-devel make git clang
+    echo "Installing additional RPM development packages"
+    dnf install -y gcc-c++ cmake boost boost-devel make clang
 fi
+
+if [[ $PLATFORM == ubuntu* ]]; then
+    echo "Installing additional DEB development packages"
+    apt -y install g++ clang libboost-dev cmake make
+fi
+
 
 if [ -z "$CXX" ]; then
     if [ "$COMPILER" == "clang" ]; then
