@@ -18,16 +18,14 @@ jobs:
       matrix:
         platform: [ almalinux:8, almalinux:9, almalinux:10, ubuntu:22.04, ubuntu:24.04 ]
         compiler: [ gcc ]
-        arch: [ ubuntu-latest ]
+        runner: [ ubuntu-latest, ubuntu-24.04-arm ]
         include:
           # On Alma 9 we also test clang
           - platform: almalinux:9
             compiler: clang
-          - platform: almalinux:10
-            arch: ubuntu-24.04-arm
 
     # The type of runner that the job will run on
-    runs-on: ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -42,11 +40,11 @@ jobs:
         echo "DIMAGE=$PLATFORM" >> $GITHUB_ENV
         echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
         echo "COMPILER=$COMPILER" >> $GITHUB_ENV
-        echo "ARCH=$ARCH" >> $GITHUB_ENV
+        echo "ARCH=$RUNNER" >> $GITHUB_ENV
       env:
         PLATFORM: ${{ matrix.platform }}
         COMPILER: ${{ matrix.compiler }}
-        ARCH: ${{ matrix.arch }}
+        ARCH: ${{ matrix.runner }}
 
     # Pulls the associated Docker image
     - name: Docker pull
