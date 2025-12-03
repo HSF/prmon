@@ -42,9 +42,11 @@ jobs:
         echo "DIMAGE=$PLATFORM" >> $GITHUB_ENV
         echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
         echo "COMPILER=$COMPILER" >> $GITHUB_ENV
+        echo "ARCH=$ARCH" >> $GITHUB_ENV
       env:
         PLATFORM: ${{ matrix.platform }}
         COMPILER: ${{ matrix.compiler }}
+        ARCH: ${{ matrix.arch }}
 
     # Pulls the associated Docker image
     - name: Docker pull
