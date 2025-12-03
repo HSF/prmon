@@ -51,7 +51,7 @@ jobs:
     - name: Docker pull
       run: docker pull $DIMAGE
     - name: Run container
-      run: docker run --rm your-image:tag
+      run: docker run --rm $DIMAGE
 
     # Builds the code and runs the test
     - name: Build and test
