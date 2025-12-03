@@ -19,10 +19,10 @@ jobs:
     # Define the platforms to run on. Later determines the Docker image that'll be used
     strategy:
       matrix:
-        platform: [ c8-dev, u20-dev, almalinux:9, ubuntu:24.04 ]
+        platform: [ c8-dev, u20-dev, alalinux:8, almalinux:9, almalinux:10, ubuntu:24.04 ]
         compiler: [ gcc ]
         include:
-          # On Alma 9 and Ubuntu 24 we also test clang
+          # On Alma 9 we also test clang
           - platform: almalinux:9
             compiler: clang
 

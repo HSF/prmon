@@ -9,6 +9,7 @@
 cd /tmp
 echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
 
+# In vanilla containers we need to install the necessary development packages
 if [[ "$PLATFORM" == almalinux* ]]; then
     echo "Installing additional RPM development packages"
     dnf install -y gcc-c++ cmake boost boost-devel make clang
