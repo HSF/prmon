@@ -19,7 +19,7 @@ jobs:
     # Define the platforms to run on. Later determines the Docker image that'll be used
     strategy:
       matrix:
-        platform: [ c7-dev, c8-dev, u20-dev ]
+        platform: [ hepsoftwarefoundation/c8-dev, hepsoftwarefoundation/u20-dev, almalinux:9 ]
         compiler: [ gcc ]
         include:
           # On C8 we also test clang
@@ -36,7 +36,7 @@ jobs:
     # Sets up useful environment variables
     - name: Setup environment variables
       run: |
-        echo "DIMAGE=hepsoftwarefoundation/$PLATFORM" >> $GITHUB_ENV
+        echo "DIMAGE=$PLATFORM" >> $GITHUB_ENV
         echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
         echo "COMPILER=$COMPILER" >> $GITHUB_ENV
       env:
@@ -51,15 +51,14 @@ jobs:
     - name: Build and test
       run: |
         echo "Starting run for $PLATFORM, compiler suite $COMPILER"
-        if [[ "$DIMAGE" == *c7-dev ]];
-        then
-          docker run -e PLATFORM -e COMPILER -e CMAKE=cmake3 -e CMAKE_EXTRA=$CMAKE_EXTRA -v $(pwd):/mnt $DIMAGE scl enable devtoolset-8 /mnt/.github/scripts/build-test.sh;
-        elif [[ "$DIMAGE" == *c8-dev ]];
+        if [[ "$DIMAGE" == *c8-dev ]];
         then
           docker run -e PLATFORM -e COMPILER -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         elif [[ "$DIMAGE" == *u20-dev ]];
         then
           docker run -e PLATFORM -e COMPILER -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
+        elif [[ "$DIMAGE" == almalinux*]]
+          docker run -e PLATFORM -e COMPILER -e CXX=g++ -e CC=gcc -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         else
           echo "Unkown Docker Image: $DIMAGE"
         fi

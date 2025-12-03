@@ -8,6 +8,12 @@
 # to cmake for particular platforms
 cd /tmp
 echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
+
+if [[ "$PLATFORM" == almalinux* ]]
+    echo "Installing additional development packages"
+    dnf install -y gcc-c++ cmake boost boost-devel make git
+fi
+
 if [ -z "$CXX" ]; then
     if [ "$COMPILER" == "clang" ]; then
         CXX=$(type -p clang++)
