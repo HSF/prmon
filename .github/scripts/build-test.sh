@@ -11,7 +11,7 @@ echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
 
 if [[ "$PLATFORM" == almalinux* ]]; then
     echo "Installing additional development packages"
-    dnf install -y gcc-c++ cmake boost boost-devel make git
+    dnf install -y gcc-c++ cmake boost boost-devel make git clang
 fi
 
 if [ -z "$CXX" ]; then
@@ -25,24 +25,13 @@ else
     echo "CXX was set externally to $CXX"
 fi
 
-if [ -z "$CC" ]; then
-    if [ "$COMPILER" == "clang" ]; then
-        CC=$(type -p clang)
-    else
-        # gcc suite is the fall through
-        CC=$(type -p gcc)
-    fi
-else
-    echo "CC was set externally to $CC"
-fi
-
 if [ -z "$CMAKE" ]; then
     CMAKE=$(type -p cmake)
 fi
 
 # For debugging, handy to print what we're doing
-cmd="$CMAKE -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DBUILD_GTESTS=ON $CMAKE_EXTRA /mnt"
+cmd="$CMAKE -S /mnt -B . -DCMAKE_CXX_COMPILER=$CXX -DBUILD_GTESTS=ON $CMAKE_EXTRA"
 echo $cmd
 $cmd
-make -j 4
-make test
+cmake --build .
+cmake --build . --target test

@@ -22,8 +22,8 @@ jobs:
         platform: [ c8-dev, u20-dev, almalinux:9 ]
         compiler: [ gcc ]
         include:
-          # On C8 we also test clang
-          - platform: c8-dev
+          # On Alma 9 we also test clang
+          - platform: almalinux:9
             compiler: clang
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -65,7 +65,7 @@ jobs:
           docker run -e PLATFORM -e COMPILER -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         elif [[ "$DIMAGE" == almalinux* ]];
         then
-          docker run -e PLATFORM -e COMPILER -e CXX=g++ -e CC=gcc -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
+          docker run -e PLATFORM -e COMPILER -e -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         else
           echo "Unkown Docker Image: $DIMAGE";
         fi
