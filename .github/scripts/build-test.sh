@@ -16,6 +16,7 @@ fi
 
 if [[ $PLATFORM == ubuntu* ]]; then
     echo "Installing additional DEB development packages"
+    apt update
     apt -y install g++ clang libboost-dev cmake make
 fi
 
