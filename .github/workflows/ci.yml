@@ -36,7 +36,7 @@ jobs:
     # Sets up useful environment variables
     - name: Setup environment variables
       run: |
-        if [[ ! $PLATFORM =~ (almalinux|ubuntu).* ]]; then
+        if [[ ! $PLATFORM =~ (almalinux|ubuntu) ]]; then
           echo "DIMAGE=hepsoftwarefoundation/$PLATFORM" >> $GITHUB_ENV
         else
           echo "DIMAGE=$PLATFORM" >> $GITHUB_ENV
