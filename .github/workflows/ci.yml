@@ -23,7 +23,7 @@ jobs:
         compiler: [ gcc ]
         include:
           # On Alma 9 and Ubuntu 24 we also test clang
-          - platform: [ almalinux:9, ubuntu:24.04 ]
+          - platform: almalinux:9
             compiler: clang
 
     # Steps represent a sequence of tasks that will be executed as part of the job
