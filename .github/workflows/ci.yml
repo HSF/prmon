@@ -36,7 +36,7 @@ jobs:
     # Sets up useful environment variables
     - name: Setup environment variables
       run: |
-        if [[ ! $PLATFORM == almalinux* ]]; then
+        if [[ ! $PLATFORM =~ (almalinux|ubuntu)* ]]; then
           echo "DIMAGE=hepsoftwarefoundation/$PLATFORM" >> $GITHUB_ENV
         else
           echo "DIMAGE=$PLATFORM" >> $GITHUB_ENV
@@ -55,15 +55,12 @@ jobs:
     - name: Build and test
       run: |
         echo "Starting run for $PLATFORM, compiler suite $COMPILER"
-        if [[ "$DIMAGE" == *c8-dev ]];
+        if [[ $DIMAGE =~ *(c8-dev|almalinux|ubuntu)* ]]
         then
           docker run -e PLATFORM -e COMPILER -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         elif [[ "$DIMAGE" == *u20-dev ]];
         then
           docker run -e PLATFORM -e COMPILER -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
-        elif [[ "$DIMAGE" == almalinux* ]] || [[ "$DIMAGE" == ubuntu* ]];
-        then
-          docker run -e PLATFORM -e COMPILER -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         else
           echo "Unkown Docker Image: $DIMAGE";
         fi
