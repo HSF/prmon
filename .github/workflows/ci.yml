@@ -57,11 +57,14 @@ jobs:
     - name: Build and test
       run: |
         echo "Starting run for $PLATFORM, compiler suite $COMPILER"
-        if [[ "$DIMAGE" == *c8-dev ]]; then
+        if [[ "$DIMAGE" == *c8-dev ]];
+        then
           docker run -e PLATFORM -e COMPILER -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
-        elif [[ "$DIMAGE" == *u20-dev ]]; then
+        elif [[ "$DIMAGE" == *u20-dev ]];
+        then
           docker run -e PLATFORM -e COMPILER -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
-        elif [[ "$DIMAGE" == almalinux*]]; then
+        elif [[ "$DIMAGE" == almalinux*]];
+        then
           docker run -e PLATFORM -e COMPILER -e CXX=g++ -e CC=gcc -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         else
           echo "Unkown Docker Image: $DIMAGE";
