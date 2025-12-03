@@ -9,7 +9,7 @@
 cd /tmp
 echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
 
-if [[ "$PLATFORM" == almalinux* ]]
+if [[ "$PLATFORM" == almalinux* ]]; then
     echo "Installing additional development packages"
     dnf install -y gcc-c++ cmake boost boost-devel make git
 fi
