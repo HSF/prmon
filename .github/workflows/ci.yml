@@ -14,6 +14,8 @@ jobs:
   # Main building and testing
   build-test:
     # The type of runner that the job will run on
+    # Should also be able to run on aarch64 with ubuntu-24.04-arm, but
+    # cannot get that to work in the matrix, weirdly
     runs-on: ubuntu-latest
 
     # Define the platforms to run on. Later determines the Docker image to be used
@@ -29,7 +31,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
@@ -48,6 +50,7 @@ jobs:
       run: docker pull $DIMAGE
 
     # Builds the code and runs the test
+    # The exact docker command can be tuned to specific images
     - name: Build and test
       run: |
         echo "Starting run for $PLATFORM, compiler suite $COMPILER"
