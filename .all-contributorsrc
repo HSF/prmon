@@ -92,6 +92,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "jmcarcell",
+      "name": "Juan Miguel Carceller",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22276694?v=4",
+      "profile": "https://github.com/jmcarcell",
+      "contributions": [
+        "infra"
+      ]
     }
   ],
   "contributorsPerLine": 7,
