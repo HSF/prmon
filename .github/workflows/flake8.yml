@@ -19,16 +19,16 @@ jobs:
       # Steps represent a sequence of tasks that will be executed as part of the job
       steps:
       # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
       # Sets up useful environment variables
       - name: Setup environment variables
         run: |
-          echo "DIMAGE=hepsoftwarefoundation/u20-dev" >> $GITHUB_ENV
+          echo "DIMAGE=almalinux:9" >> $GITHUB_ENV
         env:
-          PLATFORM: u20-dev
+          PLATFORM: almalinux:9
 
       # Pulls the associated Docker image
       - name: Docker pull
