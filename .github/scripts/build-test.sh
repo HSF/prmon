@@ -2,7 +2,7 @@
 #
 # Wrapper script to build prmon and run all tests
 #
-# Note that CXX, CC and CMAKE can all be customised so that
+# Note that CXX and CMAKE can all be customised so that
 # they can be matched to the development environment in each
 # container; CMAKE_EXTRA can be used to pass special options
 # to cmake for particular platforms
@@ -21,7 +21,9 @@ if [[ $PLATFORM == ubuntu* ]]; then
     apt -y install g++ clang libboost-dev cmake make
 fi
 
-
+# If environment variables CXX or CMAKE are defined then use these
+# to set the compiler and cmake binary (sometimes needed when there
+# is some non-standard binary names)
 if [ -z "$CXX" ]; then
     if [ "$COMPILER" == "clang" ]; then
         CXX=$(type -p clang++)
