@@ -15,7 +15,7 @@
   - `git push origin tag v3.1.0`
   - Again, from command line to bypass normal branch protection
 6. Prepare a binary tarball of the static build to add to the release:
-  - On AlamaLinux install the packages `glibc-static` and `libstdc++-static`
+  - See [below](#alma-linux-static-library-setup) for the Alama Linux recipe to install static library dependencies
   - `cmake -DBUILD_STATIC=ON <PATH_TO_SOURCES>`
   - By hand, strip the `prmon` binary to reduce its size
   - `make package`
@@ -37,3 +37,13 @@
 - We reference the *Concept* DOI in the `README.md` file of the project.
 - If a release DOI is first reserved then it might be possible to add
   it to the stable branch README a the tag point (we need to check).
+
+## Alma Linux static library setup
+
+This is the current recipe for this, for Alma Linux 9:
+
+```sh
+dnf install 'dnf-command(config-manager)'
+dnf config-manager --set-enabled crb
+dnf -y install glibc-static libstdc++-static
+```
