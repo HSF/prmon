@@ -5,8 +5,8 @@
 
 [![Build Status][build-img]][build-link]  [![License][license-img]][license-url] [![Codefactor][codefactor-img]][codefactor-url] [![HSF Project][hsf-project-img]][hsf-project-url]
 
-[build-img]: https://github.com/HSF/prmon/workflows/CI/badge.svg?branch=main
-[build-link]: https://github.com/HSF/prmon/actions?query=workflow%3ACI+branch%3Amain
+[build-img]: https://github.com/hsf/prmon/actions/workflows/ci.yml/badge.svg?branch=main
+[build-link]: https://github.com/hsf/prmon/actions/workflows/ci.yml?query=branch%3Amain
 [license-img]: https://img.shields.io/github/license/hsf/prmon.svg
 [license-url]: https://github.com/hsf/prmon/blob/main/LICENSE
 [codefactor-img]: https://www.codefactor.io/repository/github/HSF/prmon/badge
