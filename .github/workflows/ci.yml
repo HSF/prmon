@@ -14,29 +14,31 @@ jobs:
   # Main building and testing
   build-test:
     # The type of runner that the job will run on
+    # Should also be able to run on aarch64 with ubuntu-24.04-arm, but
+    # cannot get that to work in the matrix, weirdly
     runs-on: ubuntu-latest
 
-    # Define the platforms to run on. Later determines the Docker image that'll be used
+    # Define the platforms to run on. Later determines the Docker image to be used
     strategy:
       matrix:
-        platform: [ c7-dev, c8-dev, u20-dev ]
+        platform: [ almalinux:8, almalinux:9, almalinux:10, ubuntu:22.04, ubuntu:24.04 ]
         compiler: [ gcc ]
         include:
-          # On C8 we also test clang
-          - platform: c8-dev
+          # On Alma 9 we also test clang
+          - platform: almalinux:9
             compiler: clang
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
     # Sets up useful environment variables
     - name: Setup environment variables
       run: |
-        echo "DIMAGE=hepsoftwarefoundation/$PLATFORM" >> $GITHUB_ENV
+        echo "DIMAGE=$PLATFORM" >> $GITHUB_ENV
         echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
         echo "COMPILER=$COMPILER" >> $GITHUB_ENV
       env:
@@ -48,18 +50,13 @@ jobs:
       run: docker pull $DIMAGE
 
     # Builds the code and runs the test
+    # The exact docker command can be tuned to specific images
     - name: Build and test
       run: |
         echo "Starting run for $PLATFORM, compiler suite $COMPILER"
-        if [[ "$DIMAGE" == *c7-dev ]];
-        then
-          docker run -e PLATFORM -e COMPILER -e CMAKE=cmake3 -e CMAKE_EXTRA=$CMAKE_EXTRA -v $(pwd):/mnt $DIMAGE scl enable devtoolset-8 /mnt/.github/scripts/build-test.sh;
-        elif [[ "$DIMAGE" == *c8-dev ]];
+        if [[ $DIMAGE =~ (c8-dev|almalinux|ubuntu) ]]
         then
           docker run -e PLATFORM -e COMPILER -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
-        elif [[ "$DIMAGE" == *u20-dev ]];
-        then
-          docker run -e PLATFORM -e COMPILER -e CXX=g++-9 -e CC=gcc-9 -v $(pwd):/mnt $DIMAGE /mnt/.github/scripts/build-test.sh;
         else
-          echo "Unkown Docker Image: $DIMAGE"
+          echo "Unkown Docker Image: $DIMAGE";
         fi
