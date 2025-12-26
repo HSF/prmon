@@ -130,11 +130,6 @@ void cgroupmon::update_stats(const std::vector<pid_t>& pids,
   // (all processes in the tree should be in the same cgroup)
   std::string base_path = read_path.empty() ? "" : read_path;
   cgroup_path = find_cgroup_path(pids[0]);
-  
-  prmon::monitored_value_map cgroup_stat_update{};
-  for (const auto& value : cgroup_stats) {
-    cgroup_stat_update[value.first] = 0L;
-  }
 
   // Construct full path to cgroup directory
   std::string full_cgroup_path = base_path + cgroup_mount_point + cgroup_path;
@@ -375,13 +370,27 @@ void cgroupmon::parse_io_stat_v1(const std::string& path,
   }
 }
 
-// Helper to read a single value from a file
+// Helper to read a single value from a file or count lines for proc/thread files
 unsigned long long cgroupmon::read_single_value(const std::string& filepath) {
   std::ifstream file(filepath);
   if (!file.is_open()) {
     return 0;
   }
 
+  // For cgroup.procs and cgroup.threads, count the number of lines (PIDs)
+  if (filepath.find("cgroup.procs") != std::string::npos ||
+      filepath.find("cgroup.threads") != std::string::npos) {
+    unsigned long long count = 0;
+    std::string line;
+    while (std::getline(file, line)) {
+      if (!line.empty()) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // For single-value files, read the first number
   unsigned long long value;
   file >> value;
   return file.fail() ? 0 : value;
