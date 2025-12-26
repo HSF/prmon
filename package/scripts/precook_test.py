@@ -93,8 +93,9 @@ def make_net(proc_net, fixed_value, rand=False):
             print(random.randint(0, net_lim) if rand else fixed_value, file=f)
 
 
-def make_nvidia(proc_nvidia, fixed_value_sm_mem, fixed_value_fb,
-                rand_sm_mem=False, rand_fb=False):
+def make_nvidia(
+    proc_nvidia, fixed_value_sm_mem, fixed_value_fb, rand_sm_mem=False, rand_fb=False
+):
     # idx
     print(proc_nvidia, fixed_value_sm_mem, fixed_value_fb, rand_sm_mem, rand_fb)
     smi_fname = os.path.join(proc_nvidia, "smi")

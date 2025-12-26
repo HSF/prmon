@@ -65,6 +65,46 @@ issue to first discuss with the maintainers.
 If you want to add a new *monitoring component* please take a look at [this
 guide](ADDING_MONITORS.md).
 
+## Windows Development Notes
+
+The scope of `prmon` is Linux systems (access to `/proc` and cgroups is
+required). If you develop on Windows, we recommend building and running tests
+inside a Linux environment:
+
+- Use WSL2 (Ubuntu) or Docker Desktop to provide a Linux runtime.
+- Run all builds and tests inside WSL2 or a Linux container.
+
+For formatting on Windows before opening a pull request:
+
+- Python: create a virtual environment and run `black` and `flake8`.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip black flake8
+black package/scripts package/tests
+flake8 package/scripts package/tests
+```
+
+- C++: install LLVM (for `clang-format`) and format sources.
+
+```powershell
+winget install --id LLVM.LLVM -e
+Get-ChildItem src, package/src, tests -Recurse -Include *.cpp,*.h |
+  ForEach-Object { clang-format -i $_.FullName }
+```
+
+Alternatively, when using CMake, you can invoke the `clang-format` target (if
+available):
+
+```powershell
+cmake -S . -B build
+cmake --build build --target clang-format
+```
+
+Please run final builds and tests in a Linux environment (WSL2 or Docker)
+to validate functionality before submitting your PR.
+
 ## Documentation Improvements
 
 It is almost a truism that documentation can always be improved! If you are not
