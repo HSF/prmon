@@ -235,8 +235,8 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   // Check that we ran for a reasonable number of iterations
   if (wallclock_monitor_p->get_wallclock_t() < prmon::mon_value(interval)) {
     spdlog::warn(
-        "Wallclock time of monitored process was less than the monitoring "
-        "interval, so average statistics will be unreliable");
+        "Monitored process finished before the sampling interval elapsed. "
+        "Consider using --interval <seconds> for short-lived processes.");
   }
 
   return return_code;
