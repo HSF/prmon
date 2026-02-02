@@ -15,6 +15,14 @@ be useful to the project, please raise the issue.
 All of our interactions in the project are governed by the [code of
 conduct](../CODE_OF_CONDUCT.md). Thanks for respecting it!
 
+## AI Assisted Contributions
+
+AI assistance is accepted for any contributions. However, as the submitter, you
+must take full responsibility for all code and results, and you should disclose
+AI use for non-routine tasks (algorithm design, architecture, complex
+problem-solving). Routine tasks, such as correcting grammar, formatting or
+style do not require disclosure.
+
 ## Issues and Bug Reports
 
 Raise bug reports and general issues using the [*issues*](https://github.com/HSF/prmon/issues)
