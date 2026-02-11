@@ -12,7 +12,7 @@
 #define MONITOR_NAME "iomon"
 
 // Define this to be 1 to activate the artificial
-// supression of i/o values so that the recovery
+// suppression of i/o values so that the recovery
 // of stats from the max values is checked
 #define IOMON_TEST 0
 

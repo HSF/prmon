@@ -22,10 +22,10 @@ using monitored_average_map = std::map<std::string, avg_value>;
 
 // parameter class holds three strings for each monitored value:
 // - the name of the value
-// - the units of the value for maxiumums and averages
+// - the units of the value for maximums and averages
 // as quite a few units don't have meaningful average values then
-// these should be set to and empty string, which will suppress
-// adding that informtion to the JSON output file
+// these should be set to an empty string, which will suppress
+// adding that information to the JSON output file
 class parameter {
  private:
   std::string m_name;

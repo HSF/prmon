@@ -138,7 +138,7 @@ void const memmon::get_unit_info(nlohmann::json& unit_json) {
   return;
 }
 
-// Toggle on fast memmory monitoring
+// Toggle on fast memory monitoring
 void const memmon::do_fastmon() {
   // Fast monitoring reads the data from a special file
   // This file is called smaps_rollup instead of smaps

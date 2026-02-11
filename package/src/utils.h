@@ -1,8 +1,8 @@
 // Copyright (C) 2018-2025 CERN
 // License Apache2 - see LICENCE file
 
-// Generic header for utilities used by the prmon
-// mointors
+// Generic header for utilities used by the prmon monitors
+//
 
 #ifndef PRMON_UTILS_H
 #define PRMON_UTILS_H 1

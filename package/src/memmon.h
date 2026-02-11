@@ -18,7 +18,7 @@
 
 class memmon final : public Imonitor, public MessageBase {
  private:
-  // Default paramater list
+  // Default parameter list
   // const static std::vector<std::string> default_memory_params{"vmem", "pss",
   // "rss", "swap"};
   const prmon::parameter_list params = {{"vmem", "kB", "kB"},
@@ -52,7 +52,7 @@ class memmon final : public Imonitor, public MessageBase {
   void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return true; }
 
-  // Toggle on fast memmory monitoring
+  // Toggle on fast memory monitoring
   void const do_fastmon();
 };
 REGISTER_MONITOR(Imonitor, memmon, "Monitor memory usage")

@@ -39,13 +39,13 @@ class netmon final : public Imonitor, public MessageBase {
   // Initial values, as these stats are global counters
   prmon::monitored_value_map network_stats_initial;
 
-  // Vector for network interface paramters to measure (will be constructed)
+  // Vector for network interface parameters to measure (will be constructed)
   std::vector<std::string> interface_params;
 
   // Which network interfaces to monitor
   std::vector<std::string> monitored_netdevs;
 
-  // Nested dictionary of network_if_streams[PARMETER][DEVICE][ISTREAM*]
+  // Nested dictionary of network_if_streams[PARAMETER][DEVICE][ISTREAM*]
   std::map<std::string,
            std::unordered_map<std::string, std::unique_ptr<std::ifstream>>>
       network_if_streams;

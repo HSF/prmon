@@ -1,6 +1,6 @@
 // Copyright (C) 2020-2025 CERN
 //
-// Process and thread number monitoring class
+// NVIDIA GPU monitoring class
 //
 
 #ifndef PRMON_NVIDIAMON_H
