@@ -1,0 +1,68 @@
+{
+  "Avg": {
+    "gpufbmem": 0.0,
+    "gpumempct": 0.0,
+    "gpusmpct": 0.0,
+    "ngpus": 0.0,
+    "nprocs": 1.0,
+    "nthreads": 1.0,
+    "pss": 154.0,
+    "rchar": 101257.0,
+    "read_bytes": 0.0,
+    "rss": 2048.0,
+    "rx_bytes": 130642.0,
+    "rx_packets": 971.428,
+    "swap": 0.0,
+    "tx_bytes": 198542.0,
+    "tx_packets": 1671.0,
+    "vmem": 8292.0,
+    "wchar": 0.0,
+    "write_bytes": 0.0
+  },
+  "HW": {
+    "cpu": {
+      "CPUs": 16,
+      "CoresPerSocket": 8,
+      "ModelName": "AMD Ryzen 7 7735HS with Radeon Graphics",
+      "Sockets": 1,
+      "ThreadsPerCore": 2
+    },
+    "gpu": {
+      "gpu_0": {
+        "name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+        "sm_freq": 3105,
+        "total_mem": 6288384
+      },
+      "nGPU": 1
+    },
+    "mem": {
+      "MemTotal": 15591724
+    }
+  },
+  "Max": {
+    "gpufbmem": 0,
+    "gpumempct": 0,
+    "gpusmpct": 0,
+    "ngpus": 0,
+    "nprocs": 1,
+    "nthreads": 1,
+    "pss": 154,
+    "rchar": 7088,
+    "read_bytes": 0,
+    "rss": 2048,
+    "rx_bytes": 9145,
+    "rx_packets": 68,
+    "stime": 0,
+    "swap": 0,
+    "tx_bytes": 13898,
+    "tx_packets": 117,
+    "utime": 0,
+    "vmem": 8292,
+    "wchar": 0,
+    "write_bytes": 0,
+    "wtime": 7
+  },
+  "prmon": {
+    "Version": "3.2.0"
+  }
+}

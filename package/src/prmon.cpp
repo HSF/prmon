@@ -4,7 +4,7 @@
 // PRocess MONitor
 // See https://github.com/HSF/prmon
 
-#include <getopt.h>
+#include "popl.hpp"
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -244,136 +244,69 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
 }
 
 int main(int argc, char* argv[]) {
-  // Set defaults
-  const char* default_filename = "prmon.txt";
-  const char* default_json_summary = "prmon.json";
-  const char* default_log_filename = "prmon.log";
-  const unsigned int default_interval = 30;
-  const bool default_store_hw_info = true;
-  const bool default_store_unit_info = false;
-
-  pid_t pid = -1;
-  bool got_pid = false;
-  std::string filename{default_filename};
-  std::string jsonSummary{default_json_summary};
-  std::string logFileName{default_log_filename};
-  std::vector<std::string> netdevs{};
-  std::vector<std::string> disabled_monitors{};
-  unsigned int interval{default_interval};
-  bool store_hw_info{default_store_hw_info};
-  bool store_unit_info{default_store_unit_info};
-  int do_help{0};
-  bool do_fast_memmon{false};
-
-  static struct option long_options[] = {
-      {"pid", required_argument, NULL, 'p'},
-      {"filename", required_argument, NULL, 'f'},
-      {"json-summary", required_argument, NULL, 'j'},
-      {"log-filename", required_argument, NULL, 'o'},
-      {"interval", required_argument, NULL, 'i'},
-      {"disable", required_argument, NULL, 'd'},
-      {"suppress-hw-info", no_argument, NULL, 's'},
-      {"units", no_argument, NULL, 'u'},
-      {"netdev", required_argument, NULL, 'n'},
-      {"help", no_argument, NULL, 'h'},
-      {"level", required_argument, NULL, 'l'},
-      {"fast-memmon", no_argument, NULL, 'm'},
-      {0, 0, 0, 0}};
-
-  int c;
-  while ((c = getopt_long(argc, argv, "-p:f:j:o:i:d:sun:h:l:m", long_options,
-                          NULL)) != -1) {
-    switch (char(c)) {
-      case 'p':
-        pid = std::stoi(optarg);
-        got_pid = true;
-        break;
-      case 'f':
-        filename = optarg;
-        break;
-      case 'j':
-        jsonSummary = optarg;
-        break;
-      case 'o':
-        logFileName = optarg;
-        break;
-      case 'i':
-        interval = std::stoi(optarg);
-        break;
-      case 's':
-        store_hw_info = false;
-        break;
-      case 'u':
-        store_unit_info = true;
-        break;
-      case 'n':
-        netdevs.push_back(optarg);
-        break;
-      case 'd':
-        // Check we got a valid monitor name
-        if (prmon::valid_monitor_disable(optarg))
-          disabled_monitors.push_back(optarg);
-        break;
-      case 'h':
-        do_help = 1;
-        break;
-      case 'l':
-        processLevel(std::string(optarg));
-        break;
-      case 'm':
-        do_fast_memmon = true;
-        break;
-      default:
-        std::cerr << "Use '--help' for usage " << std::endl;
-        return 1;
+  // Scan argv for "--" separator before popl parsing
+  // so that child program arguments are hidden from the option parser
+  int child_args = -1;
+  int popl_argc = argc;
+  for (int i = 1; i < argc; i++) {
+    if (!strcmp(argv[i], "--")) {
+      child_args = i + 1;
+      popl_argc = i;
+      break;
     }
   }
 
-  // Get additional configuration from the environment
-  prmon::disable_monitors_from_env(disabled_monitors);
+  // Set up the option parser
+  popl::OptionParser op(
+      "prmon is a process monitor program that records runtime data\n"
+      "from a process and its children, writing time stamped values\n"
+      "for resource consumption into a logfile and a JSON summary\n"
+      "format when the process exits.");
 
-  if (do_help) {
+  auto opt_pid = op.add<popl::Value<int>>(
+      "p", "pid", "Monitored process ID", -1);
+  auto opt_filename = op.add<popl::Value<std::string>>(
+      "f", "filename", "Filename for detailed stats", "prmon.txt");
+  auto opt_json_summary = op.add<popl::Value<std::string>>(
+      "j", "json-summary", "Filename for JSON summary", "prmon.json");
+  auto opt_log_filename = op.add<popl::Value<std::string>>(
+      "o", "log-filename", "Filename for logging", "prmon.log");
+  auto opt_interval = op.add<popl::Value<unsigned int>>(
+      "i", "interval", "Seconds between samples", 30);
+  auto opt_suppress = op.add<popl::Switch>(
+      "s", "suppress-hw-info", "Disable hardware information");
+  auto opt_units = op.add<popl::Switch>(
+      "u", "units", "Add units information to JSON file");
+  auto opt_netdev = op.add<popl::Value<std::string>>(
+      "n", "netdev",
+      "Network device to monitor (can be given multiple times;"
+      " default ALL devices)");
+  auto opt_disable = op.add<popl::Value<std::string>>(
+      "d", "disable",
+      "Disable monitor component (can be given multiple times;"
+      " all monitors enabled by default;"
+      " special name '[~]all' sets default state)");
+  auto opt_level = op.add<popl::Value<std::string>>(
+      "l", "level",
+      "Set logging level (e.g. 'info' or 'mon:debug';"
+      " valid levels: trace, debug, info, warn, error, critical)");
+  auto opt_fast_memmon = op.add<popl::Switch>(
+      "m", "fast-memmon",
+      "Do fast memory monitoring using smaps_rollup");
+  auto opt_help = op.add<popl::Switch>(
+      "h", "help", "Show this help message");
+
+  // Parse only the prmon options (not child args)
+  op.parse(popl_argc, argv);
+
+  // Handle help request
+  if (opt_help->is_set()) {
+    std::cout << op << std::endl;
     std::cout
-        << "prmon is a process monitor program that records runtime data\n"
-        << "from a process and its children, writing time stamped values\n"
-        << "for resource consumption into a logfile and a JSON summary\n"
-        << "format when the process exits.\n"
-        << std::endl;
-    std::cout
-        << "Options:\n"
-        << "[--pid, -p PID]           Monitored process ID\n"
-        << "[--filename, -f FILE]     Filename for detailed stats (default "
-        << default_filename << ")\n"
-        << "[--json-summary, -j FILE] Filename for JSON summary (default "
-        << default_json_summary << ")\n"
-        << "[--log-filename, -o FILE] Filename for logging (default "
-        << default_log_filename << ")\n"
-        << "[--interval, -i TIME]     Seconds between samples (default "
-        << default_interval << ")\n"
-        << "[--suppress-hw-info, -s]  Disable hardware information (default "
-        << (default_store_hw_info ? "false" : "true") << ")\n"
-        << "[--units, -u]             Add units information to JSON file "
-           "(default "
-        << (default_store_unit_info ? "true" : "false") << ")\n"
-        << "[--netdev, -n dev]        Network device to monitor (can be given\n"
-        << "                          multiple times; default ALL devices)\n"
-        << "[--disable, -d mon]       Disable monitor component\n"
-        << "                          (can be given multiple times);\n"
-        << "                          all monitors enabled by default\n"
-        << "                          Special name '[~]all' sets default "
-           "state\n"
-        << "[--level, -l lev]         Set the logging level of all "
-           "monitors\n"
-        << "[--level, -l mon:lev]     Set the logging level of a "
-           "specific monitor\n"
-        << "                          Valid level names are trace, debug, "
-           "info,\n"
-        << "                          warn, error and critical\n"
-        << "[--fast-memmon, -m]       Do fast memory monitoring using "
-           "smaps_rollup\n"
-        << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
+        << "[--] prog [arg] ...       Instead of monitoring a PID prmon "
+           "will\n"
         << "                          execute the given program + args and\n"
-        << "                          monitor this (must come after other \n"
+        << "                          monitor this (must come after other\n"
         << "                          arguments)\n"
         << "\n"
         << "One of --pid or a child program must be given (but not both)\n"
@@ -395,13 +328,35 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  int child_args = -1;
-  for (int i = 0; i < argc; i++) {
-    if (!strcmp(argv[i], "--")) {
-      child_args = i + 1;
-      break;
-    }
+  // Extract values from parsed options
+  pid_t pid = opt_pid->value();
+  bool got_pid = opt_pid->is_set();
+  std::string filename = opt_filename->value();
+  std::string jsonSummary = opt_json_summary->value();
+  std::string logFileName = opt_log_filename->value();
+  unsigned int interval = opt_interval->value();
+  bool store_hw_info = !opt_suppress->is_set();
+  bool store_unit_info = opt_units->is_set();
+  bool do_fast_memmon = opt_fast_memmon->is_set();
+
+  // Collect repeatable options
+  std::vector<std::string> netdevs{};
+  for (size_t i = 0; i < opt_netdev->count(); ++i) {
+    netdevs.push_back(opt_netdev->value(i));
   }
+
+  std::vector<std::string> disabled_monitors{};
+  for (size_t i = 0; i < opt_disable->count(); ++i) {
+    if (prmon::valid_monitor_disable(opt_disable->value(i)))
+      disabled_monitors.push_back(opt_disable->value(i));
+  }
+
+  for (size_t i = 0; i < opt_level->count(); ++i) {
+    processLevel(opt_level->value(i));
+  }
+
+  // Get additional configuration from the environment
+  prmon::disable_monitors_from_env(disabled_monitors);
 
   if (invalid_level_option) {
     return EXIT_FAILURE;
