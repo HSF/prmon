@@ -123,7 +123,7 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 
 * `--pid` the 'mother' PID to monitor (all children in the same process tree are monitored as well)
 * `--filename` output file for time-stamped monitored values
-* `--json-summmary` output file for summary data written in JSON format
+* `--json-summary` output file for summary data written in JSON format
 * `--log-filename` output file for log messages
 * `--interval` time, in seconds, between monitoring snapshots
 * `--suppress-hw-info` flag that turns-off hardware information collection
