@@ -1003,6 +1003,7 @@ inline void OptionParser::parse(int argc, const char* const argv[])
             /// from here on only non opt args
             for (int m = n + 1; m < argc; ++m)
                 non_option_args_.emplace_back(argv[m]);
+            break;
         }
         else if (arg.find("--") == 0)
         {
