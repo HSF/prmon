@@ -1,5 +1,0 @@
-Time	wtime	gpufbmem	gpumempct	gpusmpct	ngpus	pss	rss	swap	vmem	rchar	read_bytes	wchar	write_bytes	rx_bytes	rx_packets	tx_bytes	tx_packets	stime	utime	nprocs	nthreads
-1771507908	1	0	0	0	0	154	2048	0	8292	7088	0	0	0	1461	11	2625	23	0	0	1	1
-1771507910	3	0	0	0	0	154	2048	0	8292	7088	0	0	0	4161	32	7168	63	0	0	1	1
-1771507912	5	0	0	0	0	154	2048	0	8292	7088	0	0	0	6653	50	10533	90	0	0	1	1
-1771507914	7	0	0	0	0	154	2048	0	8292	7088	0	0	0	9145	68	13898	117	0	0	1	1
