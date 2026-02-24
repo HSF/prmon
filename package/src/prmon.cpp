@@ -95,7 +95,6 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
     }
   }
 
-  int iteration = 0;
   time_t lastIteration = time(0) - interval;
   time_t currentTime;
 
@@ -137,13 +136,15 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   bool wroteFile = false;
   std::vector<pid_t> cpids{};
   int return_code = 0;
+
+  bool first = true;
   // Scope of 'monitors' ensures safety of bare pointer here
   auto wallclock_monitor_p = static_cast<wallmon*>(monitors["wallmon"].get());
   while (kill(mpid, 0) == 0 && prmon::sigusr1 == false) {
-    if (time(0) - lastIteration > interval) {
-      iteration++;
+    if (first || time(0) - lastIteration > interval){
       // Reset lastIteration
       lastIteration = time(0);
+      first = false;
 
       if (modern_kernel)
         cpids = prmon::offspring_pids(mpid);
@@ -195,7 +196,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
             }
           }
         }
-
+  
         // Write JSON realtime summary to a temporary file
         std::ofstream json_out(tmp_json_file.str());
         json_out << std::setw(2) << json_summary << std::endl;
@@ -224,7 +225,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   file.close();
 
   // Cleanup snapshot file
-  if (remove(json_snapshot_file.str().c_str()) != 0 && iteration > 0)
+  if (remove(json_snapshot_file.str().c_str()) != 0 && errno != ENOENT)
     perror("remove fails");
 
   // Write final JSON summary file
