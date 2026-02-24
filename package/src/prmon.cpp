@@ -95,7 +95,6 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
     }
   }
 
-  int iteration = 0;
   time_t lastIteration = time(0) - interval;
   time_t currentTime;
 
@@ -143,7 +142,6 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   auto wallclock_monitor_p = static_cast<wallmon*>(monitors["wallmon"].get());
   while (kill(mpid, 0) == 0 && prmon::sigusr1 == false) {
     if (first || time(0) - lastIteration > interval){
-      iteration++;
       // Reset lastIteration
       lastIteration = time(0);
       first = false;
