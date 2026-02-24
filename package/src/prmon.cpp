@@ -138,8 +138,8 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   std::vector<pid_t> cpids{};
   int return_code = 0;
 
-  // Scope of 'monitors' ensures safety of bare pointer here
   bool first = true;
+  // Scope of 'monitors' ensures safety of bare pointer here
   auto wallclock_monitor_p = static_cast<wallmon*>(monitors["wallmon"].get());
   while (kill(mpid, 0) == 0 && prmon::sigusr1 == false) {
     if (first || time(0) - lastIteration > interval){
@@ -198,8 +198,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
             }
           }
         }
-        first = false;
-
+  
         // Write JSON realtime summary to a temporary file
         std::ofstream json_out(tmp_json_file.str());
         json_out << std::setw(2) << json_summary << std::endl;
@@ -237,7 +236,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   file.close();
 
   // Check that we ran for a reasonable number of iterations
-  if (wallclock_monitor_p->get_wallclock_t() < prmon::mon_value(interval) && iteration <= 1) {
+  if (wallclock_monitor_p->get_wallclock_t() < prmon::mon_value(interval)) {
     spdlog::warn(
         "Monitored process finished before the sampling interval elapsed. "
         "Average statistics will be unreliable. "
