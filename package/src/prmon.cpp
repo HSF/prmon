@@ -4,7 +4,6 @@
 // PRocess MONitor
 // See https://github.com/HSF/prmon
 
-#include "popl.hpp"
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -23,6 +22,7 @@
 #include <vector>
 
 #include "memmon.h"
+#include "popl.hpp"
 #include "prmonVersion.h"
 #include "prmonutils.h"
 #include "registry.h"
@@ -261,10 +261,10 @@ int main(int argc, char* argv[]) {
       "prmon is a process monitor program that records runtime data\n"
       "from a process and its children, writing time stamped values\n"
       "for resource consumption into a logfile and a JSON summary\n"
-      "format when the process exits.");
+      "format when the process exits");
 
   auto opt_pid = op.add<popl::Value<int>>(
-      "p", "pid", "Monitored process ID", -1);
+      "p", "pid", "Monitored process ID");
   auto opt_filename = op.add<popl::Value<std::string>>(
       "f", "filename", "Filename for detailed stats", "prmon.txt");
   auto opt_json_summary = op.add<popl::Value<std::string>>(
@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
       "o", "log-filename", "Filename for logging", "prmon.log");
   auto opt_interval = op.add<popl::Value<unsigned int>>(
       "i", "interval", "Seconds between samples", 30);
-  auto opt_suppress = op.add<popl::Switch>(
+  auto opt_suppress_hw_info = op.add<popl::Switch>(
       "s", "suppress-hw-info", "Disable hardware information");
   auto opt_units = op.add<popl::Switch>(
       "u", "units", "Add units information to JSON file");
@@ -329,13 +329,16 @@ int main(int argc, char* argv[]) {
   }
 
   // Extract values from parsed options
-  pid_t pid = opt_pid->value();
+  pid_t pid = -1;
   bool got_pid = opt_pid->is_set();
+  if (got_pid) {
+    pid = opt_pid->value();
+  }
   std::string filename = opt_filename->value();
   std::string jsonSummary = opt_json_summary->value();
   std::string logFileName = opt_log_filename->value();
   unsigned int interval = opt_interval->value();
-  bool store_hw_info = !opt_suppress->is_set();
+  bool store_hw_info = !opt_suppress_hw_info->is_set();
   bool store_unit_info = opt_units->is_set();
   bool do_fast_memmon = opt_fast_memmon->is_set();
 
