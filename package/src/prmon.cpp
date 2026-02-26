@@ -244,18 +244,6 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
 }
 
 int main(int argc, char* argv[]) {
-  // Scan argv for "--" separator before popl parsing
-  // so that child program arguments are hidden from the option parser
-  int child_args = -1;
-  int popl_argc = argc;
-  for (int i = 1; i < argc; i++) {
-    if (!strcmp(argv[i], "--")) {
-      child_args = i + 1;
-      popl_argc = i;
-      break;
-    }
-  }
-
   // Set up the option parser
   popl::OptionParser op(
       "prmon is a process monitor program that records runtime data\n"
@@ -296,8 +284,11 @@ int main(int argc, char* argv[]) {
   auto opt_help = op.add<popl::Switch>(
       "h", "help", "Show this help message");
 
-  // Parse only the prmon options (not child args)
-  op.parse(popl_argc, argv);
+  // Parse command line options
+  op.parse(argc, argv);
+
+  // Collect non-option arguments (child program args after "--")
+  const auto& child = op.non_option_args();
 
   // Handle help request
   if (opt_help->is_set()) {
@@ -376,7 +367,7 @@ int main(int argc, char* argv[]) {
   logger->flush_on(global_logging_level);
   spdlog::set_default_logger(logger);
 
-  if ((!got_pid && child_args == -1) || (got_pid && child_args > 0)) {
+  if ((!got_pid && child.empty()) || (got_pid && !child.empty())) {
     std::stringstream strm;
     strm << "One and only one PID or child program is required - ";
     if (got_pid)
@@ -395,17 +386,20 @@ int main(int argc, char* argv[]) {
     ProcessMonitor(pid, filename, jsonSummary, interval, store_hw_info,
                    store_unit_info, netdevs, disabled_monitors, do_fast_memmon);
   } else {
-    if (child_args == argc) {
-      spdlog::error(
-          "Found marker for child program to execute, but with no "
-          "program argument.");
-      return 1;
+    std::vector<char*> child_argv;
+    child_argv.reserve(child.size() + 1);
+    for (const auto& s : child) {
+      child_argv.push_back(const_cast<char*>(s.c_str()));
     }
-    pid_t child = fork();
-    if (child == 0) {
-      execvp(argv[child_args], &argv[child_args]);
-    } else if (child > 0) {
-      return ProcessMonitor(child, filename, jsonSummary, interval,
+    child_argv.push_back(nullptr);
+
+    pid_t child_pid = fork();
+    if (child_pid == 0) {
+      execvp(child_argv[0], child_argv.data());
+      perror("execvp");
+      return 1;
+    } else if (child_pid > 0) {
+      return ProcessMonitor(child_pid, filename, jsonSummary, interval,
                             store_hw_info, store_unit_info, netdevs,
                             disabled_monitors, do_fast_memmon);
     }
