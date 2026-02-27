@@ -10,6 +10,7 @@ add_executable(prmon src/prmon.cpp
            src/wallmon.cpp
            src/memmon.cpp
            src/nvidiamon.cpp
+           src/cgroupmon.cpp
            )
 
 target_link_libraries(prmon PRIVATE

@@ -50,6 +50,7 @@ if (BUILD_GTESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/netmon.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/nvidiamon.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/iomon.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/cgroupmon.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/MessageBase.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/prmonutils.cpp
@@ -83,6 +84,7 @@ if (BUILD_GTESTS)
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/netmon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/nvidiamon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/iomon.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/cgroupmon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/MessageBase.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parameter.cpp
@@ -139,6 +141,7 @@ endfunction(script_install)
 script_install(SCRIPT test_cpu.py)
 script_install(SCRIPT test_io.py)
 script_install(SCRIPT test_net.py)
+script_install(SCRIPT test_cgroup.py)
 script_install(SCRIPT test_mem.py)
 script_install(SCRIPT net_burner.py)
 script_install(SCRIPT http_block.py DESTINATION cgi-bin)
@@ -178,4 +181,8 @@ add_test(NAME testUnits COMMAND ${PYTHON_TEST} test_cpu.py --units --time 3 --sl
 add_test(NAME testExitCode COMMAND ${PYTHON_TEST} test_exit.py --exit-code 43)
 
 # Test for disabling monitor components
+
+# Cgroup Tests (will skip if cgroups not available)
+add_test(NAME testCgroup COMMAND ${PYTHON_TEST} test_cgroup.py --time 3)
+
 add_test(NAME testDisable COMMAND ${PYTHON_TEST} test_disable.py --disable iomon countmon)
