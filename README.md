@@ -1,6 +1,6 @@
 # Process Monitor (prmon)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Build Status][build-img]][build-link]  [![License][license-img]][license-url] [![Codefactor][codefactor-img]][codefactor-url] [![HSF Project][hsf-project-img]][hsf-project-url]
@@ -303,6 +303,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Siddhant2306"><img src="https://avatars.githubusercontent.com/u/174049098?v=4?s=100" width="100px;" alt="Siddhant2306"/><br /><sub><b>Siddhant2306</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=Siddhant2306" title="Documentation">📖</a> <a href="https://github.com/HSF/prmon/commits?author=Siddhant2306" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/EyupKeremBas7"><img src="https://avatars.githubusercontent.com/u/165667589?v=4?s=100" width="100px;" alt="Eyüp Kerem Baş"/><br /><sub><b>Eyüp Kerem Baş</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=EyupKeremBas7" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/utkarshasinha"><img src="https://avatars.githubusercontent.com/u/193846712?v=4?s=100" width="100px;" alt="utkarshasinha"/><br /><sub><b>utkarshasinha</b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=utkarshasinha" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/iareARiES"><img src="https://avatars.githubusercontent.com/u/147093410?v=4?s=100" width="100px;" alt="Aditya "/><br /><sub><b>Aditya </b></sub></a><br /><a href="https://github.com/HSF/prmon/commits?author=iareARiES" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
