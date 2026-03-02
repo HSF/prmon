@@ -112,10 +112,7 @@ if (BUILD_GTESTS)
     add_test(NAME testFieldsAll COMMAND test_fields)
     add_test(NAME testFieldsSomeDisabled COMMAND test_fields --disable netmon --disable cpumon)
 
-    # nvmlmon uses dlopen for runtime NVML loading — link against dl
-    target_sources(test_values PRIVATE ../src/nvmlmon.cpp)
     target_link_libraries(test_values PRIVATE dl)
-    target_sources(test_fields PRIVATE ../src/nvmlmon.cpp)
     target_link_libraries(test_fields PRIVATE dl)
 
 endif()

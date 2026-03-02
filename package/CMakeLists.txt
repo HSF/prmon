@@ -12,7 +12,6 @@ add_executable(prmon src/prmon.cpp
            src/memmon.cpp
            )
 
-target_sources(prmon PRIVATE src/nvmlmon.cpp)
 target_link_libraries(prmon PRIVATE dl)
 
 target_link_libraries(prmon PRIVATE
