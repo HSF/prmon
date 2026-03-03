@@ -6,6 +6,8 @@ name: Clang-Format
 on:
   push:
     branches-ignore: [ main, stable ]
+  pull_request:
+    branches: [ main, stable ]
 
 # Defines the main job where we checkout our code, run clang-format
 # and commit changes
