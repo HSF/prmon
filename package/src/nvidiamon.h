@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2025 CERN
+// Copyright (C) 2020-2026 CERN
 //
 // NVIDIA GPU monitoring class
 //
@@ -14,6 +14,10 @@
 #include "parameter.h"
 #include "registry.h"
 
+// The following constants, types, and function pointer declarations
+// mirror the Nvidia NVML API and are resolved at runtime via dlopen
+// to avoid a link-time dependency on the NVML library.
+
 // NVML process utilization sample
 typedef struct {
   unsigned int pid;
@@ -23,12 +27,6 @@ typedef struct {
   unsigned int encUtil;
   unsigned int decUtil;
 } nvmlProcessUtilizationSample_t;
-
-// NVML process info (v1)
-typedef struct {
-  unsigned int pid;
-  unsigned long long usedGpuMemory;
-} nvmlProcessInfo_v1_t;
 
 // NVML process info (v2)
 typedef struct {
@@ -47,12 +45,8 @@ typedef struct nvmlDevice_st* nvmlDevice_t;
 class nvidiamon final : public Imonitor, public MessageBase {
  private:
   // Enum to decide which method to use to monitor nvidia GPUs
-  enum class MonitorMethod{
-    NVML,
-    SMI,
-    NONE
-  };
-  
+  enum class MonitorMethod { NVML, SMI, NONE };
+
   // const static std::vector<std::string> default_nvidia_params{
   //   "ngpus", "gpusmpct", "gpumempct", "gpufbmem"};
   const prmon::parameter_list params = {{"ngpus", "1", "1"},
@@ -66,7 +60,7 @@ class nvidiamon final : public Imonitor, public MessageBase {
 
   // Handle to the dynamically loaded libnvidia-ml.so
   void* nvml_handle{nullptr};
-  
+
   // Set a boolean to see if we have a valid nvidia setup
   bool valid;
 
@@ -81,7 +75,7 @@ class nvidiamon final : public Imonitor, public MessageBase {
 
   // Initialize NVML
   bool init_nvml();
-  
+
   // Test if nvidia-smi is available
   bool test_nvidia_smi();
 
@@ -92,17 +86,17 @@ class nvidiamon final : public Imonitor, public MessageBase {
 
   // Match monitored PIDs against sampled data, accumulating into stats
   bool accumulate_process_stats(const std::vector<pid_t>& pids,
-                                unsigned int util_count,
-                                unsigned int mem_count,
+                                unsigned int util_count, unsigned int mem_count,
                                 prmon::monitored_value_map& stats);
 
-
   // NVML methods
-  void update_stats_nvml(const std::vector<pid_t>& pids, const std::string read_path);
+  void update_stats_nvml(const std::vector<pid_t>& pids,
+                         const std::string read_path);
   void const get_hardware_info_nvml(nlohmann::json& hw_json);
 
   // SMI methods
-  void update_stats_smi(const std::vector<pid_t>& pids, const std::string read_path);
+  void update_stats_smi(const std::vector<pid_t>& pids,
+                        const std::string read_path);
   void const get_hardware_info_smi(nlohmann::json& hw_json);
 
   // Vectors to store utilization and memory info
@@ -116,7 +110,6 @@ class nvidiamon final : public Imonitor, public MessageBase {
   const unsigned int MB_to_KB = 1024;
   const unsigned long long BYTES_PER_KB = 1024;
   unsigned long long last_seen_timestamp{};
-
 
  public:
   nvidiamon();

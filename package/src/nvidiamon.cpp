@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2025 CERN
+// Copyright (C) 2020-2026 CERN
 // License Apache2 - see LICENCE file
 
 #include "nvidiamon.h"
@@ -17,6 +17,10 @@
 
 #define MONITOR_NAME "nvidiamon"
 
+// The following constants, types, and function pointer declarations
+// mirror the Nvidia NVML API and are resolved at runtime via dlopen
+// to avoid a link-time dependency on the NVML library.
+
 // NVML return code constants
 #define NVML_SUCCESS 0
 #define NVML_ERROR_NOT_FOUND 6
@@ -28,12 +32,14 @@
 // NVML return type
 typedef int nvmlReturn_t;
 
+// NVML memory info struct
 typedef struct {
   unsigned long long total;  // Total physical device memory (in bytes)
   unsigned long long free;   // Unallocated device memory (in bytes)
   unsigned long long used;   // Allocated device memory (in bytes)
 } nvmlMemory_t;
 
+// NVML clock types
 typedef enum {
   NVML_CLOCK_GRAPHICS = 0,
   NVML_CLOCK_SM = 1,
@@ -81,14 +87,14 @@ nvidiamon::nvidiamon() {
     nvidia_stats.emplace(param.get_name(), prmon::monitored_value(param));
   }
 
-  valid = true; 
+  valid = true;
 
-  if (load_nvml_lib() && init_nvml()) { 
+  if (load_nvml_lib() && init_nvml()) {
     active_method = MonitorMethod::NVML;
     utilization.resize(max_samples);
     memory_info.resize(max_samples);
     debug("Successfully initialized NVIDIA monitoring via NVML");
-    return; 
+    return;
   }
 
   if (test_nvidia_smi()) {
@@ -133,10 +139,9 @@ std::pair<int, std::vector<std::string>> nvidiamon::read_gpu_stats_test(
 
 // Query utilization and memory samples for a single GPU device.
 // Returns false if the device should be skipped (fatal NVML error).
-bool nvidiamon::query_device_samples(nvmlDevice_t device, unsigned int gpu_idx,
-                                   unsigned int& util_count,
-                                   unsigned int& mem_count,
-                                   unsigned long long& current_max_timestamp) {
+bool nvidiamon::query_device_samples(
+    nvmlDevice_t device, unsigned int gpu_idx, unsigned int& util_count,
+    unsigned int& mem_count, unsigned long long& current_max_timestamp) {
   util_count = max_samples;
   nvmlReturn_t result = nvmlDeviceGetProcessUtilization(
       device, utilization.data(), &util_count, last_seen_timestamp);
@@ -186,9 +191,10 @@ bool nvidiamon::query_device_samples(nvmlDevice_t device, unsigned int gpu_idx,
 
 // Match monitored PIDs against the sampled utilization and memory data,
 // accumulating into the stats map.  Returns true if any PID matched.
-bool nvidiamon::accumulate_process_stats(
-    const std::vector<pid_t>& pids, unsigned int util_count,
-    unsigned int mem_count, prmon::monitored_value_map& stats) {
+bool nvidiamon::accumulate_process_stats(const std::vector<pid_t>& pids,
+                                         unsigned int util_count,
+                                         unsigned int mem_count,
+                                         prmon::monitored_value_map& stats) {
   bool gpu_is_active{false};
   for (unsigned int target_pid : pids) {
     for (unsigned int i{0}; i < util_count; ++i) {
@@ -211,7 +217,7 @@ bool nvidiamon::accumulate_process_stats(
 }
 
 void nvidiamon::update_stats_nvml(const std::vector<pid_t>& pids,
-                           const std::string read_path) {
+                                  const std::string read_path) {
   prmon::monitored_value_map nvidia_stats_update{};
   for (const auto& value : nvidia_stats) {
     nvidia_stats_update[value.first] = 0L;
@@ -255,7 +261,7 @@ void nvidiamon::update_stats_nvml(const std::vector<pid_t>& pids,
 }
 
 void nvidiamon::update_stats_smi(const std::vector<pid_t>& pids,
-                             const std::string read_path) {
+                                 const std::string read_path) {
   const std::vector<std::string> cmd = {"nvidia-smi", "pmon", "-s",
                                         "um",         "-c",   "1"};
   prmon::monitored_value_map nvidia_stats_update{};
@@ -354,7 +360,8 @@ void nvidiamon::update_stats_smi(const std::vector<pid_t>& pids,
   }
 }
 
-void nvidiamon::update_stats(const std::vector<pid_t>& pids, const std::string read_path) {
+void nvidiamon::update_stats(const std::vector<pid_t>& pids,
+                             const std::string read_path) {
   if (!valid && read_path.empty()) return;
 
   // Test mode: precooked data is always in SMI format
@@ -374,7 +381,6 @@ void nvidiamon::update_stats(const std::vector<pid_t>& pids, const std::string r
       break;
   }
 }
-
 
 // Return NVIDIA stats
 prmon::monitored_value_map const nvidiamon::get_text_stats() {
@@ -442,30 +448,30 @@ bool nvidiamon::load_nvml_lib() {
     return false;
   }
 
-  #define LOAD_SYM(var, sym, cast)       \
-    var = (cast)dlsym(nvml_handle, sym); \
-    if (!(var)) {                        \
-      goto load_error;                   \
-    }
+#define LOAD_SYM(var, sym, cast)       \
+  var = (cast)dlsym(nvml_handle, sym); \
+  if (!(var)) {                        \
+    goto load_error;                   \
+  }
 
-    LOAD_SYM(nvmlInit, "nvmlInit", nvmlReturn_t(*)())
-    LOAD_SYM(nvmlShutdown, "nvmlShutdown", nvmlReturn_t(*)())
-    LOAD_SYM(nvmlErrorString, "nvmlErrorString", const char* (*)(nvmlReturn_t))
-    LOAD_SYM(nvmlDeviceGetCount, "nvmlDeviceGetCount",
-            nvmlReturn_t(*)(unsigned int*))
-    LOAD_SYM(nvmlDeviceGetHandleByIndex, "nvmlDeviceGetHandleByIndex",
-            nvmlReturn_t(*)(unsigned int, nvmlDevice_t*))
-    LOAD_SYM(nvmlDeviceGetProcessUtilization, "nvmlDeviceGetProcessUtilization",
-            nvmlReturn_t(*)(nvmlDevice_t, nvmlProcessUtilizationSample_t*,
-                            unsigned int*, unsigned long long))
-    LOAD_SYM(nvmlDeviceGetName, "nvmlDeviceGetName",
-            nvmlReturn_t(*)(nvmlDevice_t, char*, unsigned int))
-    LOAD_SYM(nvmlDeviceGetMaxClockInfo, "nvmlDeviceGetMaxClockInfo",
-            nvmlReturn_t(*)(nvmlDevice_t, nvmlClockType_t, unsigned int*))
-    LOAD_SYM(nvmlDeviceGetMemoryInfo, "nvmlDeviceGetMemoryInfo",
-            nvmlReturn_t(*)(nvmlDevice_t, nvmlMemory_t*))
+  LOAD_SYM(nvmlInit, "nvmlInit", nvmlReturn_t(*)())
+  LOAD_SYM(nvmlShutdown, "nvmlShutdown", nvmlReturn_t(*)())
+  LOAD_SYM(nvmlErrorString, "nvmlErrorString", const char* (*)(nvmlReturn_t))
+  LOAD_SYM(nvmlDeviceGetCount, "nvmlDeviceGetCount",
+           nvmlReturn_t(*)(unsigned int*))
+  LOAD_SYM(nvmlDeviceGetHandleByIndex, "nvmlDeviceGetHandleByIndex",
+           nvmlReturn_t(*)(unsigned int, nvmlDevice_t*))
+  LOAD_SYM(nvmlDeviceGetProcessUtilization, "nvmlDeviceGetProcessUtilization",
+           nvmlReturn_t(*)(nvmlDevice_t, nvmlProcessUtilizationSample_t*,
+                           unsigned int*, unsigned long long))
+  LOAD_SYM(nvmlDeviceGetName, "nvmlDeviceGetName",
+           nvmlReturn_t(*)(nvmlDevice_t, char*, unsigned int))
+  LOAD_SYM(nvmlDeviceGetMaxClockInfo, "nvmlDeviceGetMaxClockInfo",
+           nvmlReturn_t(*)(nvmlDevice_t, nvmlClockType_t, unsigned int*))
+  LOAD_SYM(nvmlDeviceGetMemoryInfo, "nvmlDeviceGetMemoryInfo",
+           nvmlReturn_t(*)(nvmlDevice_t, nvmlMemory_t*))
 
-  #undef LOAD_SYM
+#undef LOAD_SYM
 
   // Try v3 first, then v2, then v1
   nvmlDeviceGetComputeRunningProcesses =
@@ -485,12 +491,12 @@ bool nvidiamon::load_nvml_lib() {
     goto load_error;
   }
   return true;
-  
-    load_error:
-      warning("Failed to resolve NVML function symbols: " + std::string(dlerror()));
-      dlclose(nvml_handle);
-      nvml_handle = nullptr;
-      return false;
+
+load_error:
+  warning("Failed to resolve NVML function symbols: " + std::string(dlerror()));
+  dlclose(nvml_handle);
+  nvml_handle = nullptr;
+  return false;
 }
 
 bool nvidiamon::init_nvml() {
@@ -516,7 +522,6 @@ bool nvidiamon::init_nvml() {
   ngpus = gpus;
   return true;
 }
-
 
 // Return the parameter list
 prmon::parameter_list const nvidiamon::get_parameter_list() { return params; }

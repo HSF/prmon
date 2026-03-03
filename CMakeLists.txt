@@ -1,7 +1,7 @@
 # - Define the minimum CMake version
 # HSF recommends 3.10 to support C/C++ compile features for C/C++11 across all
 # platforms
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.10)
 # - Call project() to setup system
 # From CMake 3, we can set the project version easily in one go
 project(prmon VERSION 3.2.0 LANGUAGES CXX)

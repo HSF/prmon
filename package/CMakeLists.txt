@@ -12,11 +12,10 @@ add_executable(prmon src/prmon.cpp
            src/memmon.cpp
            )
 
-target_link_libraries(prmon PRIVATE dl)
-
 target_link_libraries(prmon PRIVATE
            nlohmann_json::nlohmann_json
            spdlog::spdlog_header_only
+           dl
            )
 
 if (BUILD_BENCHMARK_LOG)

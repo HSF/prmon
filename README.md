@@ -164,6 +164,7 @@ If any of these issues are encountered, a relevant message is printed
 to notify the user.
 
 ### NVIDIA GPU Monitoring
+
 When NVIDIA GPUs are present, `prmon` will preferentially use the
 NVIDIA Management Library (NVML) for direct GPU monitoring via
 `libnvidia-ml.so`. If NVML is not available or fails to initialise,
