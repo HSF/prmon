@@ -454,37 +454,37 @@ bool nvidiamon::load_nvml_lib() {
     goto load_error;                   \
   }
 
-  LOAD_SYM(nvmlInit, "nvmlInit", nvmlReturn_t(*)())
-  LOAD_SYM(nvmlShutdown, "nvmlShutdown", nvmlReturn_t(*)())
+  LOAD_SYM(nvmlInit, "nvmlInit", nvmlReturn_t (*)())
+  LOAD_SYM(nvmlShutdown, "nvmlShutdown", nvmlReturn_t (*)())
   LOAD_SYM(nvmlErrorString, "nvmlErrorString", const char* (*)(nvmlReturn_t))
   LOAD_SYM(nvmlDeviceGetCount, "nvmlDeviceGetCount",
-           nvmlReturn_t(*)(unsigned int*))
+           nvmlReturn_t (*)(unsigned int*))
   LOAD_SYM(nvmlDeviceGetHandleByIndex, "nvmlDeviceGetHandleByIndex",
-           nvmlReturn_t(*)(unsigned int, nvmlDevice_t*))
+           nvmlReturn_t (*)(unsigned int, nvmlDevice_t*))
   LOAD_SYM(nvmlDeviceGetProcessUtilization, "nvmlDeviceGetProcessUtilization",
-           nvmlReturn_t(*)(nvmlDevice_t, nvmlProcessUtilizationSample_t*,
-                           unsigned int*, unsigned long long))
+           nvmlReturn_t (*)(nvmlDevice_t, nvmlProcessUtilizationSample_t*,
+                            unsigned int*, unsigned long long))
   LOAD_SYM(nvmlDeviceGetName, "nvmlDeviceGetName",
-           nvmlReturn_t(*)(nvmlDevice_t, char*, unsigned int))
+           nvmlReturn_t (*)(nvmlDevice_t, char*, unsigned int))
   LOAD_SYM(nvmlDeviceGetMaxClockInfo, "nvmlDeviceGetMaxClockInfo",
-           nvmlReturn_t(*)(nvmlDevice_t, nvmlClockType_t, unsigned int*))
+           nvmlReturn_t (*)(nvmlDevice_t, nvmlClockType_t, unsigned int*))
   LOAD_SYM(nvmlDeviceGetMemoryInfo, "nvmlDeviceGetMemoryInfo",
-           nvmlReturn_t(*)(nvmlDevice_t, nvmlMemory_t*))
+           nvmlReturn_t (*)(nvmlDevice_t, nvmlMemory_t*))
 
 #undef LOAD_SYM
 
   // Try v3 first, then v2, then v1
   nvmlDeviceGetComputeRunningProcesses =
-      (nvmlReturn_t(*)(nvmlDevice_t, unsigned int*, nvmlProcessInfo_v3_t*))
+      (nvmlReturn_t (*)(nvmlDevice_t, unsigned int*, nvmlProcessInfo_v3_t*))
           dlsym(nvml_handle, "nvmlDeviceGetComputeRunningProcesses_v3");
   if (!nvmlDeviceGetComputeRunningProcesses) {
     nvmlDeviceGetComputeRunningProcesses =
-        (nvmlReturn_t(*)(nvmlDevice_t, unsigned int*, nvmlProcessInfo_v3_t*))
+        (nvmlReturn_t (*)(nvmlDevice_t, unsigned int*, nvmlProcessInfo_v3_t*))
             dlsym(nvml_handle, "nvmlDeviceGetComputeRunningProcesses_v2");
   }
   if (!nvmlDeviceGetComputeRunningProcesses) {
     nvmlDeviceGetComputeRunningProcesses =
-        (nvmlReturn_t(*)(nvmlDevice_t, unsigned int*, nvmlProcessInfo_v3_t*))
+        (nvmlReturn_t (*)(nvmlDevice_t, unsigned int*, nvmlProcessInfo_v3_t*))
             dlsym(nvml_handle, "nvmlDeviceGetComputeRunningProcesses");
   }
   if (!nvmlDeviceGetComputeRunningProcesses) {
