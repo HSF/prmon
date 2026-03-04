@@ -4,17 +4,18 @@ add_executable(prmon src/prmon.cpp
            src/MessageBase.cpp
            src/parameter.cpp
            src/netmon.cpp
+           src/nvidiamon.cpp
            src/iomon.cpp
            src/cpumon.cpp
            src/countmon.cpp
            src/wallmon.cpp
            src/memmon.cpp
-           src/nvidiamon.cpp
            )
 
 target_link_libraries(prmon PRIVATE
            nlohmann_json::nlohmann_json
            spdlog::spdlog_header_only
+           dl
            )
 
 if (BUILD_BENCHMARK_LOG)

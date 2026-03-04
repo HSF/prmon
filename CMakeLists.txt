@@ -6,6 +6,11 @@ cmake_minimum_required(VERSION 3.10)
 # From CMake 3, we can set the project version easily in one go
 project(prmon VERSION 3.2.0 LANGUAGES CXX)
 
+# For newer CMakes, allow target_link_libraries to link targets defined in other directories
+if(POLICY CMP0079)
+  cmake_policy(SET CMP0079 NEW)
+endif()
+
 # For newer CMakes use normalized install destination paths
 if(POLICY CMP0177)
   cmake_policy(SET CMP0177 NEW)
@@ -53,7 +58,7 @@ set(BUILD_GTESTS "${BUILD_GTESTS}"
 
 # Define a default build type when using a single-mode tool like make/ninja
 # We make this default to Release, unless profiling is enabled, in which
-# case do RelWithDebInfo (bcause you need the debug symbols)
+# case do RelWithDebInfo (because you need the debug symbols)
 if(NOT CMAKE_BUILD_TYPE)
   if(PROFILE_GPROF OR PROFILE_GPERFTOOLS)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
@@ -84,7 +89,6 @@ if("${ARM_PROCESSOR}" STREQUAL "arm")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
   message(STATUS "Disabled ABI warnings on ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif()
-
 
 # Add package utilities to CMake path
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
@@ -122,6 +126,7 @@ target_include_directories(prmon PRIVATE ${PROJECT_SOURCE_DIR}/package/include)
 if (BUILD_BENCHMARK_LOG)
   target_include_directories(benchmark-log PRIVATE ${PROJECT_SOURCE_DIR}/package/include)
 endif(BUILD_BENCHMARK_LOG)
+
 #--- create uninstall target ---------------------------------------------------
 include(cmake/prmonUninstall.cmake)
 

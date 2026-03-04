@@ -112,6 +112,9 @@ if (BUILD_GTESTS)
     add_test(NAME testFieldsAll COMMAND test_fields)
     add_test(NAME testFieldsSomeDisabled COMMAND test_fields --disable netmon --disable cpumon)
 
+    target_link_libraries(test_values PRIVATE dl)
+    target_link_libraries(test_fields PRIVATE dl)
+
 endif()
 
 # Custom targets for handling scripted wrappers for tests

@@ -163,6 +163,17 @@ might not contain all metrics that the default approach supports, e.g.,
 If any of these issues are encountered, a relevant message is printed
 to notify the user.
 
+### NVIDIA GPU Monitoring
+
+When NVIDIA GPUs are present, `prmon` will preferentially use the
+NVIDIA Management Library (NVML) for direct GPU monitoring via
+`libnvidia-ml.so`. If NVML is not available or fails to initialise,
+`prmon` falls back to parsing the output of `nvidia-smi`.
+No extra build-time dependencies are needed: NVML symbols are loaded
+at runtime via `dlopen`, so `prmon` can be compiled on machines without
+NVIDIA drivers and will detect GPU support when run on a machine that
+has them.
+
 ### Environment Variables
 
 The `PRMON_DISABLE_MONITOR` environment variable can be used to specify a comma
