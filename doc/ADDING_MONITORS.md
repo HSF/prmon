@@ -143,16 +143,16 @@ If your monitor does not provide hardware data, simply return.
 ## Example: cgroupmon
 
 The `cgroupmon` monitor is a good example of a monitor that:
-- Detects system capabilities (cgroup v1/v2 availability)
+- Detects system capabilities (cgroup v2 availability)
 - Gracefully degrades when features are unavailable
 - Reads from multiple file sources
-- Handles both v1 and v2 interfaces
+- Handles cgroup v2 interface
 
 Key implementation features:
-- **Detection**: Checks `/sys/fs/cgroup/` for cgroup version at initialization
+- **Detection**: Checks `/sys/fs/cgroup/cgroup.controllers` for cgroup v2 at initialization
 - **Validity**: Sets `valid = false` if cgroups are not available
 - **Path Resolution**: Dynamically finds cgroup path from `/proc/[pid]/cgroup`
-- **Version Handling**: Separate parsing functions for v1 and v2 formats
+- **Parsing**: Specialized parsing functions for v2 format files
 - **Error Handling**: Graceful handling of missing or inaccessible cgroup files
 
 See `package/src/cgroupmon.{h,cpp}` for the full implementation.
