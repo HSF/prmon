@@ -29,10 +29,9 @@ def setup_configurable_test(
 
             # Check if running in a container/cgroup environment
             has_cgroup_v2 = os.path.exists("/sys/fs/cgroup/cgroup.controllers")
-            has_cgroup_v1 = os.path.exists("/sys/fs/cgroup/cpu")
 
-            if not (has_cgroup_v2 or has_cgroup_v1):
-                self.skipTest("No cgroup support detected on this system")
+            if not has_cgroup_v2:
+                self.skipTest("No cgroup v2 support detected on this system")
 
             burn_cmd = ["./burner", "--time", str(time)]
 
@@ -58,7 +57,7 @@ def setup_configurable_test(
                 prmon_json = json.load(infile)
 
                 # Check that cgroup stats exist if cgroups are available
-                if has_cgroup_v2 or has_cgroup_v1:
+                if has_cgroup_v2:
                     # Check for at least some cgroup metrics
                     cgroup_metrics_found = False
                     for key in prmon_json.get("Max", {}).keys():

@@ -17,7 +17,7 @@
 #include "registry.h"
 
 // Cgroup version enumeration
-enum class CgroupVersion { NONE, V1, V2, HYBRID };
+enum class CgroupVersion { NONE, V2 };
 
 class cgroupmon final : public Imonitor, public MessageBase {
  private:
@@ -35,9 +35,6 @@ class cgroupmon final : public Imonitor, public MessageBase {
       {"cgroup_mem_anon", "kB", "kB"},
       {"cgroup_mem_file", "kB", "kB"},
       {"cgroup_mem_kernel", "kB", "kB"},
-      {"cgroup_mem_slab", "kB", "kB"},
-      {"cgroup_mem_pgfault", "1", "1/s"},
-      {"cgroup_mem_pgmajfault", "1", "1/s"},
       // I/O metrics
       {"cgroup_io_read", "B", "B/s"},
       {"cgroup_io_write", "B", "B/s"},
@@ -59,8 +56,7 @@ class cgroupmon final : public Imonitor, public MessageBase {
   std::string find_cgroup_path(pid_t pid);
   std::string find_cgroup_mount_point();
   
-  // Reading methods for different cgroup versions
-  void read_cgroup_v1_stats(const std::string& cgroup_path);
+  // Reading methods for cgroup v2
   void read_cgroup_v2_stats(const std::string& cgroup_path);
   
   // Parse specific cgroup files
@@ -69,12 +65,6 @@ class cgroupmon final : public Imonitor, public MessageBase {
   void parse_memory_stat_v2(const std::string& path,
                             prmon::monitored_value_map& stats);
   void parse_io_stat_v2(const std::string& path,
-                        prmon::monitored_value_map& stats);
-  void parse_cpu_stat_v1(const std::string& path,
-                         prmon::monitored_value_map& stats);
-  void parse_memory_stat_v1(const std::string& path,
-                            prmon::monitored_value_map& stats);
-  void parse_io_stat_v1(const std::string& path,
                         prmon::monitored_value_map& stats);
   
   // Helper to read single value files
