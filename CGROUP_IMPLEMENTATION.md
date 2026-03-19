@@ -1,7 +1,7 @@
 # Cgroup v2 Support Implementation - Summary
 
 ## Overview
-This implementation adds comprehensive cgroup (v1/v2) monitoring support to prmon, enabling accurate resource tracking in containerized environments (Docker, Kubernetes, Podman).
+This implementation adds cgroup v2 monitoring support to prmon, enabling accurate resource tracking in containerized environments (Docker, Kubernetes, Podman) on modern Linux distributions.
 
 ## Implementation Status: ✅ COMPLETE
 
@@ -9,7 +9,7 @@ This implementation adds comprehensive cgroup (v1/v2) monitoring support to prmo
 
 #### **New Source Files**
 1. **`package/src/cgroupmon.h`** - Header file with monitor class definition
-2. **`package/src/cgroupmon.cpp`** - Implementation with v1/v2 support
+2. **`package/src/cgroupmon.cpp`** - Implementation v2-only
 3. **`package/tests/test_cgroup.py`** - Python integration test
 4. **`package/tests/test_cgroup.cpp`** - C++ unit test skeleton
 5. **`package/scripts/precooked_tests/cgroup_v2/1/`** - Test data directory structure
@@ -23,12 +23,12 @@ This implementation adds comprehensive cgroup (v1/v2) monitoring support to prmo
 ## Features Implemented
 
 ### ✅ Core Functionality
-- **Auto-detection** of cgroup v1, v2, or hybrid mode
+- **Auto-detection** of cgroup v2 availability
 - **Dynamic path resolution** from `/proc/[pid]/cgroup`
 - **Graceful fallback** when cgroups unavailable
 - **Backward compatibility** with non-containerized environments
 
-### ✅ Metrics Tracked (17 metrics total)
+### ✅ Metrics Tracked (14 metrics total)
 
 #### CPU Metrics (5)
 - `cgroup_cpu_user` - User CPU time (microseconds)
@@ -37,15 +37,12 @@ This implementation adds comprehensive cgroup (v1/v2) monitoring support to prmo
 - `cgroup_cpu_throttled` - Throttled time (microseconds)
 - `cgroup_cpu_periods` - Number of scheduling periods
 
-#### Memory Metrics (8)
+#### Memory Metrics (5)
 - `cgroup_mem_current` - Current memory usage (kB)
 - `cgroup_mem_max` - Memory limit (kB)
 - `cgroup_mem_anon` - Anonymous memory (kB)
 - `cgroup_mem_file` - File cache memory (kB)
 - `cgroup_mem_kernel` - Kernel memory (kB)
-- `cgroup_mem_slab` - Slab memory (kB)
-- `cgroup_mem_pgfault` - Page faults
-- `cgroup_mem_pgmajfault` - Major page faults
 
 #### I/O Metrics (2)
 - `cgroup_io_read` - Bytes read (B)
@@ -65,15 +62,11 @@ This implementation adds comprehensive cgroup (v1/v2) monitoring support to prmo
 - Uses `cgroup.procs` and `cgroup.threads`
 
 #### Cgroup v1 (Legacy Hierarchy)
-- Reads from `/sys/fs/cgroup/cpuacct.stat`
+- Reads from `/sys/fs/cgroup/cpu.stat`
 - Reads from `/sys/fs/cgroup/memory.stat`
-- Reads from `/sys/fs/cgroup/blkio.throttle.io_service_bytes`
-- Supports `memory.usage_in_bytes`, `memory.limit_in_bytes`
-- Converts USER_HZ to microseconds for CPU times
-
-#### Hybrid Mode
-- Attempts v2 first, falls back to v1
-- Handles systems with both hierarchies
+- Reads from `/sys/fs/cgroup/io.stat`
+- Supports `memory.current`, `memory.max`
+- Uses native microsecond precision for CPU times
 
 ## Technical Design
 
@@ -89,11 +82,6 @@ cgroupmon (Imonitor implementation)
 │   ├── parse_cpu_stat_v2()
 │   ├── parse_memory_stat_v2()
 │   └── parse_io_stat_v2()
-├── Reading Layer (v1)
-│   ├── read_cgroup_v1_stats()
-│   ├── parse_cpu_stat_v1()
-│   ├── parse_memory_stat_v1()
-│   └── parse_io_stat_v1()
 └── Standard Interfaces
     ├── get_text_stats()
     ├── get_json_total_stats()
@@ -119,7 +107,7 @@ cgroupmon (Imonitor implementation)
 
 ### Integration Tests
 - ✅ Python test (`test_cgroup.py`)
-  - Auto-detects cgroup availability
+  - Auto-detects cgroup v2 availability
   - Skips gracefully on systems without cgroups
   - Validates JSON output structure
 - ✅ Added to CTest suite
@@ -127,8 +115,6 @@ cgroupmon (Imonitor implementation)
 ### Manual Testing Needed
 - 🔄 Docker container environments
 - 🔄 Kubernetes pod environments
-- 🔄 cgroup v1-only systems (older Linux)
-- 🔄 Hybrid cgroup systems
 
 ## Usage
 
@@ -171,7 +157,7 @@ command: ["prmon", "--", "./myapp"]
 
 1. **Permissions**: Some cgroup files may require elevated permissions
 2. **Nested containers**: Complex nesting may need additional handling
-3. **Hybrid systems**: Detection prefers v2, may miss v1-specific features
+3. **v2-only support**: v1 and hybrid systems are not supported
 4. **Network stats**: Still relies on device-level monitoring (future enhancement)
 
 ## Future Enhancements

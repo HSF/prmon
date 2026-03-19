@@ -191,7 +191,7 @@ Disables the `nvidiamon` monitor.
 
 ### Cgroup Monitoring (Container Support)
 
-`prmon` automatically detects and monitors cgroup v1 and v2 statistics when
+`prmon` automatically detects and monitors cgroup v2 statistics when
 running in containerized environments (Docker, Kubernetes, Podman). The
 `cgroupmon` monitor provides additional metrics prefixed with `cgroup_` that
 give container-aware resource accounting:
