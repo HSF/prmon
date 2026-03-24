@@ -105,7 +105,7 @@ nvidiamon::nvidiamon() {
 
   valid = false;
   active_method = MonitorMethod::NONE;
-  warning("Both NVML and nvidia-smi failed. NVIDIA monitoring disabled.");
+  info("Both NVML and nvidia-smi failed. NVIDIA monitoring disabled.");
 }
 
 nvidiamon::~nvidiamon() {
@@ -428,7 +428,7 @@ bool nvidiamon::test_nvidia_smi() {
   }
   nvidiamon::ngpus = gpus;
   if (gpus == 0) {
-    warning("Executed 'nvidia-smi -L', but no GPUs found");
+    info("Executed 'nvidia-smi -L', but no GPUs found");
     return false;
   } else if (gpus > 4) {
     warning(
@@ -444,7 +444,7 @@ bool nvidiamon::load_nvml_lib() {
     nvml_handle = dlopen("libnvidia-ml.so.1", RTLD_NOW);
   }
   if (!nvml_handle) {
-    warning("Failed to load libnvidia-ml.so: " + std::string(dlerror()));
+    info("Failed to load libnvidia-ml.so: " + std::string(dlerror()));
     return false;
   }
 
@@ -515,7 +515,7 @@ bool nvidiamon::init_nvml() {
   }
 
   if (gpus == 0) {
-    warning("nvmlInit() succeeded but no GPUs found");
+    info("nvmlInit() succeeded but no GPUs found");
     nvmlShutdown();
     return false;
   }
