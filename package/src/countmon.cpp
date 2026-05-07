@@ -47,6 +47,7 @@ void countmon::update_stats(const std::vector<pid_t>& pids,
       count_stat_update["nprocs"] += 1L;
       count_stat_update["nthreads"] +=
           std::stol(stat_entries[prmon::num_threads]);
+      count_stat_update["nfds"] += prmon::count_fds(pid, read_path);
     }
     stat_entries.clear();
   }
