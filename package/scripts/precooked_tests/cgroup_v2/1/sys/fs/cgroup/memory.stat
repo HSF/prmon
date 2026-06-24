@@ -1,0 +1,6 @@
+anon 102400000
+file 51200000
+kernel_stack 1024000
+slab 10240000
+pgfault 1000
+pgmajfault 10

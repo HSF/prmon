@@ -139,3 +139,20 @@ provided as a JSON structure, that will be passed by reference into the
 subsection in the JSON dictionary for data from your monitor.
 
 If your monitor does not provide hardware data, simply return.
+
+## Example: cgroupmon
+
+The `cgroupmon` monitor is a good example of a monitor that:
+- Detects system capabilities (cgroup v2 availability)
+- Gracefully degrades when features are unavailable
+- Reads from multiple file sources
+- Handles cgroup v2 interface
+
+Key implementation features:
+- **Detection**: Checks `/sys/fs/cgroup/cgroup.controllers` for cgroup v2 at initialization
+- **Validity**: Sets `valid = false` if cgroups are not available
+- **Path Resolution**: Dynamically finds cgroup path from `/proc/[pid]/cgroup`
+- **Parsing**: Specialized parsing functions for v2 format files
+- **Error Handling**: Graceful handling of missing or inaccessible cgroup files
+
+See `package/src/cgroupmon.{h,cpp}` for the full implementation.
