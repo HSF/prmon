@@ -7,8 +7,8 @@
 set(CLANG_FORMAT "clang-format" CACHE STRING "Clang format binary")
 message(STATUS "Setting clang-format test binary to '${CLANG_FORMAT}' (use -DCLANG_FORMAT to change)")
 
-# Get all project files
-file(GLOB_RECURSE ALL_SOURCE_FILES *.cpp *.h)
+# Get all project files (only within package, ignore submodules)
+file(GLOB_RECURSE ALL_SOURCE_FILES package/*.cpp package/*.h)
 
 # Using --style=Google uses the built in rules of
 # the clang format binary. This is slightly 
