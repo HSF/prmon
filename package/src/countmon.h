@@ -21,7 +21,8 @@ class countmon final : public Imonitor, public MessageBase {
  private:
   // Setup the parameters to monitor here
   const prmon::parameter_list params = {{"nprocs", "1", "1"},
-                                        {"nthreads", "1", "1"}};
+                                        {"nthreads", "1", "1"},
+                                        {"nfds", "1", "1"}};
 
   // Dynamic monitoring container for value measurements
   // This will be filled at initialisation, taking the names
