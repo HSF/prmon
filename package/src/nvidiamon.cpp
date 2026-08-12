@@ -590,20 +590,16 @@ void const nvidiamon::get_hardware_info_smi(nlohmann::json& hw_json) {
   for (auto const& s : cmd_result.second) {
     std::istringstream instr(s);
     // Parse first field to a string in case it's weird, like "[N/A]"
+    // N.B. We expect this to be digits + a comma
     std::string tok;
     instr >> tok;
-    if (tok == "[N/A]") {
-      warning("Got [N/A] for GPU frequency");
+    errno = 0;
+    char* end = 0;
+    sm_freq = std::strtoul(tok.c_str(), &end, 10);
+    // Belt and braces error detection...
+    if ((end == tok.c_str()) || (*end != ',') || errno == ERANGE) {
+      warning("Odd value from GPU hardware query for frequency (will set to 0): " + tok);
       sm_freq = 0;
-    } else {
-      errno = 0;
-      char* end = 0;
-      sm_freq = std::strtoul(tok.c_str(), &end, 10);
-      // Belt and braces error detection...
-      if ((end == tok.c_str()) || (*end != '\0') || errno == ERANGE) {
-        warning("Odd value from GPU hardware query for frequency (will set to 0): " + tok);
-        sm_freq = 0;
-      }
     }
     instr.get();  // Swallow the comma
     instr >> total_mem;
