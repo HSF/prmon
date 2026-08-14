@@ -58,6 +58,9 @@ const bool smaps_rollup_exists();
 
 // Utility function to parse a string to uint
 unsigned int parse_uint_field(const std::string& s);
+
+// Utility function to count the number of file descriptors for a PID
+int count_fds(pid_t pid, const std::string& read_path);
 }  // namespace prmon
 
 #endif  // PRMON_UTILS_H

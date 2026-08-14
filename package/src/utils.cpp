@@ -9,9 +9,11 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include <iostream>
 #include <string>
+#include <sstream>
 
 const std::pair<int, std::vector<std::string>> prmon::cmd_pipe_output(
     const std::vector<std::string> cmdargs) {
@@ -114,4 +116,20 @@ const bool prmon::smaps_rollup_exists() {
 unsigned int prmon::parse_uint_field(const std::string& s) {
   if (s == "-" || s.empty()) return 0;
   return std::stoul(s);
+}
+
+int prmon::count_fds(pid_t pid, const std::string& read_path) {
+  std::stringstream fd_path;
+  fd_path << read_path << "/proc/" << pid << "/fd";
+  DIR* dir = opendir(fd_path.str().c_str());
+  if (!dir) return 0;
+  int count = 0;
+  struct dirent* entry;
+  while ((entry = readdir(dir)) != nullptr) {
+    if (entry->d_name[0] != '.') {
+      count++;
+    }
+  }
+  closedir(dir);
+  return count;
 }
