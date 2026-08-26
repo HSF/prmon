@@ -81,6 +81,20 @@ will discuss how to do it. If you have concrete contribution then please submit
 it as a feature request. Documentation includes code comments as well as more
 specific files (like this one) and all improvements are welcome.
 
+## Dependabot submodule pull requests
+
+Dependabot tracks the branch that each submodule points at, so it opens a pull
+request for every upstream commit instead of one per release; tag-based
+submodule updates are not supported yet
+([dependabot/dependabot-core#1639](https://github.com/dependabot/dependabot-core/issues/1639)).
+Until that changes:
+
+- Merge only submodule PRs whose update corresponds to an upstream release
+  tag.
+- Close PRs that point at unreleased commits, referencing this section.
+- The number of open submodule PRs is capped and they carry the
+  `dependencies` label to make triage easier.
+
 ## Authorship and Copyright
 
 As members of the High-Energy Physics community, our host laboratory,

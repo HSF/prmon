@@ -3,14 +3,27 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
+# NOTE (see #296): gitsubmodule updates track the tracked branch of each
+# submodule, so Dependabot opens a PR per upstream commit rather than per
+# release. Tag-based submodule updates are not supported yet
+# (dependabot/dependabot-core#1639), so submodule PRs are capped and labelled;
+# merge only those corresponding to an upstream release tag.
+
 version: 2
 updates:
   - package-ecosystem: "github-actions" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    groups:
+      actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
