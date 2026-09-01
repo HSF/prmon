@@ -1,7 +1,7 @@
 // Copyright (C) 2018-2025 CERN
 // License Apache2 - see LICENCE file
 
-// Process and thread number monitoring class
+// Process, thread and file descriptor number monitoring class
 //
 
 #ifndef PRMON_COUNTMON_H
@@ -21,7 +21,8 @@ class countmon final : public Imonitor, public MessageBase {
  private:
   // Setup the parameters to monitor here
   const prmon::parameter_list params = {{"nprocs", "1", "1"},
-                                        {"nthreads", "1", "1"}};
+                                        {"nthreads", "1", "1"},
+                                        {"nfds", "1", "1"}};
 
   // Dynamic monitoring container for value measurements
   // This will be filled at initialisation, taking the names
@@ -46,6 +47,7 @@ class countmon final : public Imonitor, public MessageBase {
   void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return true; }
 };
-REGISTER_MONITOR(Imonitor, countmon, "Monitor number of processes and threads")
+REGISTER_MONITOR(Imonitor, countmon,
+                 "Monitor number of processes, threads and file descriptors")
 
 #endif  // PRMON_COUNTMON_H

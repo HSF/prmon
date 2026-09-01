@@ -28,6 +28,37 @@ std::shared_ptr<spdlog::sinks::basic_file_sink_st> f_sink{
 
 bool prmon::sigusr1 = false;
 
+TEST(CountmonTest, CountmonValueTestFixed) {
+  std::string cur_path = base_path + "drop";
+  std::vector<pid_t> fake_pids = mother_pid;
+
+  std::unique_ptr<Imonitor> monitor(
+      registry::Registry<Imonitor>::create("countmon"));
+
+  const int iterationCount = 3;
+
+  std::map<std::string, unsigned long long> store_stats;
+  for (int iteration = 1; iteration <= iterationCount; ++iteration) {
+    std::stringstream iteration_path{};
+    iteration_path << cur_path << "/" << iteration;
+    monitor->update_stats(fake_pids, iteration_path.str());
+    store_stats = monitor->get_text_stats();
+    ASSERT_EQ(store_stats["nprocs"], 1);
+    ASSERT_EQ(store_stats["nthreads"], 1);
+    if (iteration == 1) {
+      ASSERT_EQ(store_stats["nfds"], 3);
+    } else if (iteration == 2) {
+      ASSERT_EQ(store_stats["nfds"], 5);
+    } else {
+      ASSERT_EQ(store_stats["nfds"], 2);
+    }
+  }
+
+  // Verify that the peak value reflects the maximum across iterations
+  auto max_stats = monitor->get_json_total_stats();
+  ASSERT_EQ(max_stats["nfds"], 5);
+}
+
 TEST(IomonTest, IomonMonitonicityTestFixed) {
   std::string cur_path = base_path + "drop";
   std::vector<pid_t> fake_pids = mother_pid;

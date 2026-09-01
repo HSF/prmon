@@ -3,6 +3,7 @@
 
 #include "countmon.h"
 
+#include <dirent.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -49,6 +50,19 @@ void countmon::update_stats(const std::vector<pid_t>& pids,
           std::stol(stat_entries[prmon::num_threads]);
     }
     stat_entries.clear();
+
+    std::stringstream fd_dir_name{};
+    fd_dir_name << read_path << "/proc/" << pid << "/fd" << std::ends;
+    DIR* fd_dir = opendir(fd_dir_name.str().c_str());
+    if (fd_dir) {
+      struct dirent* entry;
+      while ((entry = readdir(fd_dir)) != nullptr) {
+        if (entry->d_name[0] != '.') {
+          count_stat_update["nfds"] += 1L;
+        }
+      }
+      closedir(fd_dir);
+    }
   }
 
   // Update the statistics with the new snapshot values

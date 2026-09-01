@@ -65,6 +65,17 @@ def setup_configurable_test(threads=1, procs=1, time=10.0, interval=1, invoke=Fa
                     f"(expected {expect_thread}, got {total_thread}",
                 )
 
+                # File descriptor count sanity check: every process
+                # has at least stdin, stdout, stderr open
+                total_nfds = prmon_json["Max"]["nfds"]
+                min_expected_nfds = 3 * procs
+                self.assertGreaterEqual(
+                    total_nfds,
+                    min_expected_nfds,
+                    msg="File descriptor count too low "
+                    f"(expected >= {min_expected_nfds}, got {total_nfds})",
+                )
+
     return ConfigurableProcessMonitor
 
 
