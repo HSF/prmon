@@ -23,8 +23,7 @@ static size_t curl_write_cb(char* ptr, size_t size, size_t nmemb,
   return size * nmemb;
 }
 
-
-// Constructor; uses RAII pattern to be valid after construction
+// Initiate curl_stats
 curlmon::curlmon() : curl_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
@@ -83,6 +82,7 @@ double curlmon::parse_metric_line(const std::string& line,
 
 void curlmon::update_stats(const std::vector<pid_t>& /*pids*/,
                            const std::string /*read_path*/) {
+  
   // Collect matching lines from all URLs
   std::vector<std::string> dcmi_lines{};
   std::vector<std::string> rapl_lines{};
@@ -107,6 +107,8 @@ void curlmon::update_stats(const std::vector<pid_t>& /*pids*/,
         if (lower.find("ipmi_power_watts") != std::string::npos)
           ipmi_lines.push_back(line);
         if (lower.find("node_hwmon_power_watt") != std::string::npos)
+          hwmon_lines.push_back(line);
+        else if (lower.find("node_hwmon_power_average_watt") != std::string::npos)
           hwmon_lines.push_back(line);
       }
     } catch (...) {
