@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.10)
 # - Call project() to setup system
 # From CMake 3, we can set the project version easily in one go
-project(prmon VERSION 3.2.0 LANGUAGES CXX)
+project(prmon VERSION 3.3.0 LANGUAGES CXX)
 
 # For newer CMakes, allow target_link_libraries to link targets defined in other directories
 if(POLICY CMP0079)

@@ -19,7 +19,7 @@ jobs:
       # Steps represent a sequence of tasks that will be executed as part of the job
       steps:
       # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
