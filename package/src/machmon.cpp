@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <tuple>
 
 #include "utils.h"
 
@@ -23,29 +24,37 @@ machmon::machmon() : mach_stats{} {
   for (const auto& param : params) {
     mach_stats.emplace(param.get_name(), prmon::monitored_value(param, true));
   }
+
+  valid = true;
 }
 
 // Read the first line of /proc/stat and return {utime, stime, ntime}
 
 static std::tuple<long, long, long> read_proc_stat(
-    const std::string& read_path) {
-  std::string stat_path = "/proc/stat";
+    const std::string& /*read_path*/) {
+  const std::string stat_path = "/proc/stat";
   std::ifstream proc_stat{stat_path};
-  if (!proc_stat)
+  if (!proc_stat) {
     throw std::runtime_error("Cannot open " + stat_path);
+  }
 
   std::string cpu_label{};
   long user{}, nice{}, system{};
 
   // First line: "cpu  user nice system idle ..."
-  if (!(proc_stat >> cpu_label >> user >> nice >> system))
+  if (!(proc_stat >> cpu_label >> user >> nice >> system)) {
     throw std::runtime_error("Unexpected format in " + stat_path);
+  }
 
-  return {user, system, nice};
+  return std::make_tuple(user, system, nice);
 }
 
 void machmon::update_stats(const std::vector<pid_t>& /*pids*/,
                               const std::string read_path) {
+    if (!valid) {
+    return;
+    }
+
     long utime, stime, ntime;
     std::tie(utime, stime, ntime) = read_proc_stat(read_path);
 
@@ -61,7 +70,6 @@ void machmon::update_stats(const std::vector<pid_t>& /*pids*/,
     mach_stats.at("utime_total").set_value((utime - initial_utime) / clk);
     mach_stats.at("stime_total").set_value((stime - initial_stime) / clk);
     mach_stats.at("ntime_total").set_value((ntime - initial_ntime) / clk);
-
 }
 
 // Return the summed counters
@@ -88,7 +96,7 @@ prmon::monitored_average_map const machmon::get_json_average_stats(
 // Return the parameter list
 prmon::parameter_list const machmon::get_parameter_list() { return params; }
 
-// No extra hardware info needed here
+// No extra hardware information needed here
 void const machmon::get_hardware_info(nlohmann::json& /*hw_json*/) {
   return;
 }

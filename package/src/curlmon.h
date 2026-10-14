@@ -28,8 +28,15 @@ class curlmon final : public Imonitor, public MessageBase {
       {"rapl_1",  "J", "RAPL package 1 energy in joules"},
       {"rapl_2",  "J", "RAPL package 2 energy in joules"}
   };
+
+  // Extract lines from the Prometheus text output for each metric type
+  void collect_lines(const std::string& body,
+                   std::vector<std::string>& dcmi,
+                   std::vector<std::string>& rapl,
+                   std::vector<std::string>& ipmi,
+                   std::vector<std::string>& hwmon) const;
   
-  bool connection_failed{false}; // To disable monitor if all ports fail
+  bool valid{false}; // To disable monitor if all ports fail or no metric is read
 
   prmon::monitored_list curl_stats;
 
@@ -55,7 +62,7 @@ class curlmon final : public Imonitor, public MessageBase {
   prmon::parameter_list const get_parameter_list();
   void const get_hardware_info(nlohmann::json& hw_json);
   void const get_unit_info(nlohmann::json& unit_json);
-  bool const is_valid() { return true; }
+  bool const is_valid() { return valid; }
 };
 REGISTER_MONITOR(Imonitor, curlmon, "Monitor power consumption - prometheus")
 

@@ -23,13 +23,42 @@ static size_t curl_write_cb(char* ptr, size_t size, size_t nmemb,
   return size * nmemb;
 }
 
-// Initiate curl_stats
+// Constructor; uses RAII pattern to be valid after construction
 curlmon::curlmon() : curl_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
   for (const auto& param : params) {
     curl_stats.emplace(param.get_name(), prmon::monitored_value(param, true));
   }
+  valid = false;
+
+  if (metrics_urls.empty()) {
+    debug("No exporter URLs provided, curlmon disabled");
+    return;
+  }
+
+  bool reachable = false;
+  std::vector<std::string> dcmi, rapl, ipmi, hwmon;
+  for (const auto& url : metrics_urls) {
+    try {
+      collect_lines(fetch_metrics(url), dcmi, rapl, ipmi, hwmon);
+      reachable = true;
+    } catch (const std::exception& e) {
+      debug("curlmon: endpoint " + url + " not usable: " + e.what());
+    }
+  }
+
+  if (!reachable) {
+    info("Cannot connect to any exporter endpoint. curlmon disabled.");
+    return;
+  }
+  if (dcmi.empty() && rapl.empty() && ipmi.empty() && hwmon.empty()) {
+    info("Exporter reachable but none of the dcmi/rapl/ipmi/hwmon metrics "
+         "were found. curlmon disabled.");
+    return;
+  }
+
+  valid = true;
 }
 
 // Fetch Prometheus text from the ctt URL
@@ -41,7 +70,7 @@ std::string curlmon::fetch_metrics(const std::string& url) const {
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_cb);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2L);
 
   CURLcode res = curl_easy_perform(curl);
   curl_easy_cleanup(curl);
@@ -80,6 +109,30 @@ double curlmon::parse_metric_line(const std::string& line,
 }
 
 
+void curlmon::collect_lines(const std::string& body,
+                            std::vector<std::string>& dcmi,
+                            std::vector<std::string>& rapl,
+                            std::vector<std::string>& ipmi,
+                            std::vector<std::string>& hwmon) const {
+  std::istringstream stream{body};
+  std::string line{};
+  while (std::getline(stream, line)) {
+    std::string lower = line;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower.find("ipmi_dcmi_power_consumption_watts") != std::string::npos)
+      dcmi.push_back(line);
+    if (lower.find("node_rapl_package_joules_total") != std::string::npos)
+      rapl.push_back(line);
+    if (lower.find("ipmi_power_watts") != std::string::npos)
+      ipmi.push_back(line);
+    if (lower.find("node_hwmon_power_watt") != std::string::npos)
+      hwmon.push_back(line);
+    else if (lower.find("node_hwmon_power_average_watt") != std::string::npos)
+      hwmon.push_back(line);
+  }
+}
+
+
 void curlmon::update_stats(const std::vector<pid_t>& /*pids*/,
                            const std::string /*read_path*/) {
   
@@ -89,36 +142,19 @@ void curlmon::update_stats(const std::vector<pid_t>& /*pids*/,
   std::vector<std::string> ipmi_lines{};
   std::vector<std::string> hwmon_lines{};
 
-  if (connection_failed) return;
-
   int failed_urls = 0;
   for (const auto& url : metrics_urls) {
     try {
-      const std::string body = fetch_metrics(url);
-      std::istringstream stream{body};
-      std::string line{};
-      while (std::getline(stream, line)) {
-        std::string lower = line;
-        std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-        if (lower.find("ipmi_dcmi_power_consumption_watts") != std::string::npos)
-          dcmi_lines.push_back(line);
-        if (lower.find("node_rapl_package_joules_total") != std::string::npos)
-          rapl_lines.push_back(line);
-        if (lower.find("ipmi_power_watts") != std::string::npos)
-          ipmi_lines.push_back(line);
-        if (lower.find("node_hwmon_power_watt") != std::string::npos)
-          hwmon_lines.push_back(line);
-        else if (lower.find("node_hwmon_power_average_watt") != std::string::npos)
-          hwmon_lines.push_back(line);
-      }
+      collect_lines(fetch_metrics(url), dcmi_lines, rapl_lines,
+                    ipmi_lines, hwmon_lines);
     } catch (...) {
-      ++failed_urls;  // Silencioso: no se loga nada por URL individual
+      ++failed_urls;
     }
   }
 
   if (failed_urls == (int)metrics_urls.size()) {
-    error("Cannot connect to any exporter endpoint, disabling curlmon");
-    connection_failed = true;
+    info("Cannot connect to any exporter endpoint, disabling curlmon");
+    valid = false;
     return;
   }
 
