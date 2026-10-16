@@ -135,7 +135,6 @@ void curlmon::collect_lines(const std::string& body,
 
 void curlmon::update_stats(const std::vector<pid_t>& /*pids*/,
                            const std::string /*read_path*/) {
-  
   // Collect matching lines from all URLs
   std::vector<std::string> dcmi_lines{};
   std::vector<std::string> rapl_lines{};

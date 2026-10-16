@@ -23,9 +23,9 @@ class machmon final : public Imonitor, public MessageBase {
  private:
   // Setup the parameters to monitor here
   const prmon::parameter_list params = {
-      {"utime_total", "s", "Total user CPU time from /proc/stat"},
-      {"stime_total", "s", "Total system CPU time from /proc/stat"},
-      {"ntime_total", "s", "Total nice CPU time from /proc/stat"},
+      {"utime_total", "s", ""},
+      {"stime_total", "s", ""},
+      {"ntime_total", "s", ""},
   };
 
   // Dynamic monitoring container
