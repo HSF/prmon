@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2018-2025 CERN
+# Copyright (C) 2018-2026 CERN
 # License Apache2 - see LICENCE file
 
 """Test harness script for network IO"""
@@ -25,8 +25,8 @@ def setup_configurable_test(
         """Test class for a specific set of parameters"""
 
         def setUp(self):
-            """Start the simple python HTTP CGI server"""
-            http_server_cmd = ["python3", "-m", "http.server", "--cgi"]
+            """Start the simple python HTTP data block server"""
+            http_server_cmd = ["python3", "./http_block.py"]
             self.http_server = subprocess.Popen(http_server_cmd, shell=False)
 
         def tearDown(self):
