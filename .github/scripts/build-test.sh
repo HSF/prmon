@@ -12,13 +12,13 @@ echo "Starting build and test for platform $PLATFORM, compiler suite $COMPILER"
 # In vanilla containers we need to install the necessary development packages
 if [[ "$PLATFORM" == almalinux* ]]; then
     echo "Installing additional RPM development packages"
-    dnf install -y gcc-c++ cmake boost boost-devel make clang
+    dnf install -y gcc-c++ cmake boost boost-devel make clang libcurl-devel
 fi
 
 if [[ $PLATFORM == ubuntu* ]]; then
     echo "Installing additional DEB development packages"
     apt update
-    apt -y install g++ clang libboost-dev cmake make
+    apt -y install g++ clang libboost-dev cmake make libcurl4-openssl-dev
 fi
 
 # If environment variables CXX or CMAKE are defined then use these

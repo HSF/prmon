@@ -10,13 +10,18 @@ add_executable(prmon src/prmon.cpp
            src/countmon.cpp
            src/wallmon.cpp
            src/memmon.cpp
+           src/machmon.cpp
+           src/curlmon.cpp
            )
 
 target_link_libraries(prmon PRIVATE
            nlohmann_json::nlohmann_json
            spdlog::spdlog_header_only
+           CURL::libcurl
            dl
            )
+
+find_package(CURL REQUIRED)
 
 if (BUILD_BENCHMARK_LOG)
   add_executable(benchmark-log benchmarks/benchmark-log.cpp)
