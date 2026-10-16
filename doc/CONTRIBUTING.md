@@ -1,14 +1,19 @@
 # Contributing to prmon
 
-Thanks for taking the time to contribute to the `prmon` project. We are very
-happy to get contributions for
+We are very happy for people to contribute to `prmon`. We are happy to get
+contributions for:
 
 - Bug reports, for things that don't work properly
 - Feature requests, for things that prmon could do in the future
-- Documentation improvements, for things that could be better explained
 
-That does not cover all possible contributions, so if you believe something can
-be useful to the project, please raise the issue.
+These should be entered as [issues](https://github.com/HSF/prmon/issues) in the
+project.
+
+In the present era of agentic coding, it is very easy to produce code, but
+still takes a lot of precious time for maintainers to review it. For this
+reason *we ask that you always open an issue prior to submitting a PR*.
+
+**Unsolicited PRs will be closed without further discussion.**
 
 ## Code of Conduct
 
@@ -22,6 +27,10 @@ must take full responsibility for all code and results, and you should disclose
 AI use for non-routine tasks (algorithm design, architecture, complex
 problem-solving). Routine tasks, such as correcting grammar, formatting or
 style do not require disclosure.
+
+We also repeat our updated policy, that all PRs must be connected to an issue
+which the maintainers have accepted requires a code change. **Random
+unsolicited PRs will be closed without further discussion.**
 
 ## Issues and Bug Reports
 
@@ -89,4 +98,5 @@ As members of the High-Energy Physics community, our host laboratory,
 All contributions need to agree to pass copyright to CERN.
 
 Every significant author of prmon will be acknowledged in our
-[AUTHORS](../AUTHORS.md) file.
+[AUTHORS](../AUTHORS.md) file. All contributors (large and small) will be
+acknowledged in our AllContributors section of the README.
