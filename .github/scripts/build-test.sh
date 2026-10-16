@@ -18,7 +18,7 @@ fi
 if [[ $PLATFORM == ubuntu* ]]; then
     echo "Installing additional DEB development packages"
     apt update
-    apt -y install g++ clang libboost-dev cmake make
+    apt -y install g++ clang libboost-dev cmake make libcurl4-openssl-dev
 fi
 
 # If environment variables CXX or CMAKE are defined then use these
