@@ -44,4 +44,11 @@ cmd="$CMAKE -S /mnt -B . -DCMAKE_CXX_COMPILER=$CXX -DBUILD_GTESTS=ON $CMAKE_EXTR
 echo $cmd
 $cmd
 cmake --build .
-cmake --build . --target test
+
+# Run tests, showing the output of any failing test; as the build directory
+# is lost when the container exits, also dump the full test log on failure
+if ! ctest --output-on-failure; then
+    echo "===== Testing/Temporary/LastTest.log ====="
+    cat Testing/Temporary/LastTest.log
+    exit 1
+fi
