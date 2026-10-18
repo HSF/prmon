@@ -26,9 +26,9 @@ jobs:
       # Sets up useful environment variables
       - name: Setup environment variables
         run: |
-          echo "DIMAGE=almalinux:9" >> $GITHUB_ENV
+          echo "DIMAGE=almalinux:latest" >> $GITHUB_ENV
         env:
-          PLATFORM: almalinux:9
+          PLATFORM: almalinux:latest
 
       # Pulls the associated Docker image
       - name: Docker pull

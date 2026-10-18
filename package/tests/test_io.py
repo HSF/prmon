@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2018-2025 CERN
+# Copyright (C) 2018-2026 CERN
 # License Apache2 - see LICENCE file
 
 """prmon test for measuring i/o"""
@@ -11,6 +11,8 @@ import subprocess
 import sys
 import unittest
 
+from prmon_test_utils import dump_on_failure
+
 
 def setup_configurable_test(
     io=10, threads=1, procs=1, usleep=10, pause=1, slack=0.95, interval=1
@@ -20,6 +22,7 @@ def setup_configurable_test(
     class ConfigurableProcessMonitor(unittest.TestCase):
         """Test class for a specific set of parameters"""
 
+        @dump_on_failure
         def test_run_test_with_params(self):
             """Actual test runner"""
             burn_cmd = ["./io-burner", "--io", str(io)]
