@@ -2,9 +2,6 @@
 // License Apache2 - see LICENCE file
 
 // Full CPU monitoring class
-//
-
-#pragma once
 
 #ifndef PRMON_MACHMON_H
 #define PRMON_MACHMON_H 1

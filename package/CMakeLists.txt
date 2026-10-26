@@ -11,7 +11,7 @@ add_executable(prmon src/prmon.cpp
            src/wallmon.cpp
            src/memmon.cpp
            src/machmon.cpp
-           src/curlmon.cpp
+           src/powermon.cpp
            )
 
 target_link_libraries(prmon PRIVATE

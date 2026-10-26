@@ -1,13 +1,10 @@
 // Copyright (C) 2018-2025 CERN
 // License Apache2 - see LICENCE file
 
-// Curl to prometheus monitoring class
-//
+// Power monitoring class
 
-#pragma once
-
-#ifndef PRMON_CURLMON_H
-#define PRMON_CURLMON_H 1
+#ifndef PRMON_POWERMON_H
+#define PRMON_POWERMON_H 1
 
 #include <map>
 #include <string>
@@ -18,8 +15,9 @@
 #include "MessageBase.h"
 #include "parameter.h"
 #include "registry.h"
+#include <cstdlib>
 
-class curlmon final : public Imonitor, public MessageBase {
+class powermon final : public Imonitor, public MessageBase {
  private:
   const prmon::parameter_list params = {
       {"dcmi", "W",  "DCMI power consumption"},
@@ -38,19 +36,22 @@ class curlmon final : public Imonitor, public MessageBase {
   
   bool valid{false}; // To disable monitor if all ports fail or no metric is read
 
-  prmon::monitored_list curl_stats;
+  prmon::monitored_list power_stats;
 
-  const std::vector<std::string> metrics_urls{
+  const std::vector<std::string> default_metrics_urls{
       "http://localhost:9100/metrics",
       "http://localhost:9290/metrics"
   };
   
-  std::string fetch_metrics(const std::string& url) const;
+  std::vector<std::string> metrics_urls;
+  
+  std::string fetch_metrics(const std::string& url);
   double parse_metric_line(const std::string& line,
                            const std::string& metric_name) const;
   
  public:
-  curlmon();
+  powermon();
+  ~powermon();
 
   void update_stats(const std::vector<pid_t>& pids,
                     const std::string read_path = "");
@@ -64,7 +65,7 @@ class curlmon final : public Imonitor, public MessageBase {
   void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return valid; }
 };
-REGISTER_MONITOR(Imonitor, curlmon, "Monitor power consumption - prometheus")
+REGISTER_MONITOR(Imonitor, powermon, "Monitor power consumption - prometheus")
 
 
-#endif  // PRMON_CURLMON_H
+#endif  // PRMON_POWERMON_H
