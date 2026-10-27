@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2018-2025 CERN
+# Copyright (C) 2018-2026 CERN
 # License Apache2 - see LICENCE file
 
 """prmon test harness to count number of processes"""
@@ -11,6 +11,8 @@ import subprocess
 import sys
 import unittest
 
+from prmon_test_utils import dump_on_failure
+
 
 def setup_configurable_test(threads=1, procs=1, time=10.0, interval=1, invoke=False):
     """Wrap the class definition in a function to allow arguments to be passed"""
@@ -18,6 +20,7 @@ def setup_configurable_test(threads=1, procs=1, time=10.0, interval=1, invoke=Fa
     class ConfigurableProcessMonitor(unittest.TestCase):
         """Test class for a specific set of parameters"""
 
+        @dump_on_failure
         def test_run_test_with_params(self):
             """Actual test runner"""
             burn_cmd = ["./burner", "--time", str(time)]

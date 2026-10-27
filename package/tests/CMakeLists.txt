@@ -144,10 +144,11 @@ script_install(SCRIPT test_io.py)
 script_install(SCRIPT test_net.py)
 script_install(SCRIPT test_mem.py)
 script_install(SCRIPT net_burner.py)
-script_install(SCRIPT http_block.py DESTINATION cgi-bin)
+script_install(SCRIPT http_block.py)
 script_install(SCRIPT test_count.py)
 script_install(SCRIPT test_exit.py)
 script_install(SCRIPT test_disable.py)
+script_install(SCRIPT prmon_test_utils.py)
 
 # Setup the target version of Python we will use for testing
 set(PYTHON_TEST "python3" CACHE STRING "Python binary to use for tests")

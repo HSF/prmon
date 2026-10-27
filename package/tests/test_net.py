@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2018-2025 CERN
+# Copyright (C) 2018-2026 CERN
 # License Apache2 - see LICENCE file
 
 """Test harness script for network IO"""
@@ -12,6 +12,8 @@ import os
 import subprocess
 import sys
 import unittest
+
+from prmon_test_utils import dump_on_failure
 
 THE_TEST = None
 
@@ -25,8 +27,8 @@ def setup_configurable_test(
         """Test class for a specific set of parameters"""
 
         def setUp(self):
-            """Start the simple python HTTP CGI server"""
-            http_server_cmd = ["python3", "-m", "http.server", "--cgi"]
+            """Start the simple python HTTP data block server"""
+            http_server_cmd = ["python3", "./http_block.py"]
             self.http_server = subprocess.Popen(http_server_cmd, shell=False)
 
         def tearDown(self):
@@ -34,6 +36,7 @@ def setup_configurable_test(
             os.kill(self.http_server.pid, signal.SIGTERM)
             self.http_server.wait()
 
+        @dump_on_failure
         def test_run_test_with_params(self):
             """Test class for a specific set of parameters"""
             burn_cmd = ["python3", "./net_burner.py"]

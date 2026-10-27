@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2020-2025 CERN
+# Copyright (C) 2020-2026 CERN
 # License Apache2 - see LICENCE file
 
 """prmon test harness to check monitors can be disabled correctly"""
@@ -11,6 +11,8 @@ import os
 import subprocess
 import sys
 import unittest
+
+from prmon_test_utils import dump_on_failure
 
 
 def setup_configurable_test(disable=[]):
@@ -28,6 +30,7 @@ def setup_configurable_test(disable=[]):
             "nvidiamon": "ngpus",
         }
 
+        @dump_on_failure
         def setup_and_run(self, envdisable):
             """Baseline test run"""
             burn_cmd = ["./burner", "--time", "3"]

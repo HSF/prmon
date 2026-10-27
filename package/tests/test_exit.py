@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2018-2025 CERN
+# Copyright (C) 2018-2026 CERN
 # License Apache2 - see LICENCE file
 
 """prmon test case for monitored process exit code"""
@@ -10,6 +10,8 @@ import subprocess
 import sys
 import unittest
 
+from prmon_test_utils import dump_on_failure
+
 
 def setup_configurable_test(exit_code=0):
     """Wrap the class definition in a function to allow arguments to be passed"""
@@ -17,6 +19,7 @@ def setup_configurable_test(exit_code=0):
     class ConfigurableProcessMonitor(unittest.TestCase):
         """Wrap the class definition in a function to allow arguments to be passed"""
 
+        @dump_on_failure
         def test_run_test_with_params(self):
             """Actual test runner"""
             child_cmd = ["sh", "-c", "sleep 3 && exit {0}".format(exit_code)]

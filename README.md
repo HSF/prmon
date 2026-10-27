@@ -59,26 +59,27 @@ Building is usually as simple as:
     make -j<number of cores on your machine>
     make install
 
-Unless otherwise specified, the default behavior for dependencies is to first
+Unless otherwise specified, the default behaviour for dependencies is to first
 try to find an external version and fall back to the internal submodule copy
 if not found.  To explicitly force the use of either add any of the following
 configure options:
-  - `-DUSE_EXTERNAL_NLOHMANN_JSON={TRUE,FALSE,`**`AUTO`**`}`
-    - `ON`, `TRUE`: Force an external version and fail if not found.
-    - `OFF`, `FALSE`: Require the internal copy be used.
-    - **`AUTO`**: Search for an external version and fall back to the
-       internal copy if not found.
-  - `-Dnlohmann_json_DIR=/path/to/config`
-    - The path to the directory containing `nlohmann_jsonConfig.cmake`.
-      Necessary if nlohmann_json is not installed into CMake's search path.
-  - `-DUSE_EXTERNAL_SPDLOG={TRUE,FALSE,`**`AUTO`**`}`
-    - `ON`, `TRUE`: Force an external version and fail if not found.
-    - `OFF`, `FALSE`: Require the internal copy be used.
-    - **`AUTO`**: Search for an external version and fall back to the
-       internal copy if not found.
-  - `-Dspdlog_DIR=/path/to/config`
-    - The path to the directory containing `spdlogConfig.cmake`.
-      Necessary if spdlog is not installed into CMake's search path.
+
+- `-DUSE_EXTERNAL_NLOHMANN_JSON={TRUE,FALSE,`**`AUTO`**`}`
+  - `ON`, `TRUE`: Force an external version and fail if not found.
+  - `OFF`, `FALSE`: Require the internal copy be used.
+  - **`AUTO`**: Search for an external version and fall back to the
+      internal copy if not found.
+- `-Dnlohmann_json_DIR=/path/to/config`
+  - The path to the directory containing `nlohmann_jsonConfig.cmake`.
+    Necessary if nlohmann_json is not installed into CMake's search path.
+- `-DUSE_EXTERNAL_SPDLOG={TRUE,FALSE,`**`AUTO`**`}`
+  - `ON`, `TRUE`: Force an external version and fail if not found.
+  - `OFF`, `FALSE`: Require the internal copy be used.
+  - **`AUTO`**: Search for an external version and fall back to the
+      internal copy if not found.
+- `-Dspdlog_DIR=/path/to/config`
+  - The path to the directory containing `spdlogConfig.cmake`.
+    Necessary if spdlog is not installed into CMake's search path.
 
 The option `-DCMAKE_BUILD_TYPE` can switch between all of the standard
 build types. The default is `Release`; use `RelWithDebInfo` if you want
@@ -121,23 +122,23 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
       [-- prog arg arg ...]
 ```
 
-* `--pid` the 'mother' PID to monitor (all children in the same process tree are monitored as well)
-* `--filename` output file for time-stamped monitored values
-* `--json-summary` output file for summary data written in JSON format
-* `--log-filename` output file for log messages
-* `--interval` time, in seconds, between monitoring snapshots
-* `--suppress-hw-info` flag that turns-off hardware information collection
-* `--units` add information on units for each metric to JSON file
-* `--netdev` restricts network statistics to one (or more) network devices
-* `--disable` is used to disable specific monitors (and can be specified multiple times); 
+- `--pid` the 'mother' PID to monitor (all children in the same process tree are monitored as well)
+- `--filename` output file for time-stamped monitored values
+- `--json-summary` output file for summary data written in JSON format
+- `--log-filename` output file for log messages
+- `--interval` time, in seconds, between monitoring snapshots
+- `--suppress-hw-info` flag that turns-off hardware information collection
+- `--units` add information on units for each metric to JSON file
+- `--netdev` restricts network statistics to one (or more) network devices
+- `--disable` is used to disable specific monitors (and can be specified multiple times); 
     the default is that `prmon` monitors everything that it can
   * Note that the `wallmon` monitor is the only monitor that cannot be disabled
-* `--level` is used to set the logging level for monitors
+- `--level` is used to set the logging level for monitors
   * `--level LEV` sets the level for all monitors to LEV
   * `--level MON:LEV` sets the level for monitor MON to LEV
   * The valid levels are `trace`, `debug`, `info`, `warn`, `error`, `critical`
-* `--fast-memmon` toggles on fast memory monitoring using `smaps_rollup`
-* `--` after this argument the following arguments are treated as a program to invoke
+- `--fast-memmon` toggles on fast memory monitoring using `smaps_rollup`
+- `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
   instead of being given a PID via `--pid`
 
@@ -152,7 +153,7 @@ list of all available monitoring components.
 
 When invoked with `--fast-memmon` `prmon` uses the `smaps_rollup` files
 that contain pre-summed memory information for each monitored process.
-This is a faster approach compared to the default behavior,
+This is a faster approach compared to the default behaviour,
 where `prmon` aggregates the results itself by going over each of the monitored
 processes' mappings one by one.
 
@@ -215,20 +216,23 @@ default).
 The `prmon_plot.py` script (Python3) can be used to plot the outputs of prmon from the
 timestamped output file (usually `prmon.txt`). Some examples include:
 
-* Memory usage as a function of wall-time:
+- Memory usage as a function of wall-time:
+
 ```sh
 prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap --yunit GB
 ```
 ![](example-plots/PrMon_wtime_vs_vmem_pss_rss_swap.png)
 
-* Rate of change in memory usage as a function of wall-time:
+- Rate of change in memory usage as a function of wall-time:
+
 ```sh
 prmon_plot.py --input prmon.txt --xvar wtime --yvar vmem,pss,rss,swap --diff --yunit MB
 ```
 ![](example-plots/PrMon_wtime_vs_diff_vmem_pss_rss_swap.png)
 
-* Rate of change in CPU usage as a function of wall-time with stacked
+- Rate of change in CPU usage as a function of wall-time with stacked
 user and system utilizations:
+
 ```sh
 prmon_plot.py --input prmon.txt --xvar wtime --yvar utime,stime --yunit SEC --diff --stacked
 ```
@@ -241,19 +245,19 @@ The script allows the user to specify variables, their units, plotting
 style (stacked vs overlaid), as well as the format of the output image.
 Use `-h` for more information.
 
-
 ### Data Compression
 
 The `prmon_compress_output.py` script (Python3) can be used to compress the output file
 while keeping the most relevant information.
 
 The compression algorithm works as follows:
-* For the number of processes, threads, and GPUs, only the measurements that are different with respect to the previous ones are kept.
-* For all other metrics, only the measurements that satisfy an interpolation condition are kept.
+
+- For the number of processes, threads, and GPUs, only the measurements that are different with respect to the previous ones are kept.
+- For all other metrics, only the measurements that satisfy an interpolation condition are kept.
 
 This latter condition can be summarized as:
-* For any three neighboring (and time-ordered) measurements, A, B, and C, B is deleted if the linear interpolation between A and C is consistent with B ± *threshold*. Otherwise, it's retained. The *threshold* can be configured via the `--precision` parameter (default: 0.05, i.e. 5%)
 
+- For any three neighboring (and time-ordered) measurements, A, B, and C, B is deleted if the linear interpolation between A and C is consistent with B ± *threshold*. Otherwise, it's retained. The *threshold* can be configured via the `--precision` parameter (default: 0.05, i.e. 5%)
 
 The time index of the final output will be the union of the algorithm outputs of the single 
 time series. Each series will have NA values where a point was deleted at a kept index and, unless otherwise
@@ -264,17 +268,17 @@ If the `--skip-interpolate` parameter is passed, deleted values will be written 
 as `NA` values when imported into Pandas.
 
 Example:
+
 ```sh
 prmon_compress_output.py --input prmon.txt --precision 0.3 --skip-interpolate
 ```
-
 
 ## Feedback and Contributions
 
 We're very happy to get feedback on prmon as well as suggestions for future
 development. Please have a look at our [Contribution
-Guide](doc/CONTRIBUTING.md).
-
+Guide](doc/CONTRIBUTING.md). *Always open an issue before submitting a PR,
+please.*
 
 ### Profiling
 
@@ -284,10 +288,9 @@ GNU prof profiling or gperftools profiling, respectively.
 If your gperftools are in a non-standard place, pass a hint
 to CMake using `Gperftools_ROOT_DIR`.
 
-
 # Copyright
 
-Copyright (c) 2018-2025 CERN.
+Copyright (c) 2018-2026 CERN.
 
 ## Contributors ✨
 
