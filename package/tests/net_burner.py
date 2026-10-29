@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2018-2025 CERN
+# Copyright (C) 2018-2026 CERN
 # License Apache2 - see LICENCE file
 
 """Request network data for prmon unittest"""
@@ -12,7 +12,7 @@ import urllib.request
 
 def get_net_data(host="localhost", port="8000", blocks=None):
     """read network data from local http server"""
-    url = "http://" + host + ":" + str(port) + "/cgi-bin/http_block.py"
+    url = "http://" + host + ":" + str(port) + "/"
     if blocks:
         url += "?blocks=" + str(blocks)
     # This URL is fine as it's from the server we setup
