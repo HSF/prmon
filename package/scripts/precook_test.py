@@ -255,7 +255,7 @@ def createTestRand(dir_name, iter):
         make_smaps(proc_pid, 0, True)
         make_net(net_dir, 0, True)
         make_nvidia(nvidia_dir, 0, True)
-        make_mach(proc, 0, True)
+        make_machstat(proc, 0, True)
         make_power(power_dir, 0, True)
         gc.collect()
         time.sleep(interval)
