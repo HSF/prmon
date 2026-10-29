@@ -30,9 +30,8 @@ machmon::machmon() : mach_stats{} {
 
 // Read the first line of /proc/stat and return {utime, stime, ntime}
 
-static std::tuple<long, long, long> read_proc_stat(
-    const std::string& /*read_path*/) {
-  const std::string stat_path = "/proc/stat";
+static std::tuple<long, long, long> read_proc_stat(const std::string read_path = "") {
+  const std::string stat_path = read_path + "/proc/stat";
   std::ifstream proc_stat{stat_path};
   if (!proc_stat) {
     throw std::runtime_error("Cannot open " + stat_path);
@@ -67,9 +66,9 @@ void machmon::update_stats(const std::vector<pid_t>& /*pids*/,
     }
 
     const long clk = sysconf(_SC_CLK_TCK);
-    mach_stats.at("utime_total").set_value((utime - initial_utime) / clk);
-    mach_stats.at("stime_total").set_value((stime - initial_stime) / clk);
-    mach_stats.at("ntime_total").set_value((ntime - initial_ntime) / clk);
+    mach_stats.at("utime_total").set_value(std::max(0L, utime - initial_utime) / clk);
+    mach_stats.at("stime_total").set_value(std::max(0L, stime - initial_stime) / clk);
+    mach_stats.at("ntime_total").set_value(std::max(0L, ntime - initial_ntime) / clk);
 }
 
 // Return the summed counters

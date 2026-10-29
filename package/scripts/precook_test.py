@@ -120,6 +120,44 @@ def make_nvidia(proc_nvidia, fixed_value_sm_mem, fixed_value_fb,
             print(param, file=f, end=" ")
         print("", file=f)
 
+def make_machstat(proc_mach, fixed_value, rand=False):
+    mach_fname = os.path.join(proc_mach, "stat")
+    lim = 2**64 - 1
+    if rand:
+        user, nice, system = random.randint(1,lim)
+    else:
+        user, nice, system = fixed_value, fixed_value, fixed_value
+    with open(mach_fname, "w") as f:
+        print("cpu", file = f, end = " ") # Relevant line
+        # 1 utime - Time in user mode
+        # 2 ntime - Time in nice mode
+        # 3 stime - Time in system mode
+        print(f"{user} {nice} {system}", file = f, end = " ")
+
+        # 4 - 10 are never used, set to 0
+        print("0 " * 7, file = f, end = "")
+
+def make_power(power_dir, fixed_value, rand = False):
+    power_fname = os.path.join(power_dir, "ipmi.prom")
+    if rand:
+        dcmi, ipmi, hwmon = (random.randint(0, 1000) for _ in range(3))
+        rapl_0, rapl_1 = (random.randint(0, 1000000) for _ in range(3))
+    else:
+        dcmi, ipmi, hwmon, rapl_0, rapl_1 = fixed_value, fixed_value, fixed_value, fixed_value, fixed_value
+    with open(power_fname, "w") as f:
+        print("# HELP node_hwmon_power_watt Hardware monitor for power consumption", file=f)
+        print("# TYPE node_hwmon_power_watt gauge", file=f)
+        print(f'node_hwmon_power_watt{{chip="power_supply_bat1",sensor="power1"}} {hwmon}', file=f)
+        print("# HELP node_rapl_package_joules_total Current RAPL package value in joules", file=f)
+        print("# TYPE node_rapl_package_joules_total counter", file=f)
+        print(f'node_rapl_package_joules_total{{index="0",path="/sys/class/powercap/intel-rapl:0"}} {rapl_0}', file=f)
+        print(f'node_rapl_package_joules_total{{index="1",path="/sys/class/powercap/intel-rapl:1"}} {rapl_1}', file=f)
+        print("# HELP ipmi_dcmi_power_consumption_watts Current power consumption in watts", file=f)
+        print("# TYPE ipmi_dcmi_power_consumption_watts gauge", file=f)
+        print(f"ipmi_dcmi_power_consumption_watts {dcmi}", file=f)
+        print("# HELP ipmi_power_watts Power reading of the sensor in watts", file=f)
+        print("# TYPE ipmi_power_watts gauge", file=f)
+        print(f'ipmi_power_watts{{id="1",name="Pwr Consumption"}} {ipmi}', file=f)
 
 def createPath(new_dir):
     dir_name = os.path.join(os.getcwd(), "precooked_tests")
@@ -151,27 +189,35 @@ def createTestMonotonic():
         proc_pid = os.path.join(proc, str(pid))
         net_dir = os.path.join(new_dir, "net")
         nvidia_dir = os.path.join(new_dir, "nvidia")
+        power_dir = os.path.join(new_dir, "power")
         os.mkdir(proc_pid)
         os.mkdir(net_dir)
         os.mkdir(nvidia_dir)
+        os.mkdir(power_dir)
         if i == 1:
             make_stat(pid, proc_pid, 5000000)
             make_io(proc_pid, 500)
             make_smaps(proc_pid, 5000)
             make_net(net_dir, 500000)
             make_nvidia(nvidia_dir, 50, 50)
+            make_machstat(proc, 50000)
+            make_power(power_dir, 500)
         elif i == 2:
             make_stat(pid, proc_pid, 10000000)
             make_io(proc_pid, 1000)
             make_smaps(proc_pid, 10000)
             make_net(net_dir, 1000000)
             make_nvidia(nvidia_dir, 100, 100)
+            make_machstat(proc, 100000)
+            make_power(power_dir, 1000)
         else:
             make_stat(pid, proc_pid, 2000000)
             make_io(proc_pid, 200)
             make_smaps(proc_pid, 2000)
             make_net(net_dir, 200000)
             make_nvidia(nvidia_dir, "-", 20)
+            make_machstat(proc, 20000)
+            make_power(power_dir, 200)
         gc.collect()
         time.sleep(interval)
         i += 1
@@ -198,11 +244,15 @@ def createTestRand(dir_name, iter):
         os.mkdir(proc_pid)
         os.mkdir(net_dir)
         os.mkdir(nvidia_dir)
+        os.mkdir(mach_dir)
+        os.mkdir(power_dir)
         make_stat(pid, proc_pid, 0, True)
         make_io(proc_pid, 0, True)
         make_smaps(proc_pid, 0, True)
         make_net(net_dir, 0, True)
         make_nvidia(nvidia_dir, 0, True)
+        make_mach(mach_dir, 0, True)
+        make_power(power_dir, 0, True)
         gc.collect()
         time.sleep(interval)
 
