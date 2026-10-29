@@ -93,8 +93,9 @@ def make_net(proc_net, fixed_value, rand=False):
             print(random.randint(0, net_lim) if rand else fixed_value, file=f)
 
 
-def make_nvidia(proc_nvidia, fixed_value_sm_mem, fixed_value_fb,
-                rand_sm_mem=False, rand_fb=False):
+def make_nvidia(
+    proc_nvidia, fixed_value_sm_mem, fixed_value_fb, rand_sm_mem=False, rand_fb=False
+):
     # idx
     print(proc_nvidia, fixed_value_sm_mem, fixed_value_fb, rand_sm_mem, rand_fb)
     smi_fname = os.path.join(proc_nvidia, "smi")
@@ -136,7 +137,7 @@ def make_machstat(proc_mach, fixed_value, rand=False):
         print(f"{user} {nice} {system}", file=f, end=" ")
 
         # 4 - 10 are never used, set to 0
-        print("0 "*7, file=f, end="")
+        print("0 " * 7, file=f, end="")
 
 
 def make_power(power_dir, fixed_value, rand=False):
@@ -145,21 +146,50 @@ def make_power(power_dir, fixed_value, rand=False):
         dcmi, ipmi, hwmon = (random.randint(0, 1000) for _ in range(3))
         rapl_0, rapl_1 = (random.randint(0, 1000000) for _ in range(3))
     else:
-        dcmi, ipmi, hwmon, rapl_0, rapl_1 = fixed_value, fixed_value, fixed_value, fixed_value, fixed_value
+        dcmi = ipmi = hwmon = rapl_0 = rapl_1 = fixed_value
+
     with open(power_fname, "w") as f:
-        print("# HELP node_hwmon_power_watt Hardware monitor for power consumption", file=f)
+        print(
+            "# HELP node_hwmon_power_watt " "Hardware monitor for power consumption",
+            file=f,
+        )
         print("# TYPE node_hwmon_power_watt gauge", file=f)
-        print(f'node_hwmon_power_watt{{chip="power_supply_bat1",sensor="power1"}} {hwmon}', file=f)
-        print("# HELP node_rapl_package_joules_total Current RAPL package value in joules", file=f)
+        print(
+            "node_hwmon_power_watt"
+            f'{{chip="power_supply_bat1",sensor="power1"}} {hwmon}',
+            file=f,
+        )
+
+        print(
+            "# HELP node_rapl_package_joules_total "
+            "Current RAPL package value in joules",
+            file=f,
+        )
         print("# TYPE node_rapl_package_joules_total counter", file=f)
-        print(f'node_rapl_package_joules_total{{index="0",path="/sys/class/powercap/intel-rapl:0"}} {rapl_0}', file=f)
-        print(f'node_rapl_package_joules_total{{index="1",path="/sys/class/powercap/intel-rapl:1"}} {rapl_1}', file=f)
-        print("# HELP ipmi_dcmi_power_consumption_watts Current power consumption in watts", file=f)
+        print(
+            "node_rapl_package_joules_total"
+            '{index="0",path="/sys/class/powercap/intel-rapl:0"}'
+            f" {rapl_0}",
+            file=f,
+        )
+        print(
+            "node_rapl_package_joules_total"
+            '{index="1",path="/sys/class/powercap/intel-rapl:1"}'
+            f" {rapl_1}",
+            file=f,
+        )
+
+        print(
+            "# HELP ipmi_dcmi_power_consumption_watts "
+            "Current power consumption in watts",
+            file=f,
+        )
         print("# TYPE ipmi_dcmi_power_consumption_watts gauge", file=f)
         print(f"ipmi_dcmi_power_consumption_watts {dcmi}", file=f)
-        print("# HELP ipmi_power_watts Power reading of the sensor in watts", file=f)
+
+        print("# HELP ipmi_power_watts " "Power reading of the sensor in watts", file=f)
         print("# TYPE ipmi_power_watts gauge", file=f)
-        print(f'ipmi_power_watts{{id="1",name="Pwr Consumption"}} {ipmi}', file=f)
+        print('ipmi_power_watts{id="1",name="Pwr Consumption"}' f" {ipmi}", file=f)
 
 
 def createPath(new_dir):
