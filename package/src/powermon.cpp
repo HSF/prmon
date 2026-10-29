@@ -51,7 +51,6 @@ powermon::powermon() : power_stats{} {
     error("Failed to initialise libcurl");
     return;
   }
-
   // Initialize parameters
   for (const auto& param : params) {
     // RAPL values are monotonic, so we set the flag to true. Else, false.
@@ -299,7 +298,6 @@ void powermon::collect_lines(const std::string& body,
 
 void powermon::update_stats(const std::vector<pid_t>& /*pids*/,
                            const std::string read_path) {
-
   // Attempt to read from each metrics_url                    
   const std::vector<std::string> bodies = gather_bodies(read_path);
   if (bodies.empty()) {
