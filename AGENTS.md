@@ -78,8 +78,10 @@ cd build && ctest --output-on-failure
 ## Formatting and linting
 
 - C++: `clang-format --style=Google` (`cmake --build build --target
-  clang-format`). A CI workflow also applies it on pushes to non-main
-  branches.
+  clang-format`). The `Clang-Format` CI workflow checks this on pushes and
+  PRs to `main`/`stable` with a pinned version (`CLANG_FORMAT_VERSION` in
+  `.github/workflows/clang-format.yml`); other versions can format
+  differently, so use `uvx clang-format@<that version>` if in doubt.
 - Python: `black` and `flake8` with the repo's `.flake8` (88 columns,
   E203 ignored); targets `black` and `flake8`.
 - Run these before handing work back. If the tools are not installed, `uvx
