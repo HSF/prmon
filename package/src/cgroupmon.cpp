@@ -1,15 +1,15 @@
-// Copyright (C) 2018-2025 CERN
+// Copyright (C) 2018-2026 CERN
 // License Apache2 - see LICENCE file
 
 #include "cgroupmon.h"
 
-#include <sys/stat.h>
-#include <unistd.h>
 #include <climits>
+#include <unistd.h>
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include "utils.h"
 
@@ -17,8 +17,7 @@
 
 // Constructor - detect cgroup version and setup monitoring
 cgroupmon::cgroupmon()
-    : cgroup_version{CgroupVersion::NONE},
-      valid{false},
+    : valid{false},
       cgroup_path{},
       cgroup_mount_point{} {
   log_init(MONITOR_NAME);
@@ -29,35 +28,11 @@ cgroupmon::cgroupmon()
     cgroup_stats.emplace(param.get_name(), prmon::monitored_value(param));
   }
 
-  // Detect cgroup version
-  cgroup_version = detect_cgroup_version();
-  
-  if (cgroup_version == CgroupVersion::NONE) {
-    info("No cgroup support detected, cgroupmon will be inactive");
-    return;
-  }
-
   // Find cgroup mount point
   cgroup_mount_point = find_cgroup_mount_point();
-  if (cgroup_mount_point.empty()) {
-    warning("Could not find cgroup mount point");
-    return;
-  }
 
   valid = true;
-  info("Cgroup monitoring enabled (version: v2)");
-}
-
-// Detect which cgroup version is available
-CgroupVersion cgroupmon::detect_cgroup_version() {
-  struct stat st;
-  
-  // Check for cgroup v2
-  if (stat("/sys/fs/cgroup/cgroup.controllers", &st) == 0) {
-    return CgroupVersion::V2;
-  }
-  
-  return CgroupVersion::NONE;
+  info("Cgroup v2 monitoring enabled");
 }
 
 // Find the cgroup path for a given PID
@@ -71,7 +46,6 @@ std::string cgroupmon::find_cgroup_path(pid_t pid) {
   }
   
   std::string line;
-  // For cgroup v2, look for line starting with "0::"
   // For cgroup v2, look for line starting with "0::"
   while (std::getline(cgroup_stream, line)) {
     if (line.substr(0, 3) == "0::") {
@@ -267,7 +241,21 @@ prmon::monitored_average_map const cgroupmon::get_json_average_stats(
     unsigned long long elapsed_clock_ticks) {
   prmon::monitored_average_map cgroup_stat_map{};
   for (const auto& value : cgroup_stats) {
-    cgroup_stat_map[value.first] = value.second.get_average_value();
+    const std::string avg_unit = value.second.get_avg_unit();
+    // An empty average unit means no meaningful average exists, so the
+    // value must be omitted (fill_units() likewise omits its unit)
+    if (avg_unit.empty()) continue;
+    if (avg_unit.size() > 2 &&
+        avg_unit.compare(avg_unit.size() - 2, 2, "/s") == 0) {
+      // Rate units: cumulative counter divided by elapsed time (as iomon)
+      cgroup_stat_map[value.first] =
+          elapsed_clock_ticks
+              ? prmon::avg_value(value.second.get_value()) *
+                    sysconf(_SC_CLK_TCK) / elapsed_clock_ticks
+              : 0.0;
+    } else {
+      cgroup_stat_map[value.first] = value.second.get_average_value();
+    }
   }
   return cgroup_stat_map;
 }

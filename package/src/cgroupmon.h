@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2025 CERN
+// Copyright (C) 2015-2026 CERN
 // License Apache2 - see LICENCE file
 
 // Cgroup monitoring class for container resource tracking
@@ -16,17 +16,14 @@
 #include "parameter.h"
 #include "registry.h"
 
-// Cgroup version enumeration
-enum class CgroupVersion { NONE, V2 };
-
 class cgroupmon final : public Imonitor, public MessageBase {
  private:
   // Parameters to monitor from cgroups
   const prmon::parameter_list params = {
       // CPU metrics
-      {"cgroup_cpu_user", "us", "us"},
-      {"cgroup_cpu_system", "us", "us"},
-      {"cgroup_cpu_total", "us", "us"},
+      {"cgroup_cpu_user", "us", ""},
+      {"cgroup_cpu_system", "us", ""},
+      {"cgroup_cpu_total", "us", ""},
       {"cgroup_cpu_throttled", "us", ""},
       {"cgroup_cpu_periods", "1", ""},
       // Memory metrics
@@ -46,13 +43,11 @@ class cgroupmon final : public Imonitor, public MessageBase {
   prmon::monitored_list cgroup_stats;
 
   // Cgroup detection state
-  CgroupVersion cgroup_version;
   bool valid;
   std::string cgroup_path;
   std::string cgroup_mount_point;
 
   // Helper methods for cgroup detection and reading
-  CgroupVersion detect_cgroup_version();
   std::string find_cgroup_path(pid_t pid);
   std::string find_cgroup_mount_point();
   
