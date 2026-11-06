@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2026 CERN
+// Copyright (C) 2025-2026 CERN
 // License Apache2 - see LICENCE file
 
 #include "cgroupmon.h"

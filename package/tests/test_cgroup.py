@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (C) 2018-2025 CERN
+# Copyright (C) 2025-2026 CERN
 # License Apache2 - see LICENCE file
 
 """Test harness for cgroup monitoring"""

@@ -185,8 +185,7 @@ add_test(NAME testUnits COMMAND ${PYTHON_TEST} test_cpu.py --units --time 3 --sl
 add_test(NAME testExitCode COMMAND ${PYTHON_TEST} test_exit.py --exit-code 43)
 
 # Test for disabling monitor components
-
-# Cgroup Tests (will skip if cgroups not available)
-add_test(NAME testCgroup COMMAND ${PYTHON_TEST} test_cgroup.py --time 3)
-
 add_test(NAME testDisable COMMAND ${PYTHON_TEST} test_disable.py --disable iomon countmon)
+
+# Cgroup test (skipped if cgroup v2 is not available)
+add_test(NAME testCgroup COMMAND ${PYTHON_TEST} test_cgroup.py --time 3)

@@ -231,8 +231,9 @@ the sampling time. Monitoring of network I/O is **not reliable** unless the
 monitored process is isolated from other processes performing network I/O
 (it gives an upper bound on the network activity, but the monitoring is
 per network device as Linux does not give per-process network data by
-default). Note that `cgroupmon` can provide more accurate I/O statistics
-in containerized environments.
+default). Note that the `cgroupmon` I/O values (`cgroup_io_read` and
+`cgroup_io_write`) are block device I/O for the whole cgroup, so they do not
+help with network I/O.
 
 ### Visualisation
 
