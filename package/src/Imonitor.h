@@ -21,7 +21,7 @@
 
 class Imonitor {
  public:
-  virtual ~Imonitor() {};
+  virtual ~Imonitor(){};
 
   virtual void update_stats(const std::vector<pid_t>& pids,
                             const std::string read_path = "") = 0;

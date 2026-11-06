@@ -141,7 +141,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
   // Scope of 'monitors' ensures safety of bare pointer here
   auto wallclock_monitor_p = static_cast<wallmon*>(monitors["wallmon"].get());
   while (kill(mpid, 0) == 0 && prmon::sigusr1 == false) {
-    if (first || time(0) - lastIteration > interval) {
+    if (first || time(0) - lastIteration > interval){
       // Reset lastIteration
       lastIteration = time(0);
       first = false;
@@ -196,7 +196,7 @@ int ProcessMonitor(const pid_t mpid, const std::string filename,
             }
           }
         }
-
+  
         // Write JSON realtime summary to a temporary file
         std::ofstream json_out(tmp_json_file.str());
         json_out << std::setw(2) << json_summary << std::endl;
@@ -252,7 +252,8 @@ int main(int argc, char* argv[]) {
       "for resource consumption into a logfile and a JSON summary\n"
       "format when the process exits");
 
-  auto opt_pid = op.add<popl::Value<int>>("p", "pid", "Monitored process ID");
+  auto opt_pid = op.add<popl::Value<int>>(
+      "p", "pid", "Monitored process ID");
   auto opt_filename = op.add<popl::Value<std::string>>(
       "f", "filename", "Filename for detailed stats", "prmon.txt");
   auto opt_json_summary = op.add<popl::Value<std::string>>(
@@ -263,8 +264,8 @@ int main(int argc, char* argv[]) {
       "i", "interval", "Seconds between samples", 30);
   auto opt_suppress_hw_info = op.add<popl::Switch>(
       "s", "suppress-hw-info", "Disable hardware information");
-  auto opt_units =
-      op.add<popl::Switch>("u", "units", "Add units information to JSON file");
+  auto opt_units = op.add<popl::Switch>(
+      "u", "units", "Add units information to JSON file");
   auto opt_netdev = op.add<popl::Value<std::string>>(
       "n", "netdev",
       "Network device to monitor (can be given multiple times;"
@@ -279,8 +280,10 @@ int main(int argc, char* argv[]) {
       "Set logging level (e.g. 'info' or 'mon:debug';"
       " valid levels: trace, debug, info, warn, error, critical)");
   auto opt_fast_memmon = op.add<popl::Switch>(
-      "m", "fast-memmon", "Do fast memory monitoring using smaps_rollup");
-  auto opt_help = op.add<popl::Switch>("h", "help", "Show this help message");
+      "m", "fast-memmon",
+      "Do fast memory monitoring using smaps_rollup");
+  auto opt_help = op.add<popl::Switch>(
+      "h", "help", "Show this help message");
 
   // Parse command line options
   op.parse(argc, argv);
