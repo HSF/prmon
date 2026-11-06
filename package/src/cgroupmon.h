@@ -56,7 +56,7 @@ class cgroupmon final : public Imonitor, public MessageBase {
   std::string cgroup_mount_point;
 
   // Helper methods for cgroup detection and reading
-  std::string find_cgroup_path(pid_t pid);
+  std::string find_cgroup_path(pid_t pid, const std::string& read_path);
   std::string find_cgroup_mount_point();
 
   // Reading methods for cgroup v2

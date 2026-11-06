@@ -44,10 +44,13 @@ cgroupmon::cgroupmon()
   info("Cgroup v2 monitoring enabled");
 }
 
-// Find the cgroup path for a given PID
-std::string cgroupmon::find_cgroup_path(pid_t pid) {
+// Find the cgroup v2 path (relative to the mount point) for a given PID,
+// returning an empty string if it cannot be determined (e.g., the process
+// has exited, or there is no unified hierarchy entry)
+std::string cgroupmon::find_cgroup_path(pid_t pid,
+                                        const std::string& read_path) {
   std::stringstream cgroup_file;
-  cgroup_file << "/proc/" << pid << "/cgroup";
+  cgroup_file << read_path << "/proc/" << pid << "/cgroup";
 
   std::ifstream cgroup_stream(cgroup_file.str());
   if (!cgroup_stream.is_open()) {
@@ -55,14 +58,20 @@ std::string cgroupmon::find_cgroup_path(pid_t pid) {
   }
 
   std::string line;
-  // For cgroup v2, look for line starting with "0::"
+  // For cgroup v2, look for the line starting with "0::"
   while (std::getline(cgroup_stream, line)) {
-    if (line.substr(0, 3) == "0::") {
-      return line.substr(3);  // Remove "0::" prefix
+    if (line.compare(0, 3, "0::") == 0) {
+      std::string path = line.substr(3);  // Remove "0::" prefix
+      // Only accept absolute paths that stay inside the mount point
+      if (path.empty() || path[0] != '/' ||
+          path.find("/..") != std::string::npos) {
+        return "";
+      }
+      return path;
     }
   }
 
-  return "/";  // Root cgroup
+  return "";
 }
 
 // Find the cgroup filesystem mount point
@@ -71,17 +80,22 @@ std::string cgroupmon::find_cgroup_mount_point() { return "/sys/fs/cgroup"; }
 // Update statistics from cgroup
 void cgroupmon::update_stats(const std::vector<pid_t>& pids,
                              const std::string read_path) {
-  if (!valid || pids.empty()) {
+  // N.B. validity is not checked here: prmon only polls valid monitors, and
+  // this allows precooked tests (via read_path) to run on any host
+  if (pids.empty()) {
     return;
   }
 
   // Use first PID to determine cgroup path
   // (all processes in the tree should be in the same cgroup)
-  std::string base_path = read_path.empty() ? "" : read_path;
-  cgroup_path = find_cgroup_path(pids[0]);
+  cgroup_path = find_cgroup_path(pids[0], read_path);
+  if (cgroup_path.empty()) {
+    debug("Could not determine cgroup of pid " + std::to_string(pids[0]));
+    return;
+  }
 
   // Construct full path to cgroup directory
-  std::string full_cgroup_path = base_path + cgroup_mount_point + cgroup_path;
+  std::string full_cgroup_path = read_path + cgroup_mount_point + cgroup_path;
 
   try {
     read_cgroup_v2_stats(full_cgroup_path);
