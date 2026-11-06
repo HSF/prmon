@@ -19,25 +19,24 @@
 class cgroupmon final : public Imonitor, public MessageBase {
  private:
   // Parameters to monitor from cgroups
-  const prmon::parameter_list params = {
-      // CPU metrics
-      {"cgroup_cpu_user", "us", ""},
-      {"cgroup_cpu_system", "us", ""},
-      {"cgroup_cpu_total", "us", ""},
-      {"cgroup_cpu_throttled", "us", ""},
-      {"cgroup_cpu_periods", "1", ""},
-      // Memory metrics
-      {"cgroup_mem_current", "kB", "kB"},
-      {"cgroup_mem_max", "kB", ""},
-      {"cgroup_mem_anon", "kB", "kB"},
-      {"cgroup_mem_file", "kB", "kB"},
-      {"cgroup_mem_kernel", "kB", "kB"},
-      // I/O metrics
-      {"cgroup_io_read", "B", "B/s"},
-      {"cgroup_io_write", "B", "B/s"},
-      // Process/thread counts from cgroup
-      {"cgroup_nprocs", "1", "1"},
-      {"cgroup_nthreads", "1", "1"}};
+  const prmon::parameter_list params = {// CPU metrics
+                                        {"cgroup_cpu_user", "us", ""},
+                                        {"cgroup_cpu_system", "us", ""},
+                                        {"cgroup_cpu_total", "us", ""},
+                                        {"cgroup_cpu_throttled", "us", ""},
+                                        {"cgroup_cpu_periods", "1", ""},
+                                        // Memory metrics
+                                        {"cgroup_mem_current", "kB", "kB"},
+                                        {"cgroup_mem_max", "kB", ""},
+                                        {"cgroup_mem_anon", "kB", "kB"},
+                                        {"cgroup_mem_file", "kB", "kB"},
+                                        {"cgroup_mem_kernel", "kB", "kB"},
+                                        // I/O metrics
+                                        {"cgroup_io_read", "B", "B/s"},
+                                        {"cgroup_io_write", "B", "B/s"},
+                                        // Process/thread counts from cgroup
+                                        {"cgroup_nprocs", "1", "1"},
+                                        {"cgroup_nthreads", "1", "1"}};
 
   // Dynamic monitoring container
   prmon::monitored_list cgroup_stats;
@@ -50,10 +49,10 @@ class cgroupmon final : public Imonitor, public MessageBase {
   // Helper methods for cgroup detection and reading
   std::string find_cgroup_path(pid_t pid);
   std::string find_cgroup_mount_point();
-  
+
   // Reading methods for cgroup v2
   void read_cgroup_v2_stats(const std::string& cgroup_path);
-  
+
   // Parse specific cgroup files
   void parse_cpu_stat_v2(const std::string& path,
                          prmon::monitored_value_map& stats);
@@ -61,7 +60,7 @@ class cgroupmon final : public Imonitor, public MessageBase {
                             prmon::monitored_value_map& stats);
   void parse_io_stat_v2(const std::string& path,
                         prmon::monitored_value_map& stats);
-  
+
   // Helper to read single value files
   unsigned long long read_single_value(const std::string& filepath);
 

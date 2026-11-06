@@ -3,9 +3,9 @@
 
 #include "cgroupmon.h"
 
-#include <climits>
 #include <unistd.h>
 
+#include <climits>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -16,10 +16,7 @@
 #define MONITOR_NAME "cgroupmon"
 
 // Constructor - detect cgroup version and setup monitoring
-cgroupmon::cgroupmon()
-    : valid{false},
-      cgroup_path{},
-      cgroup_mount_point{} {
+cgroupmon::cgroupmon() : valid{false}, cgroup_path{}, cgroup_mount_point{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
 
@@ -39,12 +36,12 @@ cgroupmon::cgroupmon()
 std::string cgroupmon::find_cgroup_path(pid_t pid) {
   std::stringstream cgroup_file;
   cgroup_file << "/proc/" << pid << "/cgroup";
-  
+
   std::ifstream cgroup_stream(cgroup_file.str());
   if (!cgroup_stream.is_open()) {
     return "";
   }
-  
+
   std::string line;
   // For cgroup v2, look for line starting with "0::"
   while (std::getline(cgroup_stream, line)) {
@@ -52,14 +49,12 @@ std::string cgroupmon::find_cgroup_path(pid_t pid) {
       return line.substr(3);  // Remove "0::" prefix
     }
   }
-  
+
   return "/";  // Root cgroup
 }
 
 // Find the cgroup filesystem mount point
-std::string cgroupmon::find_cgroup_mount_point() {
-  return "/sys/fs/cgroup";
-}
+std::string cgroupmon::find_cgroup_mount_point() { return "/sys/fs/cgroup"; }
 
 // Update statistics from cgroup
 void cgroupmon::update_stats(const std::vector<pid_t>& pids,
@@ -86,27 +81,28 @@ void cgroupmon::update_stats(const std::vector<pid_t>& pids,
 // Read cgroup v2 statistics
 void cgroupmon::read_cgroup_v2_stats(const std::string& cgroup_path) {
   prmon::monitored_value_map stats{};
-  
+
   // CPU statistics
   parse_cpu_stat_v2(cgroup_path + "/cpu.stat", stats);
-  
+
   // Memory statistics
   parse_memory_stat_v2(cgroup_path + "/memory.stat", stats);
-  
+
   // Memory current and max
-  stats["cgroup_mem_current"] = read_single_value(cgroup_path + "/memory.current") / 1024;
+  stats["cgroup_mem_current"] =
+      read_single_value(cgroup_path + "/memory.current") / 1024;
   unsigned long long mem_max = read_single_value(cgroup_path + "/memory.max");
   if (mem_max != ULLONG_MAX) {
     stats["cgroup_mem_max"] = mem_max / 1024;
   }
-  
+
   // I/O statistics
   parse_io_stat_v2(cgroup_path + "/io.stat", stats);
-  
+
   // Process and thread counts
   stats["cgroup_nprocs"] = read_single_value(cgroup_path + "/cgroup.procs");
   stats["cgroup_nthreads"] = read_single_value(cgroup_path + "/cgroup.threads");
-  
+
   // Update monitored values
   for (auto& value : cgroup_stats) {
     if (stats.count(value.first)) {
@@ -150,7 +146,7 @@ void cgroupmon::parse_memory_stat_v2(const std::string& path,
   std::string key, value;
   while (mem_stat >> key >> value) {
     unsigned long long val_kb = std::stoull(value) / 1024;
-    
+
     if (key == "anon") {
       stats["cgroup_mem_anon"] = val_kb;
     } else if (key == "file") {
@@ -173,15 +169,15 @@ void cgroupmon::parse_io_stat_v2(const std::string& path,
   while (std::getline(io_stat, line)) {
     std::istringstream iss(line);
     std::string device, key, value;
-    
+
     iss >> device;  // e.g., "8:0"
-    
+
     while (iss >> key) {
       size_t eq_pos = key.find('=');
       if (eq_pos != std::string::npos) {
         std::string metric = key.substr(0, eq_pos);
         std::string val = key.substr(eq_pos + 1);
-        
+
         if (metric == "rbytes") {
           stats["cgroup_io_read"] += std::stoull(val);
         } else if (metric == "wbytes") {
@@ -192,7 +188,8 @@ void cgroupmon::parse_io_stat_v2(const std::string& path,
   }
 }
 
-// Helper to read a single value from a file or count lines for proc/thread files
+// Helper to read a single value from a file or count lines for proc/thread
+// files
 unsigned long long cgroupmon::read_single_value(const std::string& filepath) {
   std::ifstream file(filepath);
   if (!file.is_open()) {
@@ -249,10 +246,9 @@ prmon::monitored_average_map const cgroupmon::get_json_average_stats(
         avg_unit.compare(avg_unit.size() - 2, 2, "/s") == 0) {
       // Rate units: cumulative counter divided by elapsed time (as iomon)
       cgroup_stat_map[value.first] =
-          elapsed_clock_ticks
-              ? prmon::avg_value(value.second.get_value()) *
-                    sysconf(_SC_CLK_TCK) / elapsed_clock_ticks
-              : 0.0;
+          elapsed_clock_ticks ? prmon::avg_value(value.second.get_value()) *
+                                    sysconf(_SC_CLK_TCK) / elapsed_clock_ticks
+                              : 0.0;
     } else {
       cgroup_stat_map[value.first] = value.second.get_average_value();
     }
@@ -268,7 +264,7 @@ void const cgroupmon::get_hardware_info(nlohmann::json& hw_json) {
   if (!valid) {
     return;
   }
-  
+
   hw_json["cgroup"]["version"] = "v2";
   hw_json["cgroup"]["mount_point"] = cgroup_mount_point;
 }
