@@ -8,6 +8,7 @@
 #define PRMON_CGROUPMON_H 1
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -38,11 +39,19 @@ class cgroupmon final : public Imonitor, public MessageBase {
                                         {"cgroup_nprocs", "1", "1"},
                                         {"cgroup_nthreads", "1", "1"}};
 
+  // Cumulative counters: these are monotonic and are reported relative
+  // to their value at the first reading (i.e., since prmon started)
+  const std::set<std::string> cumulative_params = {
+      "cgroup_cpu_user",    "cgroup_cpu_system",  "cgroup_cpu_total",
+      "cgroup_cpu_throttled", "cgroup_cpu_periods", "cgroup_io_read",
+      "cgroup_io_write"};
+
   // Dynamic monitoring container
   prmon::monitored_list cgroup_stats;
 
   // Cgroup detection state
   bool valid;
+  bool baseline_taken;
   std::string cgroup_path;
   std::string cgroup_mount_point;
 
@@ -63,6 +72,8 @@ class cgroupmon final : public Imonitor, public MessageBase {
 
   // Helper to read single value files
   unsigned long long read_single_value(const std::string& filepath);
+  // Read memory.max, which contains "max" when there is no limit
+  unsigned long long read_memory_max(const std::string& filepath);
 
  public:
   cgroupmon();

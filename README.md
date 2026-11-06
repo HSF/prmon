@@ -200,7 +200,12 @@ give container-aware resource accounting:
 * **CPU**: Container CPU usage, throttling statistics
 * **Memory**: Container memory usage, limits, and detailed breakdowns (anon, file, kernel)
 * **I/O**: Container-level I/O read/write statistics
-* **Limits**: Reports container resource limits and quotas
+* **Limits**: Reports the container memory limit (`cgroup_mem_max`, which is
+  0 when there is no limit)
+
+The statistics are for the whole cgroup of the monitored process, which can
+include other processes (e.g., `prmon` itself). The cumulative CPU and I/O
+counters are reported relative to their values when `prmon` started.
 
 Cgroup monitoring is enabled automatically when cgroups are detected and can
 be disabled with `--disable cgroupmon`. This feature is particularly useful

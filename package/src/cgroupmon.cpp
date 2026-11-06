@@ -3,9 +3,9 @@
 
 #include "cgroupmon.h"
 
+#include <sys/stat.h>
 #include <unistd.h>
 
-#include <climits>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -16,17 +16,32 @@
 #define MONITOR_NAME "cgroupmon"
 
 // Constructor - detect cgroup version and setup monitoring
-cgroupmon::cgroupmon() : valid{false}, cgroup_path{}, cgroup_mount_point{} {
+cgroupmon::cgroupmon()
+    : valid{false},
+      baseline_taken{false},
+      cgroup_path{},
+      cgroup_mount_point{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
 
   // Initialize monitored values
   for (const auto& param : params) {
-    cgroup_stats.emplace(param.get_name(), prmon::monitored_value(param));
+    const bool cumulative = cumulative_params.count(param.get_name()) > 0;
+    cgroup_stats.emplace(param.get_name(),
+                         prmon::monitored_value(param, cumulative));
   }
 
   // Find cgroup mount point
   cgroup_mount_point = find_cgroup_mount_point();
+
+  // Only a unified (v2) hierarchy is supported, which is identified by the
+  // presence of cgroup.controllers at the mount point
+  struct stat st;
+  if (stat((cgroup_mount_point + "/cgroup.controllers").c_str(), &st) != 0) {
+    info("No cgroup v2 hierarchy found at " + cgroup_mount_point +
+         ", cgroupmon will be inactive");
+    return;
+  }
 
   valid = true;
   info("Cgroup v2 monitoring enabled");
@@ -91,10 +106,7 @@ void cgroupmon::read_cgroup_v2_stats(const std::string& cgroup_path) {
   // Memory current and max
   stats["cgroup_mem_current"] =
       read_single_value(cgroup_path + "/memory.current") / 1024;
-  unsigned long long mem_max = read_single_value(cgroup_path + "/memory.max");
-  if (mem_max != ULLONG_MAX) {
-    stats["cgroup_mem_max"] = mem_max / 1024;
-  }
+  stats["cgroup_mem_max"] = read_memory_max(cgroup_path + "/memory.max") / 1024;
 
   // I/O statistics
   parse_io_stat_v2(cgroup_path + "/io.stat", stats);
@@ -103,12 +115,19 @@ void cgroupmon::read_cgroup_v2_stats(const std::string& cgroup_path) {
   stats["cgroup_nprocs"] = read_single_value(cgroup_path + "/cgroup.procs");
   stats["cgroup_nthreads"] = read_single_value(cgroup_path + "/cgroup.threads");
 
-  // Update monitored values
+  // Update monitored values. Cumulative counters include all usage since
+  // the cgroup was created, so the first reading is taken as their offset
+  // and they then report usage since prmon started. (A counter that cannot
+  // be read at the first update gets no offset.)
   for (auto& value : cgroup_stats) {
-    if (stats.count(value.first)) {
-      value.second.set_value(stats[value.first]);
+    const auto reading = stats.find(value.first);
+    if (reading == stats.end()) continue;
+    if (!baseline_taken && cumulative_params.count(value.first)) {
+      value.second.set_offset(reading->second);
     }
+    value.second.set_value(reading->second);
   }
+  baseline_taken = true;
 }
 
 // Parse cgroup v2 cpu.stat file
@@ -143,6 +162,11 @@ void cgroupmon::parse_memory_stat_v2(const std::string& path,
     return;
   }
 
+  // "kernel" (Linux >= 5.18) already includes "kernel_stack", so only use
+  // "kernel_stack" on older kernels that lack "kernel"
+  bool have_kernel = false, have_kernel_stack = false;
+  unsigned long long kernel_stack_kb = 0;
+
   std::string key, value;
   while (mem_stat >> key >> value) {
     unsigned long long val_kb = std::stoull(value) / 1024;
@@ -151,9 +175,16 @@ void cgroupmon::parse_memory_stat_v2(const std::string& path,
       stats["cgroup_mem_anon"] = val_kb;
     } else if (key == "file") {
       stats["cgroup_mem_file"] = val_kb;
-    } else if (key == "kernel" || key == "kernel_stack") {
-      stats["cgroup_mem_kernel"] += val_kb;
+    } else if (key == "kernel") {
+      stats["cgroup_mem_kernel"] = val_kb;
+      have_kernel = true;
+    } else if (key == "kernel_stack") {
+      kernel_stack_kb = val_kb;
+      have_kernel_stack = true;
     }
+  }
+  if (!have_kernel && have_kernel_stack) {
+    stats["cgroup_mem_kernel"] = kernel_stack_kb;
   }
 }
 
@@ -215,6 +246,21 @@ unsigned long long cgroupmon::read_single_value(const std::string& filepath) {
   return file.fail() ? 0 : value;
 }
 
+// Read memory.max, returning 0 when there is no limit (the file then
+// contains "max") or the value cannot be read
+unsigned long long cgroupmon::read_memory_max(const std::string& filepath) {
+  std::ifstream file(filepath);
+  std::string token;
+  if (!(file >> token) || token == "max") {
+    return 0;
+  }
+  try {
+    return std::stoull(token);
+  } catch (const std::exception&) {
+    return 0;
+  }
+}
+
 // Return current statistics
 prmon::monitored_value_map const cgroupmon::get_text_stats() {
   prmon::monitored_value_map cgroup_stat_map{};
@@ -265,8 +311,7 @@ void const cgroupmon::get_hardware_info(nlohmann::json& hw_json) {
     return;
   }
 
-  hw_json["cgroup"]["version"] = "v2";
-  hw_json["cgroup"]["mount_point"] = cgroup_mount_point;
+  hw_json["HW"]["cgroup"]["version"] = "v2";
 }
 
 // Collect unit information
