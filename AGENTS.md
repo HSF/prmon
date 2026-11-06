@@ -58,9 +58,9 @@ cd build && ctest --output-on-failure
 
 - C++ standard: **C++11** on `main` (`CMAKE_CXX_STANDARD` in the top-level
   `CMakeLists.txt`). Do not use newer language features unless the standard is
-  deliberately raised (it is being discussed for C++14).
+  deliberately raised.
 - CMake >= 3.10. Python >= 3.6 for the tests; also keep test scripts working on
-  current Python (3.13+ removed `cgi`; avoid deprecated stdlib modules).
+  current Python (e.g., 3.13+ removed `cgi`; avoid deprecated stdlib modules).
 - Python test wrappers are copied into the build tree by `script_install()` in
   `package/tests/CMakeLists.txt` and run from `build/package/tests`, invoking
   `../prmon`. **Any new helper module or script a test imports or runs must be
@@ -93,8 +93,8 @@ changing a monitor. Key points and pitfalls:
 - Monitors implement `Imonitor` (`package/src/Imonitor.h`) and self-register
   with `REGISTER_MONITOR(Imonitor, classname, "Description")`. They must also
   be added to `add_executable(prmon ...)` in `package/CMakeLists.txt`.
-- Monitors are named for **what** they measure, not **how** (e.g. `powermon`,
-  not `curlmon`).
+- Monitors are named for **what** they measure, not **how** they measure it
+  (e.g. `powermon`, not `curlmon`).
 - Use RAII: the monitor must be fully usable (or report `is_valid() == false`)
   after construction. **`is_valid()` is only checked once, at registration**
   in `prmon.cpp`; setting `valid = false` later has no effect on whether the
@@ -139,11 +139,14 @@ variables and responses from local services (an unprivileged port on
 - When parsing text, cast to `unsigned char` before `<cctype>` functions,
   avoid locale-dependent number parsing where it matters, and match exact
   tokens rather than substrings.
-- If using libcurl: restrict protocols (`CURLOPT_PROTOCOLS_STR`), set
-  connect and total timeouts, cap response size, disable proxies for local
-  endpoints, check every `curl_easy_setopt` and the transfer result, treat
-  HTTP errors as failures, and always `curl_easy_cleanup` exactly once (an
-  RAII wrapper avoids leaks and double frees).
+- When using any external library or resource be extremely careful to avoid
+  and blocking calls, calls that would result in resource exhaustion (e.g., 
+  arbitrarily long reads), or leak any resources (sockets, memory, etc.)
+  - e.g., if using libcurl: restrict protocols (`CURLOPT_PROTOCOLS_STR`), set
+    connect and total timeouts, cap response size, disable proxies for local
+    endpoints, check every `curl_easy_setopt` and the transfer result, treat
+    HTTP errors as failures, and always `curl_easy_cleanup` exactly once (an
+    RAII wrapper avoids leaks and double frees).
 - Don't log credentials (e.g. user info inside URLs).
 - Keep new runtime dependencies to a minimum; prefer loading optional ones at
   runtime (as NVML is, via `dlopen`) so prmon still builds and runs without
