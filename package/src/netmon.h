@@ -71,7 +71,7 @@ class netmon final : public Imonitor, public MessageBase {
 
  public:
   netmon(std::vector<std::string> netdevs);
-  netmon() : netmon(std::vector<std::string>{}){};
+  netmon() : netmon(std::vector<std::string>{}) {};
 
   void update_stats(const std::vector<pid_t>& pids,
                     const std::string read_path = "");
