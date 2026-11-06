@@ -1,28 +1,47 @@
 # Name of the workflow
 name: Clang-Format
 
-# Controls when the action will run. Triggers the workflow on push
-# except for the main and stable branches
+# Check C++ formatting on pushes and pull requests to the main and
+# stable branches (same triggers as the CI and flake8 workflows)
 on:
   push:
-    branches-ignore: [ main, stable ]
+    branches: [ main, stable ]
+  pull_request:
+    branches: [ main, stable ]
 
-# Defines the main job where we checkout our code, run clang-format
-# and commit changes
 jobs:
   clang-format:
     runs-on: ubuntu-latest
+    env:
+      # Pin the clang-format version so results are reproducible; different
+      # releases format some constructs differently. Update deliberately,
+      # reformatting the tree in the same change if needed.
+      CLANG_FORMAT_VERSION: "21.1.8"
     steps:
-    # Checks-out our repository under $GITHUB_WORKSPACE, so our job can access it
+    # Checks-out our repository under $GITHUB_WORKSPACE (submodules are
+    # third-party code and are not checked)
     - uses: actions/checkout@v7
 
-    # Applies clang-format to all C/C++ files w/ the specified style
-    - name: Apply clang-format
-      id: formatting
-      uses: HSF/clang-format-action@v0.4
-      with:
-        style: 'Google'
+    # Install the pinned clang-format from PyPI (pipx is preinstalled on
+    # GitHub runners and avoids the externally-managed system Python)
+    - name: Install clang-format
+      run: |
+        pipx install "clang-format==${CLANG_FORMAT_VERSION}"
+        clang-format --version
 
-    # Gets and prints the output message
-    - name: Get the output message
-      run: echo "${{ steps.formatting.outputs.message }}"
+    # Apply clang-format (Google style) to all tracked C/C++ files, except
+    # the bundled third-party popl.hpp, then fail if anything changed and
+    # print the diff so the problem is visible in the log
+    - name: Check formatting
+      run: |
+        git ls-files -z '*.cpp' '*.h' '*.hpp' ':!:package/include/popl.hpp' \
+          | xargs -0 clang-format --style=Google -i
+        if ! git diff --exit-code -- '*.cpp' '*.h' '*.hpp'; then
+          echo "::error::C++ sources are not clang-formatted (Google style," \
+               "clang-format ${CLANG_FORMAT_VERSION}). Run" \
+               "'cmake --build build --target clang-format' or" \
+               "'uvx clang-format@${CLANG_FORMAT_VERSION} --style=Google -i <files>'" \
+               "and commit the result."
+          exit 1
+        fi
+        echo "All C++ sources are correctly formatted"

@@ -61,6 +61,11 @@ repository.
   - i.e. `clang-format --style=Google ...`
   - There is a `clang-format` CMake target that will do this automatically so we
     recommend that is run before making the pull request
+  - CI checks the formatting with a pinned `clang-format` version (see
+    `CLANG_FORMAT_VERSION` in `.github/workflows/clang-format.yml`); as
+    different versions can format slightly differently, use that version
+    if CI disagrees with your local `clang-format` (e.g.,
+    `uvx clang-format@<version> --style=Google -i <files>`)
 - Python code should be formatted with `black` (following the Scikit-HEP
   recommendation) and should also be clean with the `flake8` linter
   - See the `.flake8` file for the configuration to be compatible with
