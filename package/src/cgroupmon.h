@@ -42,7 +42,7 @@ class cgroupmon final : public Imonitor, public MessageBase {
   // Cumulative counters: these are monotonic and are reported relative
   // to their value at the first reading (i.e., since prmon started)
   const std::set<std::string> cumulative_params = {
-      "cgroup_cpu_user",    "cgroup_cpu_system",  "cgroup_cpu_total",
+      "cgroup_cpu_user",      "cgroup_cpu_system",  "cgroup_cpu_total",
       "cgroup_cpu_throttled", "cgroup_cpu_periods", "cgroup_io_read",
       "cgroup_io_write"};
 

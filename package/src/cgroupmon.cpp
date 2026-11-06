@@ -17,10 +17,7 @@
 
 // Constructor - detect cgroup version and setup monitoring
 cgroupmon::cgroupmon()
-    : valid{false},
-      baseline_taken{false},
-      cgroup_path{},
-      cgroup_mount_point{} {
+    : valid{false}, baseline_taken{false}, cgroup_path{}, cgroup_mount_point{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
 
