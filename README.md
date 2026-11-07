@@ -190,6 +190,28 @@ other_code_that_invokes_prmon
 
 Disables the `nvidiamon` monitor.
 
+### Cgroup Monitoring (Container Support)
+
+`prmon` automatically detects and monitors cgroup v2 statistics when
+running in containerized environments (Docker, Kubernetes, Podman). The
+`cgroupmon` monitor provides additional metrics prefixed with `cgroup_` that
+give container-aware resource accounting:
+
+* **CPU**: Container CPU usage, throttling statistics
+* **Memory**: Container memory usage, limits, and detailed breakdowns (anon, file, kernel)
+* **I/O**: Container-level I/O read/write statistics
+* **Limits**: Reports the container memory limit (`cgroup_mem_max`, which is
+  0 when there is no limit)
+
+The statistics are for the whole cgroup of the monitored process, which can
+include other processes (e.g., `prmon` itself). The cumulative CPU and I/O
+counters are reported relative to their values when `prmon` started.
+
+Cgroup monitoring is enabled automatically when cgroups are detected and can
+be disabled with `--disable cgroupmon`. This feature is particularly useful
+for accurate monitoring in Kubernetes and Docker environments where traditional
+`/proc`-based monitoring may not respect container boundaries.
+
 ## Outputs
 
 In the `filename` output file, plain text with statistics written every
@@ -209,7 +231,9 @@ the sampling time. Monitoring of network I/O is **not reliable** unless the
 monitored process is isolated from other processes performing network I/O
 (it gives an upper bound on the network activity, but the monitoring is
 per network device as Linux does not give per-process network data by
-default).
+default). Note that the `cgroupmon` I/O values (`cgroup_io_read` and
+`cgroup_io_write`) are block device I/O for the whole cgroup, so they do not
+help with network I/O.
 
 ### Visualisation
 

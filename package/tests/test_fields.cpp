@@ -158,9 +158,9 @@ TEST(JsonTest, JsonFieldsTest) {
           break;
         }
       }
-      if (param.get_name().size() < 4 ||
-          param.get_name().substr((int)param.get_name().size() - 4, 4) !=
-              "time") {
+      // Parameters with an empty average unit have no meaningful
+      // average, so they are not expected in the JSON averages
+      if (!param.get_avg_unit().empty()) {
         ASSERT_EQ(avg_found, true)
             << param.get_name() << " from " << monitor_param.first
             << " not found in json averages\n";
