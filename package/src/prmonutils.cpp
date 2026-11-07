@@ -42,7 +42,7 @@ std::vector<pid_t> pstree_pids(const pid_t mother_pid) {
   char smaps_buffer[64];
   snprintf(smaps_buffer, 64, "pstree -l -A -p %ld | tr \\- \\\\n",
            (long)mother_pid);
-  FILE *pipe = popen(smaps_buffer, "r");
+  FILE* pipe = popen(smaps_buffer, "r");
   if (pipe == 0) return cpids;
 
   char buffer[256];
@@ -140,7 +140,7 @@ bool valid_monitor_disable(const std::string disable_name) {
     return false;
   }
   auto monitors = prmon::get_all_registered();
-  for (const auto &monitor_name : monitors) {
+  for (const auto& monitor_name : monitors) {
     if (monitor_name == disable_name) {
       return true;
     }
@@ -150,8 +150,8 @@ bool valid_monitor_disable(const std::string disable_name) {
 }
 
 // Look for any monitors we should disable from the environment
-void disable_monitors_from_env(std::vector<std::string> &disabled_monitors) {
-  char *env_string = std::getenv("PRMON_DISABLE_MONITOR");
+void disable_monitors_from_env(std::vector<std::string>& disabled_monitors) {
+  char* env_string = std::getenv("PRMON_DISABLE_MONITOR");
   if (!env_string) return;
 
   // We split this string on commas
@@ -169,8 +169,8 @@ void disable_monitors_from_env(std::vector<std::string> &disabled_monitors) {
 
 // Snip a substring from the environment variable c-string
 // and test if it's a valid monitor name
-void snip_string_and_test(char *env_string, unsigned start, unsigned pos,
-                          std::vector<std::string> &disabled_monitors) {
+void snip_string_and_test(char* env_string, unsigned start, unsigned pos,
+                          std::vector<std::string>& disabled_monitors) {
   std::string monitor_name(env_string + start, pos - start);
   if (valid_monitor_disable(monitor_name))
     disabled_monitors.push_back(monitor_name);

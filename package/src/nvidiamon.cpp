@@ -598,7 +598,9 @@ void const nvidiamon::get_hardware_info_smi(nlohmann::json& hw_json) {
     sm_freq = std::strtoul(tok.c_str(), &end, 10);
     // Belt and braces error detection...
     if ((end == tok.c_str()) || (*end != ',') || errno == ERANGE) {
-      warning("Odd value from GPU hardware query for frequency (will set to 0): " + tok);
+      warning(
+          "Odd value from GPU hardware query for frequency (will set to 0): " +
+          tok);
       sm_freq = 0;
     }
     instr.get();  // Swallow the comma

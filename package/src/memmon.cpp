@@ -123,9 +123,9 @@ void const memmon::get_hardware_info(nlohmann::json& hw_json) {
           hw_json["HW"]["mem"][metric] =
               std::stol(std::regex_replace(val, std::regex("^\\s+|\\s+$"), ""));
         }  // end of metric check
-      }    // end of populating metrics
-    }      // end of seperator check
-  }        // end of reading memInfoFile
+      }  // end of populating metrics
+    }  // end of seperator check
+  }  // end of reading memInfoFile
 
   // Close the file
   memInfoFile.close();
