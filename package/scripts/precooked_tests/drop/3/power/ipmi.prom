@@ -1,0 +1,13 @@
+# HELP node_hwmon_power_watt Hardware monitor for power consumption
+# TYPE node_hwmon_power_watt gauge
+node_hwmon_power_watt{chip="power_supply_bat1",sensor="power1"} 200
+# HELP node_rapl_package_joules_total Current RAPL package value in joules
+# TYPE node_rapl_package_joules_total counter
+node_rapl_package_joules_total{index="0",path="/sys/class/powercap/intel-rapl:0"} 200
+node_rapl_package_joules_total{index="1",path="/sys/class/powercap/intel-rapl:1"} 200
+# HELP ipmi_dcmi_power_consumption_watts Current power consumption in watts
+# TYPE ipmi_dcmi_power_consumption_watts gauge
+ipmi_dcmi_power_consumption_watts 200
+# HELP ipmi_power_watts Power reading of the sensor in watts
+# TYPE ipmi_power_watts gauge
+ipmi_power_watts{id="1",name="Pwr Consumption"} 200
