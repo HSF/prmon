@@ -30,7 +30,8 @@ static size_t curl_write_cb(char *ptr, size_t size, size_t nmemb,
   const size_t new_size = size * nmemb;
 
   // Return 0 if the new size would exceed the maximum allowed response size
-  if (buf->size() + new_size > static_cast<size_t>(kMaxResponseSize)) return 0;
+  if (buf->size() + new_size > static_cast<size_t>(kMaxResponseSize))
+    return 0;
 
   buf->append(ptr, new_size);
   return new_size;
@@ -42,7 +43,7 @@ powermon::powermon() : power_stats{} {
   log_init(MONITOR_NAME);
 #undef MONITOR_NAME
 
-  valid = false;  // Default value, only set to true if everything works
+  valid = false; // Default value, only set to true if everything works
 
   // Global init for curl, explicitly
   if (curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
@@ -62,7 +63,8 @@ powermon::powermon() : power_stats{} {
   }
   // Function to check urls/directories and store them
   auto add_entry = [&](const std::string &entry) {
-    if (entry.empty()) return;
+    if (entry.empty())
+      return;
     if (entry.find("://") != std::string::npos)
       metrics_urls.push_back(entry);
     else
@@ -79,7 +81,8 @@ powermon::powermon() : power_stats{} {
     while (true) {
       if (env_string[pos] == ',' || env_string[pos] == '\0') {
         add_entry(std::string(env_string + start, pos - start));
-        if (env_string[pos] == '\0') break;
+        if (env_string[pos] == '\0')
+          break;
         start = ++pos;
       } else {
         ++pos;
@@ -102,19 +105,18 @@ powermon::powermon() : power_stats{} {
   // Check at least one endpoint answers
   const std::vector<std::string> bodies = gather_bodies("");
   if (bodies.empty()) {
-    info(
-        "Cannot read power metrics from any exporter or directory."
-        "powermon disabled.");
+    info("Cannot read power metrics from any exporter or directory."
+         "powermon disabled.");
     return;
   }
 
   // Check at least a metric is available
   std::vector<std::string> dcmi, rapl, ipmi, hwmon;
-  for (const auto &body : bodies) collect_lines(body, dcmi, rapl, ipmi, hwmon);
+  for (const auto &body : bodies)
+    collect_lines(body, dcmi, rapl, ipmi, hwmon);
   if (dcmi.empty() && rapl.empty() && ipmi.empty() && hwmon.empty()) {
-    info(
-        "Exporter reachable but none of the dcmi/rapl/ipmi/hwmon metrics "
-        "were found. powermon disabled.");
+    info("Exporter reachable but none of the dcmi/rapl/ipmi/hwmon metrics "
+         "were found. powermon disabled.");
     return;
   }
 
@@ -151,7 +153,7 @@ std::string powermon::fetch_metrics(const std::string &url) {
       !set_ok(CURLOPT_WRITEFUNCTION, curl_write_cb) ||
       !set_ok(CURLOPT_WRITEDATA, &response) ||
       !set_ok(CURLOPT_MAXFILESIZE_LARGE, kMaxResponseSize) ||
-#if LIBCURL_VERSION_NUM >= 0x075500  // 7.85.0
+#if LIBCURL_VERSION_NUM >= 0x075500 // 7.85.0
       !set_ok(CURLOPT_PROTOCOLS_STR, "http") ||
 #else
       !set_ok(CURLOPT_PROTOCOLS, static_cast<long>(CURLPROTO_HTTP)) ||
@@ -182,7 +184,8 @@ std::string powermon::fetch_metrics(const std::string &url) {
 // Read Prometheus text from a text file.
 std::string powermon::read_metrics_file(const std::string &path) {
   std::ifstream f{path};
-  if (!f) return {};  // Missing file
+  if (!f)
+    return {}; // Missing file
 
   f.seekg(0, std::ios::end);
   const std::streamoff size = f.tellg();
@@ -209,7 +212,8 @@ std::vector<std::string> powermon::gather_bodies(const std::string &read_path) {
   if (source != Source::Files) {
     for (const auto &url : metrics_urls) {
       const std::string body = fetch_metrics(url);
-      if (!body.empty()) bodies.push_back(body);
+      if (!body.empty())
+        bodies.push_back(body);
     }
     if (!bodies.empty()) {
       if (source == Source::Undecided) {
@@ -219,7 +223,8 @@ std::vector<std::string> powermon::gather_bodies(const std::string &read_path) {
       }
     }
     // Locked to HTTP and failed.
-    if (source == Source::Http) return bodies;
+    if (source == Source::Http)
+      return bodies;
     debug("powermon: reading from URLs failed");
   }
 
@@ -255,12 +260,13 @@ std::vector<std::string> powermon::gather_bodies(const std::string &read_path) {
 double powermon::parse_metric_line(const std::string &line,
                                    const std::string &metric_name) const {
   if (line.empty() || line[0] == '#')
-    return -1.0;  // Skip header or empty lines
+    return -1.0; // Skip header or empty lines
   if (line.rfind(metric_name, 0) != 0)
-    return -1.0;  // Skip lines without metric_name
+    return -1.0; // Skip lines without metric_name
 
   char next = line[metric_name.size()];
-  if (next != '{' && next != ' ' && next != '\t') return -1.0;
+  if (next != '{' && next != ' ' && next != '\t')
+    return -1.0;
 
   size_t value_start = line.find('}');
   if (value_start == std::string::npos)
@@ -275,8 +281,10 @@ double powermon::parse_metric_line(const std::string &line,
   try {
     const double val = std::stod(line.substr(value_start));
     // Return -1 if val is NaN, Inf, negative or over the maximum
-    if (std::isnan(val) || std::isinf(val)) return -1.0;
-    if (val < 0.0) return -1.0;
+    if (std::isnan(val) || std::isinf(val))
+      return -1.0;
+    if (val < 0.0)
+      return -1.0;
     if (val >=
         static_cast<double>(std::numeric_limits<prmon::mon_value>::max()))
       return -1.0;
@@ -296,7 +304,7 @@ void powermon::collect_lines(const std::string &body,
   std::string line{};
   while (std::getline(stream, line)) {
     if (line.empty() || line[0] == '#')
-      continue;  // Skip comments and empty lines
+      continue; // Skip comments and empty lines
     std::string lower = line;
     std::transform(
         lower.begin(), lower.end(), lower.begin(),
@@ -336,7 +344,8 @@ void powermon::update_stats(const std::vector<pid_t> & /*pids*/,
   try {
     for (const auto &line : dcmi_lines) {
       double val = parse_metric_line(line, "ipmi_dcmi_power_consumption_watts");
-      if (val >= 0.0) dcmi += val;
+      if (val >= 0.0)
+        dcmi += val;
     }
   } catch (...) {
     dcmi = 0.0;
@@ -350,12 +359,15 @@ void powermon::update_stats(const std::vector<pid_t> & /*pids*/,
                                     "node_rapl_package_joules_total");
       double v2 = parse_metric_line(rapl_lines[rapl_lines.size() - 1],
                                     "node_rapl_package_joules_total");
-      if (v1 >= 0.0) rapl_1 = v1;
-      if (v2 >= 0.0) rapl_2 = v2;
+      if (v1 >= 0.0)
+        rapl_1 = v1;
+      if (v2 >= 0.0)
+        rapl_2 = v2;
     } else if (rapl_lines.size() == 1) {
       double v =
           parse_metric_line(rapl_lines[0], "node_rapl_package_joules_total");
-      if (v >= 0.0) rapl_1 = v;
+      if (v >= 0.0)
+        rapl_1 = v;
     }
   } catch (...) {
     rapl_1 = rapl_2 = 0.0;
@@ -368,7 +380,8 @@ void powermon::update_stats(const std::vector<pid_t> & /*pids*/,
       double val = parse_metric_line(ipmi_lines.back(), "ipmi_power_watts");
       if (val < 0.0)
         val = parse_metric_line(ipmi_lines.back(), "ipmi_power_current_watts");
-      if (val >= 0.0) ipmi = val;
+      if (val >= 0.0)
+        ipmi = val;
     }
   } catch (...) {
     ipmi = 0.0;
@@ -382,7 +395,8 @@ void powermon::update_stats(const std::vector<pid_t> & /*pids*/,
                                      "node_hwmon_power_average_watt");
       if (val < 0.0)
         val = parse_metric_line(hwmon_lines.back(), "node_hwmon_power_watt");
-      if (val >= 0.0) hwmon = val;
+      if (val >= 0.0)
+        hwmon = val;
     }
   } catch (...) {
     hwmon = 0.0;
@@ -423,8 +437,8 @@ prmon::monitored_value_map const powermon::get_json_total_stats() {
   return powermon::get_text_stats();
 }
 
-prmon::monitored_average_map const powermon::get_json_average_stats(
-    unsigned long long /*elapsed_clock_ticks*/) {
+prmon::monitored_average_map const
+powermon::get_json_average_stats(unsigned long long /*elapsed_clock_ticks*/) {
   static const prmon::monitored_average_map empty{};
   return empty;
 }

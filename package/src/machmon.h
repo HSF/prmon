@@ -17,7 +17,7 @@
 #include "registry.h"
 
 class machmon final : public Imonitor, public MessageBase {
- private:
+private:
   // Setup the parameters to monitor here
   const prmon::parameter_list params = {
       {"utime_total", "s", ""},
@@ -31,13 +31,13 @@ class machmon final : public Imonitor, public MessageBase {
   long initial_utime{0L};
   long initial_stime{0L};
   long initial_ntime{0L};
-  long clk_tck{100};  // USER_HZ, read once at init
+  long clk_tck{100}; // USER_HZ, read once at init
   bool baseline_from_read_path{
-      false};  // If true, use read_path to get initial baseline
+      false}; // If true, use read_path to get initial baseline
   bool initialised{false};
-  bool valid{false};  // To disable monitor if /proc/stat is not readable
+  bool valid{false}; // To disable monitor if /proc/stat is not readable
 
- public:
+public:
   machmon();
 
   void update_stats(const std::vector<pid_t> &pids,
@@ -48,8 +48,8 @@ class machmon final : public Imonitor, public MessageBase {
   // These are the stat getter methods which retrieve current statistics
   prmon::monitored_value_map const get_text_stats();
   prmon::monitored_value_map const get_json_total_stats();
-  prmon::monitored_average_map const get_json_average_stats(
-      unsigned long long elapsed_clock_ticks);
+  prmon::monitored_average_map const
+  get_json_average_stats(unsigned long long elapsed_clock_ticks);
   prmon::parameter_list const get_parameter_list();
 
   // Hardware information getter to run once
@@ -59,4 +59,4 @@ class machmon final : public Imonitor, public MessageBase {
 };
 REGISTER_MONITOR(Imonitor, machmon, "Monitor full machine cpu time")
 
-#endif  // PRMON_MACHMON_H
+#endif // PRMON_MACHMON_H

@@ -18,7 +18,7 @@
 #include "registry.h"
 
 class powermon final : public Imonitor, public MessageBase {
- private:
+private:
   const prmon::parameter_list params = {{"dcmi", "W", ""},
                                         {"ipmi", "W", ""},
                                         {"hwmon", "W", ""},
@@ -48,7 +48,7 @@ class powermon final : public Imonitor, public MessageBase {
                      std::vector<std::string> &hwmon) const;
 
   bool valid{
-      false};  // To disable monitor if all ports fail or no metric is read
+      false}; // To disable monitor if all ports fail or no metric is read
 
   prmon::monitored_list power_stats;
 
@@ -56,7 +56,7 @@ class powermon final : public Imonitor, public MessageBase {
   double parse_metric_line(const std::string &line,
                            const std::string &metric_name) const;
 
- public:
+public:
   powermon();
   ~powermon();
 
@@ -66,8 +66,8 @@ class powermon final : public Imonitor, public MessageBase {
   // These are the stat getter methods which retrieve current statistics
   prmon::monitored_value_map const get_text_stats();
   prmon::monitored_value_map const get_json_total_stats();
-  prmon::monitored_average_map const get_json_average_stats(
-      unsigned long long elapsed_clock_ticks);
+  prmon::monitored_average_map const
+  get_json_average_stats(unsigned long long elapsed_clock_ticks);
   prmon::parameter_list const get_parameter_list();
 
   // Additional function to read from a directory instead of curl
@@ -81,4 +81,4 @@ class powermon final : public Imonitor, public MessageBase {
 };
 REGISTER_MONITOR(Imonitor, powermon, "Monitor power consumption - prometheus")
 
-#endif  // PRMON_POWERMON_H
+#endif // PRMON_POWERMON_H
