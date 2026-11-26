@@ -18,7 +18,7 @@
 #include "registry.h"
 
 class powermon final : public Imonitor, public MessageBase {
-private:
+ private:
   const prmon::parameter_list params = {{"dcmi", "W", ""},
                                         {"ipmi", "W", ""},
                                         {"hwmon", "W", ""},
@@ -42,43 +42,43 @@ private:
   //   void source_check();
 
   // Extract lines from the Prometheus text output for each metric type
-  void collect_lines(const std::string &body, std::vector<std::string> &dcmi,
-                     std::vector<std::string> &rapl,
-                     std::vector<std::string> &ipmi,
-                     std::vector<std::string> &hwmon) const;
+  void collect_lines(const std::string& body, std::vector<std::string>& dcmi,
+                     std::vector<std::string>& rapl,
+                     std::vector<std::string>& ipmi,
+                     std::vector<std::string>& hwmon) const;
 
   bool valid{
-      false}; // To disable monitor if all ports fail or no metric is read
+      false};  // To disable monitor if all ports fail or no metric is read
 
   prmon::monitored_list power_stats;
 
-  std::string fetch_metrics(const std::string &url);
-  double parse_metric_line(const std::string &line,
-                           const std::string &metric_name) const;
+  std::string fetch_metrics(const std::string& url);
+  double parse_metric_line(const std::string& line,
+                           const std::string& metric_name) const;
 
-public:
+ public:
   powermon();
   ~powermon();
 
-  void update_stats(const std::vector<pid_t> &pids,
+  void update_stats(const std::vector<pid_t>& pids,
                     const std::string read_path = "");
 
   // These are the stat getter methods which retrieve current statistics
   prmon::monitored_value_map const get_text_stats();
   prmon::monitored_value_map const get_json_total_stats();
-  prmon::monitored_average_map const
-  get_json_average_stats(unsigned long long elapsed_clock_ticks);
+  prmon::monitored_average_map const get_json_average_stats(
+      unsigned long long elapsed_clock_ticks);
   prmon::parameter_list const get_parameter_list();
 
   // Additional function to read from a directory instead of curl
-  std::string read_metrics_file(const std::string &read_path = "");
-  std::vector<std::string> gather_bodies(const std::string &read_path);
+  std::string read_metrics_file(const std::string& read_path = "");
+  std::vector<std::string> gather_bodies(const std::string& read_path);
 
   // This is the hardware information getter that runs once
-  void const get_hardware_info(nlohmann::json &hw_json);
-  void const get_unit_info(nlohmann::json &unit_json);
+  void const get_hardware_info(nlohmann::json& hw_json);
+  void const get_unit_info(nlohmann::json& unit_json);
   bool const is_valid() { return valid; }
 };
 REGISTER_MONITOR(Imonitor, powermon, "Monitor power consumption - prometheus")
 
-#endif // PRMON_POWERMON_H
+#endif  // PRMON_POWERMON_H
