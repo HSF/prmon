@@ -43,7 +43,6 @@ def setup_configurable_test(
 
             prmon_rc = subprocess.Popen(prmon_cmd, shell=False).wait()
 
-            
             self.assertEqual(prmon_rc, 0, "Non-zero return code from prmon")
 
             with open("prmon.json") as infile:
