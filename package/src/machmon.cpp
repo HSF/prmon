@@ -27,8 +27,7 @@ machmon::machmon() : mach_stats{} {
 
   // Read USER_HZ once
   clk_tck = sysconf(_SC_CLK_TCK);
-  if (clk_tck <= 0)
-    clk_tck = 100; // Default to 100 if sysconf fails
+  if (clk_tck <= 0) clk_tck = 100;  // Default to 100 if sysconf fails
 
   initialised =
       (read_proc_stat("", initial_utime, initial_stime, initial_ntime));
@@ -65,8 +64,7 @@ void machmon::update_stats(const std::vector<pid_t> & /*pids*/,
     initial_stime = stime;
     initial_ntime = ntime;
     initialised = true;
-    if (!read_path.empty())
-      baseline_from_read_path = true;
+    if (!read_path.empty()) baseline_from_read_path = true;
   }
 
   mach_stats.at("utime_total")
@@ -92,8 +90,8 @@ prmon::monitored_value_map const machmon::get_json_total_stats() {
 }
 
 // No averages for global CPU time either
-prmon::monitored_average_map const
-machmon::get_json_average_stats(unsigned long long /*elapsed_clock_ticks*/) {
+prmon::monitored_average_map const machmon::get_json_average_stats(
+    unsigned long long /*elapsed_clock_ticks*/) {
   static const prmon::monitored_average_map empty_average_stats{};
   return empty_average_stats;
 }
