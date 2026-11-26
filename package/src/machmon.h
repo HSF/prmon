@@ -31,6 +31,8 @@ class machmon final : public Imonitor, public MessageBase {
   long initial_utime{0L};
   long initial_stime{0L};
   long initial_ntime{0L};
+  long clk_tck{100};       // USER_HZ, read once at init
+  bool baseline_from_read_path{false}; // If true, use read_path to get initial baseline
   bool initialised{false};
   bool valid{false}; // To disable monitor if /proc/stat is not readable
 
@@ -39,6 +41,8 @@ class machmon final : public Imonitor, public MessageBase {
 
   void update_stats(const std::vector<pid_t>& pids,
                     const std::string read_path = "");
+  bool read_proc_stat(const std::string& read_path,
+                    long& user, long& system, long& nice);
 
   // These are the stat getter methods which retrieve current statistics
   prmon::monitored_value_map const get_text_stats();

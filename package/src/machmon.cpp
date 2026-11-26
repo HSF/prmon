@@ -25,37 +25,37 @@ machmon::machmon() : mach_stats{} {
     mach_stats.emplace(param.get_name(), prmon::monitored_value(param, true));
   }
 
+  // Read USER_HZ once
+  clk_tck = sysconf(_SC_CLK_TCK);
+  if (clk_tck <= 0) clk_tck = 100; // Default to 100 if sysconf fails
+
+  initialised = (read_proc_stat("", initial_utime, initial_stime, initial_ntime));
   valid = true;
 }
 
 // Read the first line of /proc/stat and return {utime, stime, ntime}
-
-static std::tuple<long, long, long> read_proc_stat(const std::string read_path = "") {
+bool machmon::read_proc_stat(const std::string& read_path,
+                             long& user, long& system, long& nice) {
   const std::string stat_path = read_path + "/proc/stat";
   std::ifstream proc_stat{stat_path};
   if (!proc_stat) {
-    throw std::runtime_error("Cannot open " + stat_path);
+    debug("Cannot open " + stat_path + ", skipping this iteration");
+    return false;
   }
-
   std::string cpu_label{};
-  long user{}, nice{}, system{};
-
-  // First line: "cpu  user nice system idle ..."
   if (!(proc_stat >> cpu_label >> user >> nice >> system)) {
-    throw std::runtime_error("Unexpected format in " + stat_path);
+    debug("Unexpected format in " + stat_path + ", skipping this iteration");
+    return false;
   }
-
-  return std::make_tuple(user, system, nice);
+  return true;
 }
 
 void machmon::update_stats(const std::vector<pid_t>& /*pids*/,
                               const std::string read_path) {
-    if (!valid) {
-    return;
+    long utime{}, stime{}, ntime{};
+    if (!read_proc_stat(read_path, utime, stime, ntime)) {
+      return;
     }
-
-    long utime, stime, ntime;
-    std::tie(utime, stime, ntime) = read_proc_stat(read_path);
 
     // Subtract initial snapshot on first read
     if (!initialised) {
@@ -63,12 +63,12 @@ void machmon::update_stats(const std::vector<pid_t>& /*pids*/,
       initial_stime = stime;
       initial_ntime = ntime;
       initialised = true;
+      if (!read_path.empty()) baseline_from_read_path = true;
     }
 
-    const long clk = sysconf(_SC_CLK_TCK);
-    mach_stats.at("utime_total").set_value(std::max(0L, utime - initial_utime) / clk);
-    mach_stats.at("stime_total").set_value(std::max(0L, stime - initial_stime) / clk);
-    mach_stats.at("ntime_total").set_value(std::max(0L, ntime - initial_ntime) / clk);
+    mach_stats.at("utime_total").set_value(std::max(0L, utime - initial_utime) / clk_tck);
+    mach_stats.at("stime_total").set_value(std::max(0L, stime - initial_stime) / clk_tck);
+    mach_stats.at("ntime_total").set_value(std::max(0L, ntime - initial_ntime) / clk_tck);
 }
 
 // Return the summed counters

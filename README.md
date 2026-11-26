@@ -175,6 +175,9 @@ at runtime via `dlopen`, so `prmon` can be compiled on machines without
 NVIDIA drivers and will detect GPU support when run on a machine that
 has them.
 
+### Power Monitoring
+When an observability setup is present in the machine, either via a [Prometheus exporter](https://github.com/prometheus-community/ipmi_exporter) or a custom setup, `prmon`will try to read available power consumption metrics. A more detailed breakthrough at [POWERMON](./doc/POWERMON.md).
+
 ### Environment Variables
 
 The `PRMON_DISABLE_MONITOR` environment variable can be used to specify a comma
@@ -189,6 +192,10 @@ other_code_that_invokes_prmon
 ```
 
 Disables the `nvidiamon` monitor.
+Also, the `PROMETHEUS_LOCAL_URL` variable can be used to specify a comma separated list of urls or file locations where the power consumption data is being stored or used. e.g.
+```sh
+export PROMETHEUS_LOCAL_URL=http://localhost:9100/metrics
+```
 
 ## Outputs
 

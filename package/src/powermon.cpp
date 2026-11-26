@@ -60,7 +60,6 @@ powermon::powermon() : power_stats{} {
       power_stats.emplace(param.get_name(), prmon::monitored_value(param, false));
     }
   }
-  
   // Function to check urls/directories and store them
   auto add_entry = [&](const std::string& entry){
     if (entry.empty()) return;
@@ -129,7 +128,7 @@ std::string powermon::fetch_metrics(const std::string& url) {
   std::string response{};
   CURL* curl = curl_easy_init();
   if (!curl) {
-    error("Failed to initialise libcurl, curl_easy_init() returned NULL");
+    debug("Failed to initialise libcurl, curl_easy_init() returned NULL");
     return {};
   }
 
@@ -138,8 +137,7 @@ std::string powermon::fetch_metrics(const std::string& url) {
   auto set_ok = [&](CURLoption option, auto value) {
     rc = curl_easy_setopt(curl, option, value);
     if (rc != CURLE_OK) {
-      error("curl_easy_setopt failed: " + std::string(curl_easy_strerror(rc)));
-      curl_easy_cleanup(curl);
+      debug("curl_easy_setopt failed: " + std::string(curl_easy_strerror(rc)));
       valid = false;
       return false;
     };
@@ -159,6 +157,7 @@ std::string powermon::fetch_metrics(const std::string& url) {
       !set_ok(CURLOPT_CONNECTTIMEOUT, 1L) ||
       !set_ok(CURLOPT_TIMEOUT, 2L) ||
       !set_ok(CURLOPT_PROXY, "") ||
+      !set_ok(CURLOPT_FAILONERROR, 1L) ||
       !set_ok(CURLOPT_NOSIGNAL, 1L)) {
     curl_easy_cleanup(curl);
     return {};
@@ -166,9 +165,14 @@ std::string powermon::fetch_metrics(const std::string& url) {
 
   // Execute curl, check filesize
   CURLcode curl_response = curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
   if (curl_response == CURLE_FILESIZE_EXCEEDED || curl_response == CURLE_WRITE_ERROR) {
     error("Response from " + url + "exceeds the " + 
           std::to_string(kMaxResponseSize) + "byte limit, discarding it");
+    return {};
+  } else if (curl_response != CURLE_OK) {
+    error("Failed to fetch metrics from " + url + ": " +
+          std::string(curl_easy_strerror(curl_response)));
     return {};
   }
   return response;
@@ -195,8 +199,7 @@ std::string powermon::read_metrics_file(const std::string& path){
 
 // Collect Prometheus-style text from, in order of priority:
 // 1. exporter URLs (PROMETHEUS_LOCAL_URL or default)
-// 2. directories from PROMETHEUS_LOCAL_URL
-// 3. default directory <read_path>/power
+// 2. directories (PROMETHEUS_LOCAL_URL or default)
 // First source that works is used.
 std::vector<std::string> powermon::gather_bodies(const std::string& read_path){
   std::vector<std::string> bodies;
@@ -217,25 +220,31 @@ std::vector<std::string> powermon::gather_bodies(const std::string& read_path){
     // Locked to HTTP and failed.
     if (source == Source::Http) return bodies;
     debug("powermon: reading from URLs failed");
-    }
-
-  // 2. Directories (if URLs failed or directory chosen)
-  std::vector<std::string> dirs = metrics_dirs;
-  for (const auto& dir : dirs) {
-    debug("powermon: testing directory " + dir);
-    const std::string body = read_metrics_file(dir);
-    if (!body.empty()) bodies.push_back(body);
-    if (!bodies.empty()) {
-      if (source == Source::Undecided){
-        info("powermon: reading metrics from directory " + dir);
-        source = Source::Files;
-        break;
-      }
-    } else {
-      debug("powermon: directory " + dir + " did not contain any metric or could not be read.");
-    }
-    
   }
+
+  // 2. Directories (if URLs failed or directory chosen). First, check if read_path is provided, otherwise use metrics_dirs.
+  std::vector<std::string> files;
+
+  if (!read_path.empty()) {
+    files.push_back(read_path + "/power/9100.txt");
+    files.push_back(read_path + "/power/9290.txt");
+  } else {
+    files =  metrics_dirs;
+  }
+
+  for (const auto& file : files) {
+    const std::string body = read_metrics_file(file);
+    if (!body.empty()) {
+      bodies.push_back(body);
+    } else {
+      debug("powermon: " + file + " is missing, empty or could not be read.");
+    }
+  }
+  if (!bodies.empty() && source != Source::Undecided) {
+    info("powermon: reading metrics from files");
+    source = Source::Files;
+  }
+
   return bodies;
 }
 
@@ -279,6 +288,7 @@ void powermon::collect_lines(const std::string& body,
   std::istringstream stream{body};
   std::string line{};
   while (std::getline(stream, line)) {
+    if (line.empty() || line[0] == '#') continue; // Skip comments and empty lines
     std::string lower = line;
     std::transform(lower.begin(), lower.end(), lower.begin(),
                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
@@ -352,6 +362,7 @@ void powermon::update_stats(const std::vector<pid_t>& /*pids*/,
   try {
     if (!hwmon_lines.empty()) {
       double val = parse_metric_line(hwmon_lines.back(), "node_hwmon_power_average_watt");
+      if (val < 0.0) val = parse_metric_line(hwmon_lines.back(), "node_hwmon_power_watt");
       if (val >= 0.0) hwmon = val;
     }
   } catch (...) { hwmon = 0.0; }

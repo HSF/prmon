@@ -145,6 +145,8 @@ script_install(SCRIPT test_net.py)
 script_install(SCRIPT test_mem.py)
 script_install(SCRIPT net_burner.py)
 script_install(SCRIPT http_block.py)
+script_install(SCRIPT test_mach.py)
+script_install(SCRIPT test_power.py)
 script_install(SCRIPT test_count.py)
 script_install(SCRIPT test_exit.py)
 script_install(SCRIPT test_disable.py)
@@ -168,9 +170,17 @@ add_test(NAME basicIOmultiproc COMMAND ${PYTHON_TEST} test_io.py --usleep 100 --
 # Net Tests
 add_test(NAME basicNET COMMAND ${PYTHON_TEST} test_net.py)
 
+# Machine level CPU time (machmon)
+add_test(NAME testMachSingle COMMAND ${PYTHON_TEST} test_mach.py --threads 1 --time 8)
+add_test(NAME testMachMultithread COMMAND ${PYTHON_TEST} test_mach.py --threads 2 --time 8)
+add_test(NAME testMachUnits COMMAND ${PYTHON_TEST} test_mach.py --units --time 8)
+
 # Memory Tests
 add_test(NAME singleMem COMMAND ${PYTHON_TEST} test_mem.py --procs 1)
 add_test(NAME childMem COMMAND ${PYTHON_TEST} test_mem.py --procs 4)
+
+# Power monitor (powermon)
+add_test(NAME testPower COMMAND ${PYTHON_TEST} test_power.py)
 
 # Process and thread counting Tests
 add_test(NAME basicCOUNT COMMAND ${PYTHON_TEST} test_count.py --procs 2 --threads 2)

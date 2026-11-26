@@ -20,11 +20,11 @@
 class powermon final : public Imonitor, public MessageBase {
  private:
   const prmon::parameter_list params = {
-      {"dcmi", "W",  "DCMI power consumption"},
-      {"ipmi", "W",  "IPMI power consumption"},
-      {"hwmon", "W", "HWMON power consumption"},
-      {"rapl_1",  "J", "RAPL package 1 energy in joules"},
-      {"rapl_2",  "J", "RAPL package 2 energy in joules"}
+      {"dcmi", "W",  ""},
+      {"ipmi", "W",  ""},
+      {"hwmon", "W", ""},
+      {"rapl_1",  "J", ""},
+      {"rapl_2",  "J", ""}
   };
 
   // Default urls to look at
